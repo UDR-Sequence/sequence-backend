@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    @Autowired
+
     private final MemberRepository memberRepository;
     private final AwardRepository awardRepository;
     private final CareerRepository careerRepository;
