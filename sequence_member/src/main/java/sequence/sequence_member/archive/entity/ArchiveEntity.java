@@ -32,8 +32,10 @@ public class ArchiveEntity {
     @Column(name = "field", nullable = false)
     private String field;
 
+    // TinyInt(0,1) 상태로 저장
+    // 0: 비활성, 1: 활성
     @Column(name = "status", nullable = false)
-    private TinyIntJdbcType status;
+    private Byte status;
 
     @ManyToMany
     @JoinTable(
