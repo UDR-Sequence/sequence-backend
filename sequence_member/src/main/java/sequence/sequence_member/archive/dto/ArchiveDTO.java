@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-import org.hibernate.type.descriptor.jdbc.TinyIntJdbcType;
-import sequence.sequence_member.archive.entity.ArchiveMemberEntity;
 
 import java.util.List;
 
@@ -31,7 +29,12 @@ public class ArchiveDTO {
     private String field;
 
     @NotNull(message = "상태는 필수 입력 값입니다.")
-    private TinyIntJdbcType status;
+    private Byte status;
 
     private List<ArchiveMemberDTO> archiveMembers;
+
+    // status 값이 1이면 true, 0이면 false로 반환
+    public boolean isStatus() {
+        return status != null && status == 1;
+    }
 }
