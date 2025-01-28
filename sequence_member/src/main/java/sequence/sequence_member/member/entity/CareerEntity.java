@@ -17,7 +17,7 @@ import java.util.List;
 public class CareerEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long career_id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn

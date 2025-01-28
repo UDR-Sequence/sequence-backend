@@ -17,7 +17,7 @@ import java.util.List;
 public class AwardEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long awardId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn

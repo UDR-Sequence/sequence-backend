@@ -1,7 +1,6 @@
 package sequence.sequence_member.member.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -40,10 +39,10 @@ public class MemberService {
 
         MemberEntity memberEntityCopy =  memberRepository.findByUsername(memberDTO.getUsername()).get();
 
-        List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO,memberEntityCopy);
-        List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO,memberEntityCopy);
-        List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO,memberEntityCopy);
-        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO,memberEntityCopy);
+        List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO, memberEntityCopy);
+        List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO, memberEntityCopy);
+        List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO, memberEntityCopy);
+        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
 
         experienceRepository.saveAll(experienceEntities);
         careerRepository.saveAll(careerEntities);

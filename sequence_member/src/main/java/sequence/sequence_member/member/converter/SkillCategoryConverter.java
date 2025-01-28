@@ -3,16 +3,16 @@ package sequence.sequence_member.member.converter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
-import sequence.sequence_member.member.entity.EducationEntity;
+import sequence.sequence_member.global.enums.enums.Skill;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SkillCategoryConverter implements AttributeConverter<List<EducationEntity.SkillCategory>, String> {
+public class SkillCategoryConverter implements AttributeConverter<List<Skill>, String> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(List<EducationEntity.SkillCategory> attribute) {
+    public String convertToDatabaseColumn(List<Skill> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (Exception e) {
@@ -21,9 +21,9 @@ public class SkillCategoryConverter implements AttributeConverter<List<Education
     }
 
     @Override
-    public List<EducationEntity.SkillCategory> convertToEntityAttribute(String dbData) {
+    public List<Skill> convertToEntityAttribute(String dbData) {
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<EducationEntity.SkillCategory>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<List<Skill>>() {});
         } catch (Exception e) {
             return new ArrayList<>();
         }

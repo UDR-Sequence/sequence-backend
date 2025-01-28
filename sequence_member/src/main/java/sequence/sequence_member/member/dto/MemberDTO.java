@@ -10,6 +10,8 @@ import lombok.ToString;
 
 import lombok.*;
 
+import sequence.sequence_member.global.enums.enums.ProjectRole;
+import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.AwardEntity;
 import sequence.sequence_member.member.entity.CareerEntity;
 import sequence.sequence_member.member.entity.EducationEntity.*;
@@ -60,8 +62,8 @@ public class MemberDTO {
     private Date graduation_date;
     private Degree degree;
 
-    private List<SkillCategory> skill_category;
-    private List<DesiredJob> desired_job;
+    private List<Skill> skill_category;
+    private List<ProjectRole> desired_job;
     private List<ExperienceEntity> experiences;
     private List<CareerEntity> careers;
     private List<AwardEntity> awards;

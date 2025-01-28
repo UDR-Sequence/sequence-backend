@@ -8,11 +8,11 @@ import sequence.sequence_member.member.entity.EducationEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DesiredJobConverter implements AttributeConverter<List<EducationEntity.DesiredJob>, String> {
+public class DesiredJobConverter implements AttributeConverter<List<EducationEntity>, String> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(List<EducationEntity.DesiredJob> attribute) {
+    public String convertToDatabaseColumn(List<EducationEntity> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (Exception e) {
@@ -21,9 +21,9 @@ public class DesiredJobConverter implements AttributeConverter<List<EducationEnt
     }
 
     @Override
-    public List<EducationEntity.DesiredJob> convertToEntityAttribute(String dbData) {
+    public List<EducationEntity> convertToEntityAttribute(String dbData) {
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<EducationEntity.DesiredJob>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<List<EducationEntity>>() {});
         } catch (Exception e) {
             return new ArrayList<>();
         }

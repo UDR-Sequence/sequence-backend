@@ -51,15 +51,15 @@ public class MemberEntity extends BaseTimeEntity {
     private String webUrl;
 
     // AwardEntity와의 일대다 관계 설정
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AwardEntity> awards=new ArrayList<>();
 
     // CareerEntity와의 일대다 관계 설정
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CareerEntity> careers=new ArrayList<>();
 
     //ExperienceEntity와의 일대다 관계 설정
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceEntity> experiences=new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)

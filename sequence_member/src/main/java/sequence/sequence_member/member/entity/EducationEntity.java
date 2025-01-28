@@ -3,6 +3,7 @@ package sequence.sequence_member.member.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.converter.DesiredJobConverter;
 import sequence.sequence_member.member.converter.SkillCategoryConverter;
@@ -18,7 +19,7 @@ import java.util.List;
 public class EducationEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long educationId;
+    private Long id ;
 
     @OneToOne
     @JoinColumn
@@ -44,7 +45,7 @@ public class EducationEntity extends BaseTimeEntity {
 
     @Convert(converter = SkillCategoryConverter.class)
     @Column(name = "skill_category")
-    private List<SkillCategory> skillCategory;
+    private List<Skill> skillCategory;
 
 //    @Enumerated(EnumType.STRING)
 //    @Column(name = "desired_job")
@@ -52,18 +53,10 @@ public class EducationEntity extends BaseTimeEntity {
 
     @Convert(converter = DesiredJobConverter.class)
     @Column(name = "desired_job")
-    private List<DesiredJob> desiredJob;
+    private List<sequence.sequence_member.global.enums.enums.ProjectRole> desiredJob;
 
     public enum Degree {
         ENROLLMENT, LEAVE_OF_ABSENCE, GRADUATION, MASTER, DOCTORATE, EXPELLED, DROPOUT;
-    }
-
-    public enum SkillCategory {
-        ADOBE_ILLUSTRATOR, ADOBE_PHOTOSHOP, ADOBE_INDESIGN, JAVASCRIPT, TYPESCRIPT;
-    }
-
-    public enum DesiredJob {
-        UI_UX_DESIGN, FRONT_END, BACK_END, PM;
     }
 
     public static EducationEntity toEducationEntity(MemberDTO memberDTO, MemberEntity memberEntity){

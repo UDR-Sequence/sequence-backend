@@ -17,7 +17,7 @@ import java.util.List;
 public class ExperienceEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long experienceId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn
