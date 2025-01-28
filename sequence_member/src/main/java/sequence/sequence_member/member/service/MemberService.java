@@ -26,7 +26,7 @@ public class MemberService {
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public void save(MemberDTO memberDTO){
+    public void  save(MemberDTO memberDTO){
 
         //memberDTO의 비밀번호 값을 암호화하여 memberDTO에 저장하고 memberEntity로 변환하여 저장
         //엔티티 클래스는 데이터베이스 구조를 반영해야 하며, 비즈니스 로직(회원가입, 로그인, 비밀번호 암호화)과 분리되어야 한다.

@@ -19,14 +19,14 @@ import sequence.sequence_member.global.utils.BaseTimeEntity;
 @Entity
 @Getter
 @Table(name = "comment")
-public class CommentEntity extends BaseTimeEntity {
+public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "project_id")
-    private ProjectEntity project;
+    private Project project;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
@@ -34,8 +34,8 @@ public class CommentEntity extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
-    private CommentEntity parentComment;
+    private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<CommentEntity> childComment = new ArrayList<>();
+    private List<Comment> childComment = new ArrayList<>();
 }

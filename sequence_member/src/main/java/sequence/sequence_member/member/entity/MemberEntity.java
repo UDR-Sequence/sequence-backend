@@ -38,7 +38,7 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "address", nullable = false, length = 150)
     private String address;
 
-    @Column(name = "phone", nullable = false, length = 11)
+    @Column(name = "phone", nullable = false, length = 13) // -를 포함한 13자리
     private String phone;
 
     @Column(name = "email", nullable = false, length = 45, unique = true)
@@ -47,8 +47,8 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="introduction", nullable = false)
     private String introduction;
 
-    @Column(name="web_url", length = 150)
-    private String webUrl;
+    @Column(name="portfolio", length = 150)
+    private String portfolio; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
     // AwardEntity와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -80,7 +80,7 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setPhone(memberDTO.getPhone());
         memberEntity.setEmail(memberDTO.getEmail());
         memberEntity.setIntroduction(memberDTO.getIntroduction());
-        memberEntity.setWebUrl(memberDTO.getWeb_url());
+        memberEntity.setPortfolio(memberDTO.getPortfolio());
         return memberEntity;
     }
 }

@@ -23,14 +23,14 @@ public class CareerEntity extends BaseTimeEntity {
     @JoinColumn
     private MemberEntity member;
 
-    @Column(name = "career_name", length = 100)
-    private String careerName;
+    @Column(name = "company_name", length = 100,nullable = false)
+    private String companyName;
 
-    @Column
+    @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date careerDuration;
 
-    @Column
+    @Column(nullable = false)
     private String careerDescription;
 
 
@@ -40,7 +40,7 @@ public class CareerEntity extends BaseTimeEntity {
         for(int i=0;i<memberDTO.getCareers().size();i++){
             CareerEntity careerEntity = new CareerEntity();
 
-            careerEntity.setCareerName(memberDTO.getCareers().get(i).getCareerName());
+            careerEntity.setCompanyName(memberDTO.getCareers().get(i).getCompanyName());
             careerEntity.setCareerDescription(memberDTO.getCareers().get(i).getCareerDescription());
             careerEntity.setCareerDuration(memberDTO.getCareers().get(i).getCareerDuration());
             careerEntity.setMember(memberEntity);

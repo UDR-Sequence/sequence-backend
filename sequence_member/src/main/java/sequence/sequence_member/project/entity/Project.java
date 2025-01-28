@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
+import sequence.sequence_member.member.entity.MemberEntity;
 
 @Entity
 @Getter @Setter
@@ -34,7 +34,7 @@ import sequence.sequence_member.global.utils.BaseTimeEntity;
 @AllArgsConstructor
 @Builder
 @Table(name = "project")
-public class ProjectEntity extends BaseTimeEntity {
+public class Project extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -72,14 +72,18 @@ public class ProjectEntity extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String article;
 
+    @Column
     private String link;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
-    private ProjectMemberEntity writer;
+    private MemberEntity writer;
 
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProjectMemberEntity> members;
+    private List<ProjectMember> members;
+
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProjectInvitedMember> invitedMembers;
 
     // List<ProjectMemberEntity> 에서 username만을 가지고 있는 List<String> 반환
     public List<String> getMemberUsernames() {

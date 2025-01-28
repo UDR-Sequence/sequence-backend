@@ -3,6 +3,7 @@ package sequence.sequence_member.member.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.converter.DesiredJobConverter;
@@ -19,7 +20,7 @@ import java.util.List;
 public class EducationEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id ;
+    private Long    id ;
 
     @OneToOne
     @JoinColumn
@@ -39,8 +40,8 @@ public class EducationEntity extends BaseTimeEntity {
     @Temporal(TemporalType.DATE)
     private Date graduationDate;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "degree", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Degree degree;
 
     @Convert(converter = SkillCategoryConverter.class)
@@ -55,20 +56,16 @@ public class EducationEntity extends BaseTimeEntity {
     @Column(name = "desired_job")
     private List<sequence.sequence_member.global.enums.enums.ProjectRole> desiredJob;
 
-    public enum Degree {
-        ENROLLMENT, LEAVE_OF_ABSENCE, GRADUATION, MASTER, DOCTORATE, EXPELLED, DROPOUT;
-    }
-
     public static EducationEntity toEducationEntity(MemberDTO memberDTO, MemberEntity memberEntity){
         EducationEntity educationEntity = new EducationEntity();
 
-        educationEntity.setSchoolName(memberDTO.getSchool_name());
+        educationEntity.setSchoolName(memberDTO.getSchoolName());
         educationEntity.setMajor(memberDTO.getMajor());
-        educationEntity.setEntranceDate(memberDTO.getEntrance_date());
-        educationEntity.setGraduationDate(memberDTO.getGraduation_date());
+        educationEntity.setEntranceDate(memberDTO.getEntranceDate());
+        educationEntity.setGraduationDate(memberDTO.getGraduationDate());
         educationEntity.setDegree(memberDTO.getDegree());
-        educationEntity.setDesiredJob(memberDTO.getDesired_job());
-        educationEntity.setSkillCategory(memberDTO.getSkill_category());
+        educationEntity.setDesiredJob(memberDTO.getDesiredJob());
+        educationEntity.setSkillCategory(memberDTO.getSkillCategory());
         educationEntity.setMember(memberEntity);
 
         return educationEntity;

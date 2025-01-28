@@ -1,5 +1,6 @@
 package sequence.sequence_member.member.dto;
 
+import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
@@ -16,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return List.of(); // 빈 권한 리스트. todo- 추후에 권한 추가
     }
 
     @Override

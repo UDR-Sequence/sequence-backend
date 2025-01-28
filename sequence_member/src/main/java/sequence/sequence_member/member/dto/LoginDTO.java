@@ -11,12 +11,12 @@ import sequence.sequence_member.member.entity.MemberEntity;
 @AllArgsConstructor
 public class LoginDTO {
     private String user_id;
-    private String user_pwd;
+    private String user_pw;
 
     public static LoginDTO toLoginDTO(MemberEntity memberEntity){
         LoginDTO loginDTO  = new LoginDTO();
         loginDTO.setUser_id(memberEntity.getUsername());
-        loginDTO.setUser_pwd(memberEntity.getPassword());
+        loginDTO.setUser_pw(memberEntity.getPassword());
 
         return loginDTO;
     }

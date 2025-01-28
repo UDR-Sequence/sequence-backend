@@ -1,11 +1,17 @@
 package sequence.sequence_member.member.jwt;
 
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -32,8 +38,32 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
         //클라이언트 요청으로 부터 username, password를 추출한다.
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
+//        String username = obtainUsername(request);
+//        String password = obtainPassword(request);
+        String username = null;
+        String password = null;
+
+        // JSON 형식인지 확인
+        if (request.getContentType() != null && request.getContentType().contains("application/json")) {
+            try {
+                // JSON 데이터를 읽어서 파싱
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, String> requestMap = objectMapper.readValue(request.getInputStream(), Map.class);
+
+                username = requestMap.get("username");
+                password = requestMap.get("password");
+            } catch (IOException e) {
+                throw new AuthenticationServiceException("Failed to parse JSON request", e);
+            }
+        } else {
+            // 기본 form-urlencoded 방식 처리
+            username = obtainUsername(request);
+            password = obtainPassword(request);
+        }
+
+        if (username == null || password == null) {
+            throw new AuthenticationServiceException("Username or Password is missing");
+        }
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
 
@@ -47,10 +77,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //유저 이름 찾기
         String username = authentication.getName();
 
-        String access = jwtUtil.createJwt("access",username, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", username, 86400000L);
+        String access = jwtUtil.createJwt("access",username, 600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
+        String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
 
-        tokenReissueService.RefreshTokenSave(username,refresh,86400000L);
+        tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
