@@ -17,10 +17,24 @@ public class ArchiveController {
     @Autowired
     private ArchiveService archiveService;
 
-    // Archive 저장 (Create)
+    // 저장 Create
     @PostMapping
     public ResponseEntity<ArchiveDTO> createArchive(@RequestBody ArchiveDTO archiveDTO) {
         ArchiveDTO saveArchive = archiveService.saveArchive(archiveDTO);
         return new ResponseEntity<>(saveArchive, HttpStatus.CREATED);
+    }
+
+    // 조회 Read
+    @GetMapping("/{archiveId}")
+    public ResponseEntity<ArchiveDTO> getArchive(@PathVariable long archiveId) {
+        ArchiveDTO archive = archiveService.getArchiveById(archiveId);
+        return new ResponseEntity<>(archive, HttpStatus.OK);
+    }
+
+    // 모든 조회 Read
+    @GetMapping
+    public ResponseEntity<List<ArchiveDTO>> getAllArchives() {
+        List<ArchiveDTO> archives = archiveService.getAllArchives();
+        return new ResponseEntity<>(archives, HttpStatus.OK);
     }
 }
