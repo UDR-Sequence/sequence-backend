@@ -3,14 +3,12 @@ package sequence.sequence_member.member.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import sequence.sequence_member.member.dto.MemberDTO;
-import sequence.sequence_member.member.response.ApiResponseData;
-import sequence.sequence_member.member.response.ResponseMsg;
+import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.member.service.MemberService;
 
 import java.util.Map;

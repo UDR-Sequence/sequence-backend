@@ -40,6 +40,8 @@ dependencies {
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation("io.github.cdimascio:java-dotenv:5.2.2") // 환경변수 파일 읽기 위한 라이브러리 추가
 }
 
 tasks.named('test') {
