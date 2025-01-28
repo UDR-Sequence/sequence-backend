@@ -2,6 +2,7 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name="career")
-public class CareerEntity {
+public class CareerEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long career_id;

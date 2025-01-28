@@ -2,6 +2,7 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 import java.util.ArrayList;
@@ -10,8 +11,8 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "user")
-public class MemberEntity {
+@Table(name = "member")
+public class MemberEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
