@@ -2,6 +2,7 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import sequence.sequence_member.archive.entity.ArchiveMemberEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 import java.util.ArrayList;
