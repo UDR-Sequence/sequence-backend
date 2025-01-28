@@ -7,6 +7,10 @@ import sequence.sequence_member.archive.dto.ArchiveDTO;
 import sequence.sequence_member.archive.entity.ArchiveEntity;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ArchiveService {
@@ -36,5 +40,38 @@ public class ArchiveService {
     }
     
     // Read 조회
-    
+    public ArchiveDTO getArchiveById(Long archiveId) {
+        Optional<ArchiveEntity> archiveEntityOpt = archiveRepository.findById(archiveId);
+
+        if (archiveEntityOpt.isEmpty()) {
+            throw new RuntimeException("Archive not found");
+        }
+
+        ArchiveEntity archiveEntity = archiveEntityOpt.get();
+
+        return ArchiveDTO.builder()
+                .archiveId(archiveEntity.getArchiveId())
+                .title(archiveEntity.getTitle())
+                .description(archiveEntity.getDescription())
+                .duration(archiveEntity.getDuration())
+                .field(archiveEntity.getField())
+                .status(archiveEntity.getStatus())
+                .build();
+    }
+
+    // 모든 아카이브 Read 조회
+    public List<ArchiveDTO> getAllArchives() {
+        List<ArchiveEntity> archiveEntities = archiveRepository.findAll();
+
+        return archiveEntities.stream()
+                .map(archiveEntity -> ArchiveDTO.builder()
+                        .archiveId(archiveEntity.getArchiveId())
+                        .title(archiveEntity.getTitle())
+                        .description(archiveEntity.getDescription())
+                        .duration(archiveEntity.getDuration())
+                        .field(archiveEntity.getField())
+                        .status(archiveEntity.getStatus())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }
