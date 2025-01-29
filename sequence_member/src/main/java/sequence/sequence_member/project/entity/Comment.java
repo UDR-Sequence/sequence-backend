@@ -11,7 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,7 +46,7 @@ public class Comment extends BaseTimeEntity {
     private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Comment> childComment;
+    private List<Comment> childComments;
 
     public Comment setParentComment(Comment parentComment) {
         this.parentComment = parentComment;

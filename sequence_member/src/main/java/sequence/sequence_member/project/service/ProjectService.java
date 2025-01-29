@@ -1,5 +1,6 @@
 package sequence.sequence_member.project.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +14,13 @@ import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.project.dto.CommentDTO;
+import sequence.sequence_member.project.dto.CommentOutputDTO;
 import sequence.sequence_member.project.dto.ProjectMemberOutputDTO;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
+import sequence.sequence_member.project.entity.Comment;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
@@ -67,6 +71,38 @@ public class ProjectService {
                     .build());
         }
 
+        // 댓글들을 조회하여 응답데이터에 포함함
+        List<Comment> comments = project.getComments();
+        List<CommentOutputDTO> commentOutputDTOS = new ArrayList<>(); // Comments를 정리하여 CommentOutputDTO로 변환
+        for(Comment comment : comments){
+            if(comment.getParentComment()!=null){
+                continue;
+            }
+
+            // 부모 댓글을 CommentDTO로 변환
+            CommentDTO parentComment = CommentDTO.builder()
+                    .id(comment.getId())
+                    .writer(comment.getWriter().getNickname())
+                    .content(comment.getContent())
+                    .createdLocalDateTime(comment.getCreatedDateTime())
+                    .build();
+
+            CommentOutputDTO commentOutputDTO = new CommentOutputDTO(parentComment);
+
+            // 자식 댓글을 CommentDTO로 변환후 CommentOutputDTO의 childComments에 추가
+            List<Comment> childComments = comment.getChildComments();
+            for(Comment childComment : childComments){
+                CommentDTO childCommentDTO = CommentDTO.builder()
+                        .id(childComment.getId())
+                        .writer(childComment.getWriter().getNickname())
+                        .content(childComment.getContent())
+                        .createdLocalDateTime(childComment.getCreatedDateTime())
+                        .build();
+                commentOutputDTO.addChildComment(childCommentDTO);
+            }
+            commentOutputDTOS.add(commentOutputDTO);
+        }
+
         return ProjectOutputDTO.builder()
                 .id(project.getId())
                 .title(project.getTitle())
@@ -84,6 +120,7 @@ public class ProjectService {
                 .article(project.getArticle())
                 .link(project.getLink())
                 .members(projectMemberOutputDTOS)
+                .comments(commentOutputDTOS)
                 .build();
     }
 

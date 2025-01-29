@@ -91,6 +91,9 @@ public class Project extends BaseTimeEntity {
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProjectInvitedMember> invitedMembers;
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
     //project 수정 시 사용
     public void updateProject(ProjectUpdateDTO projectUpdateDTO){
         this.title = projectUpdateDTO.getTitle();

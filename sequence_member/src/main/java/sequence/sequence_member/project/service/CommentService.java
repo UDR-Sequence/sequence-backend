@@ -25,7 +25,7 @@ public class CommentService {
      * 댓글을 작성하는 메인 로직 함수
      * @param customUserDetails
      * @param projectId
-     * @param commentInputDTO                                                            
+     * @param commentInputDTO
      */
     public void writeComment(CustomUserDetails customUserDetails, Long projectId, CommentInputDTO commentInputDTO){
         MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
