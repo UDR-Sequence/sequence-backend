@@ -58,6 +58,9 @@ public class MemberDTO {
     private String introduction;
     private String portfolio; // todo - minio에 저장할 수 있도록 추가해야 함
 
+    @NotBlank(message = "닉네임은 필수 입력 값입니다.")
+    private String nickname;
+
     @NotBlank(message = "학교명은 필수 입력 값입니다.")
     private String schoolName;
 
