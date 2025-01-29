@@ -13,11 +13,18 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
+import sequence.sequence_member.member.entity.MemberEntity;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "comment")
 public class Comment extends BaseTimeEntity {
     @Id
@@ -30,12 +37,20 @@ public class Comment extends BaseTimeEntity {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
-    private String writer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private MemberEntity writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
 
-    @OneToMany(mappedBy = "parentComment", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Comment> childComment = new ArrayList<>();
+    @OneToMany(mappedBy = "parentComment", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> childComment;
+
+    public Comment setParentComment(Comment parentComment) {
+        this.parentComment = parentComment;
+        return this;
+    }
 }
