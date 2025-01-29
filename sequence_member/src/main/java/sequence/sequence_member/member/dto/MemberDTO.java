@@ -1,6 +1,7 @@
 package sequence.sequence_member.member.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,10 +11,10 @@ import lombok.ToString;
 
 import lombok.*;
 
-import sequence.sequence_member.member.entity.AwardEntity;
-import sequence.sequence_member.member.entity.CareerEntity;
-import sequence.sequence_member.member.entity.EducationEntity.*;
-import sequence.sequence_member.member.entity.ExperienceEntity;
+import org.hibernate.validator.constraints.Length;
+import sequence.sequence_member.global.enums.enums.Degree;
+import sequence.sequence_member.global.enums.enums.ProjectRole;
+import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.MemberEntity.Gender;
 
 import java.util.Date;
@@ -25,27 +26,29 @@ import java.util.List;
 @ToString
 @Builder
 public class MemberDTO {
-    private Long id;
 
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
     @Size(min= 4, max= 10, message = "아이디는 최소 4자 이상 최대 10자 이하입니다.")
     private String username;
 
     @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
-    @Pattern(regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,20}", message = "비밀번호는 8~20자 영문 대 소문자, 숫자, 특수문자를 사용하세요.")
+    @Length(min = 8, max = 20, message = "비밀번호는 8~20자 영문 대 소문자, 숫자, 특수문자를 사용하세요.")
     private String password;
 
     @NotBlank(message = "이름은 필수 입력 값입니다.")
     private String name;
 
+    @NotNull(message = "생년월일은 필수 입력 값입니다.")
     private Date birth;
 
+    @NotNull(message = "성별은 필수 입력 값입니다.")
     private Gender gender;
 
     @NotBlank(message = "주소지는 필수 입력 값입니다.")
     private String address;
 
     @NotBlank(message = "휴대폰 번호는 필수 입력 값입니다.")
+    @Pattern(regexp = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$", message = "휴대폰 번호 형식이 올바르지 않습니다.")
     private String phone;
 
     @NotBlank(message = "이메일은 필수 입력 값입니다.")
@@ -53,17 +56,25 @@ public class MemberDTO {
     private String email;
 
     private String introduction;
-    private String web_url;
-    private String school_name;
+    private String portfolio; // todo - minio에 저장할 수 있도록 추가해야 함
+
+    @NotBlank(message = "학교명은 필수 입력 값입니다.")
+    private String schoolName;
+
+    @NotBlank(message = "전공은 필수 입력 값입니다.")
     private String major;
-    private Date entrance_date;
-    private Date graduation_date;
+
+    private Date entranceDate;
+
+    private Date graduationDate;
+
+    @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
 
-    private List<SkillCategory> skill_category;
-    private List<DesiredJob> desired_job;
-    private List<ExperienceEntity> experiences;
-    private List<CareerEntity> careers;
-    private List<AwardEntity> awards;
+    private List<Skill> skillCategory;
+    private List<ProjectRole> desiredJob;
+    private List<ExperienceDTO> experiences;
+    private List<CareerInputDTO> careers;
+    private List<AwardInputDTO> awards;
 
 }

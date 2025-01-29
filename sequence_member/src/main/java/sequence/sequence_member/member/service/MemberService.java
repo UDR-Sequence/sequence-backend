@@ -1,7 +1,6 @@
 package sequence.sequence_member.member.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -19,7 +18,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    @Autowired
 
     private final MemberRepository memberRepository;
     private final AwardRepository awardRepository;
@@ -28,7 +26,7 @@ public class MemberService {
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public void save(MemberDTO memberDTO){
+    public void  save(MemberDTO memberDTO){
 
         //memberDTO의 비밀번호 값을 암호화하여 memberDTO에 저장하고 memberEntity로 변환하여 저장
         //엔티티 클래스는 데이터베이스 구조를 반영해야 하며, 비즈니스 로직(회원가입, 로그인, 비밀번호 암호화)과 분리되어야 한다.
@@ -41,10 +39,10 @@ public class MemberService {
 
         MemberEntity memberEntityCopy =  memberRepository.findByUsername(memberDTO.getUsername()).get();
 
-        List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO,memberEntityCopy);
-        List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO,memberEntityCopy);
-        List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO,memberEntityCopy);
-        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO,memberEntityCopy);
+        List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO, memberEntityCopy);
+        List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO, memberEntityCopy);
+        List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO, memberEntityCopy);
+        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
 
         experienceRepository.saveAll(experienceEntities);
         careerRepository.saveAll(careerEntities);

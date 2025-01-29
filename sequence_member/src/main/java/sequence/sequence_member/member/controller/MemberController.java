@@ -15,13 +15,13 @@ import java.util.Map;
 
 @Controller
 @ResponseBody
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class MemberController {
 
-    @Autowired
     private final MemberService memberService;
 
-    @PostMapping("/api/user")
+    @PostMapping("/join")
     public ApiResponseData<String> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
@@ -46,7 +46,7 @@ public class MemberController {
         return "mainPage " + username;
     }
 
-    @RequestMapping("/api/check_username")
+    @RequestMapping("/check_username")
     public ApiResponseData<String> checkUser(@RequestParam(name = "username",required = false) String username){
         // 파라미터 유효성 검사
         if (username == null || username.trim().isEmpty()) {
