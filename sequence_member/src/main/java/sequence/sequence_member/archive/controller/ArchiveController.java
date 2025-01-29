@@ -37,4 +37,19 @@ public class ArchiveController {
         List<ArchiveDTO> archives = archiveService.getAllArchives();
         return new ResponseEntity<>(archives, HttpStatus.OK);
     }
+
+    // Update
+    @PutMapping("/{archiveId}")
+    public ResponseEntity<ArchiveDTO> updateArchive(@PathVariable long archiveId, @RequestBody ArchiveDTO archiveDTO) {
+        ArchiveDTO updateArchive = archiveService.updateArchive(archiveId, archiveDTO);
+        return new ResponseEntity<>(updateArchive, HttpStatus.OK);
+    }
+
+    // Delete
+    @DeleteMapping("/{archiveId}")
+    public ResponseEntity<Void> deleteArchive(@PathVariable long archiveId) {
+        archiveService.deleteArchive(archiveId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }
