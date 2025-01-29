@@ -1,6 +1,7 @@
 package sequence.sequence_member.global.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -67,11 +68,34 @@ public class GlobalExceptionHandler {
 *
 */
     // UserNotFoundException 예외 처리
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(UserNotFoundException ex){
+    @ExceptionHandler(UserNotFindException.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(UserNotFindException ex){
         Code code = Code.CAN_NOT_FIND_USER;
         // 반환할 메시지와 HTTP 상태 코드 설정
         return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
     }
 
+    // CanNotFindResourceException 예외 처리
+    @ExceptionHandler(CanNotFindResourceException.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(CanNotFindResourceException ex){
+        Code code = Code.CAN_NOT_FIND_RESOURCE;
+        // 반환할 메시지와 HTTP 상태 코드 설정
+        return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
+    }
+
+    // AuthException 예외 처리
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(AuthException ex){
+        Code code = Code.ACCESS_DENIED;
+        // 반환할 메시지와 HTTP 상태 코드 설정
+        return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
+    }
+
+    // BadRequestException 예외 처리
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(BadRequestException ex){
+        Code code = Code.BAD_REQUEST;
+        // 반환할 메시지와 HTTP 상태 코드 설정
+        return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
+    }
 }
