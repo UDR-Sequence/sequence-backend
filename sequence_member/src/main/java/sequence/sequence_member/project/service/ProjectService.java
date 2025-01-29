@@ -33,7 +33,11 @@ public class ProjectService {
     private final ProjectMemberEntityRepository projectMemberEntityRepository;
     private final MemberRepository memberRepository;
 
-    // Project를 생성하는 메인 로직 함수
+    /**
+     * Project를 생성하는 메인 로직 함수
+     * @param projectInputDTO
+     * @param customUserDetails
+     */
     @Transactional
     public void createProject(ProjectInputDTO projectInputDTO, CustomUserDetails customUserDetails){
         MemberEntity memberEntity = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
@@ -43,7 +47,11 @@ public class ProjectService {
         savePrjectMemberEntity(project, memberEntity);
     }
 
-    // Project를 조회하는 메인 로직 함수
+    /**
+     * Project를 조회하는 메인 로직 함수
+      * @param projectId
+     * @return
+     */
     @Transactional(readOnly = true)
     public ProjectOutputDTO getProject(Long projectId){
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
@@ -79,7 +87,13 @@ public class ProjectService {
                 .build();
     }
 
-    // 프로젝트 수정하는 메인로직 함수
+    /**
+     * 프로젝트 수정하는 메인로직 함수
+     * @param projectId
+     * @param customUserDetails
+     * @param projectUpdateDTO
+     * @return
+     */
     @Transactional
     public ProjectOutputDTO updateProject(Long projectId, CustomUserDetails customUserDetails, ProjectUpdateDTO projectUpdateDTO) {
         Project project = projectRepository.findById(projectId)
@@ -104,6 +118,17 @@ public class ProjectService {
         saveProjectInvitedMemberEntities(project, invitedMembers);
 
         return getProject(projectId);
+    }
+
+    public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername())
+                .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        if (!project.getWriter().equals(writer)) {
+            throw new AuthException("작성자만 삭제할 수 있습니다.");
+        }
+        projectRepository.delete(project);
     }
 
     // Project를 저장 및 반환하는 함수

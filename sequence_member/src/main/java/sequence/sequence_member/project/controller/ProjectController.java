@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,8 +42,13 @@ public class ProjectController {
     @PutMapping("/{projectId}")
     public ResponseEntity<ApiResponseData<ProjectOutputDTO>> updateProject(@PathVariable Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody
                                                                  ProjectUpdateDTO projectUpdateDTO){
-
         return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 수정 성공",projectService.updateProject(projectId, customUserDetails, projectUpdateDTO)));
+    }
+
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<ApiResponseData<String>> deleteProject(@PathVariable Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        projectService.deleteProject(projectId, customUserDetails);
+        return ResponseEntity.ok().body(ApiResponseData.success(null, "프로젝트 삭제 성공"));
     }
 
 }
