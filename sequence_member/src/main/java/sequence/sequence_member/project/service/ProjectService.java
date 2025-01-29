@@ -37,6 +37,9 @@ public class ProjectService {
         savePrjectMemberEntity(project, memberEntity);
     }
 
+    // Project를 조회하는 메인 로직 함수
+
+
     // Project를 저장 및 반환하는 함수
     private Project saveProjectEntity(ProjectInputDTO projectInputDTO, MemberEntity memberEntity){
         return projectRepository.save(Project.builder()

@@ -64,6 +64,10 @@ public class MemberDTO {
     @NotBlank(message = "전공은 필수 입력 값입니다.")
     private String major;
 
+    @NotBlank(message = "학년은 필수 입력 값입니다.")
+    @Pattern(regexp = "^[1-6]학년$", message = "학년은 1학년부터 6학년까지 입력 가능합니다.")
+    private String grade;
+
     private Date entranceDate;
 
     private Date graduationDate;
