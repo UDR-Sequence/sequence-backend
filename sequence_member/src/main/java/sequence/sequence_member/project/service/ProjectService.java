@@ -67,7 +67,7 @@ public class ProjectService {
             projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
                     .nickname(projectMember.getMember().getNickname())
                     .profileImgUrl(projectMember.getMember().getProfileImg())
-                    .memberId(projectMember.getMember().getId())
+//                    .memberId(projectMember.getMember().getId()) // memberId는 필요없는 정보이므로 제거. todo- 추후 필요시 추가
                     .build());
         }
 

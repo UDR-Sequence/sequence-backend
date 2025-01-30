@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProjectMemberOutputDTO {
-    private Long memberId;
+//    private Long memberId;
     private String profileImgUrl;
     private String nickname;
 }
