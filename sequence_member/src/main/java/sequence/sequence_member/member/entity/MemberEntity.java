@@ -2,6 +2,8 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
@@ -10,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
+@Getter @Setter
 @Table(name = "member")
 public class MemberEntity extends BaseTimeEntity {
 
@@ -50,6 +52,13 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="portfolio", length = 150)
     private String portfolio; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
+    @Column(name="nickname", length = 45)
+    private String nickname;
+
+    @Column(name="profile_img")
+    private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
+
+
     // AwardEntity와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AwardEntity> awards=new ArrayList<>();
@@ -62,7 +71,7 @@ public class MemberEntity extends BaseTimeEntity {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceEntity> experiences=new ArrayList<>();
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private EducationEntity education;
 
     public enum Gender{
@@ -79,6 +88,7 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setAddress(memberDTO.getAddress());
         memberEntity.setPhone(memberDTO.getPhone());
         memberEntity.setEmail(memberDTO.getEmail());
+        memberEntity.setNickname(memberDTO.getNickname());
         memberEntity.setIntroduction(memberDTO.getIntroduction());
         memberEntity.setPortfolio(memberDTO.getPortfolio());
         return memberEntity;

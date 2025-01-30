@@ -3,6 +3,7 @@ package sequence.sequence_member.member.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -97,6 +98,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
                         .anyRequest().authenticated());
 
         http

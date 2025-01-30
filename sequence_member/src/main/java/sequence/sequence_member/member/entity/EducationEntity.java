@@ -1,8 +1,10 @@
 package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import org.intellij.lang.annotations.Pattern;
 import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
@@ -22,7 +24,7 @@ public class EducationEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long    id ;
 
-    @OneToOne
+    @OneToOne(mappedBy = "education")
     @JoinColumn
     private MemberEntity member;
 
@@ -31,6 +33,9 @@ public class EducationEntity extends BaseTimeEntity {
 
     @Column(name = "major", nullable = false, length = 50)
     private String major;
+
+    @Column(nullable = false)
+    private String grade; // 1학년, 2학년, 3학년, 4학년, 5학년, 6학년
 
     @Column(name = "entrance_date")
     @Temporal(TemporalType.DATE)
@@ -61,6 +66,7 @@ public class EducationEntity extends BaseTimeEntity {
 
         educationEntity.setSchoolName(memberDTO.getSchoolName());
         educationEntity.setMajor(memberDTO.getMajor());
+        educationEntity.setGrade(memberDTO.getGrade());
         educationEntity.setEntranceDate(memberDTO.getEntranceDate());
         educationEntity.setGraduationDate(memberDTO.getGraduationDate());
         educationEntity.setDegree(memberDTO.getDegree());

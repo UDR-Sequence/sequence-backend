@@ -13,7 +13,7 @@ import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
 
 @Getter
-public class ProjectInputDTO {
+public class ProjectUpdateDTO {
 
     @NotEmpty(message = "제목을 입력해주세요.")
     @Length(min=1, max=40,message = "글 제목은 30자 이하로 입력해주세요.")
@@ -46,6 +46,8 @@ public class ProjectInputDTO {
 
     @NotNull(message = "현재 진행 단계를 선택 해주세요.")
     private Step step;
+
+    private List<String> deletedMembersNicknames; // 닉네임 리스트
 
     private List<String> invitedMembersNicknames; // 닉네임 리스트
 

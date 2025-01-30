@@ -2,6 +2,8 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
@@ -12,7 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "experience")
 public class ExperienceEntity extends BaseTimeEntity {

@@ -2,10 +2,13 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "refresh")
 public class RefreshEntity extends BaseTimeEntity {
     @Id

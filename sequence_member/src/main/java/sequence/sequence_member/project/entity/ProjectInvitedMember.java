@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
@@ -20,6 +21,7 @@ import sequence.sequence_member.member.entity.MemberEntity;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Getter
 @Builder
 public class ProjectInvitedMember extends BaseTimeEntity {
 
