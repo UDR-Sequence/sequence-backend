@@ -8,7 +8,7 @@ import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectMember;
 
 @Repository
-public interface ProjectMemberEntityRepository extends JpaRepository<ProjectMember,Long > {
+public interface ProjectMemberRepository extends JpaRepository<ProjectMember,Long > {
 
     public void deleteAllByProjectId(Long projectId);
 

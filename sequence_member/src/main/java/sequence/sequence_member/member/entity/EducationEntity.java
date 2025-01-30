@@ -24,7 +24,7 @@ public class EducationEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long    id ;
 
-    @OneToOne
+    @OneToOne(mappedBy = "education")
     @JoinColumn
     private MemberEntity member;
 

@@ -1,14 +1,19 @@
 package sequence.sequence_member.member.controller;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.member.dto.InviteOutputDTO;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
+import sequence.sequence_member.member.service.InviteAccessService;
 import sequence.sequence_member.member.service.MemberService;
 
 import java.util.Map;
@@ -20,6 +25,7 @@ import java.util.Map;
 public class MemberController {
 
     private final MemberService memberService;
+    private final InviteAccessService inviteAccessService;
 
     @PostMapping("/join")
     public ApiResponseData<String> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
@@ -60,6 +66,11 @@ public class MemberController {
 
         //아이디가 존재하지 않는 경우
         return ApiResponseData.success("사용가능한 아이디 입니다.");
+    }
+
+    @GetMapping("/invited-projects")
+    public ApiResponseData<List<InviteOutputDTO>> getInvitedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ApiResponseData.success(inviteAccessService.getInvitedProjects(customUserDetails));
     }
 
 }

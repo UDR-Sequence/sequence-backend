@@ -2,6 +2,8 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
@@ -10,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
+@Getter @Setter
 @Table(name = "member")
 public class MemberEntity extends BaseTimeEntity {
 
@@ -69,7 +71,7 @@ public class MemberEntity extends BaseTimeEntity {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceEntity> experiences=new ArrayList<>();
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private EducationEntity education;
 
     public enum Gender{

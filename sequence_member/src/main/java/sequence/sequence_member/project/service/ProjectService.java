@@ -1,6 +1,5 @@
 package sequence.sequence_member.project.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +23,8 @@ import sequence.sequence_member.project.entity.Comment;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
-import sequence.sequence_member.project.repository.ProjectInvitedMemberEntityRepository;
-import sequence.sequence_member.project.repository.ProjectMemberEntityRepository;
+import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
+import sequence.sequence_member.project.repository.ProjectMemberRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
 
 @Service
@@ -33,8 +32,8 @@ import sequence.sequence_member.project.repository.ProjectRepository;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final ProjectInvitedMemberEntityRepository projectInvitedMemberEntityRepository;
-    private final ProjectMemberEntityRepository projectMemberEntityRepository;
+    private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final MemberRepository memberRepository;
 
     /**
@@ -148,7 +147,7 @@ public class ProjectService {
         if(deletedMembers.contains(writer)){
             throw new AuthException("작성자는 삭제할 수 없습니다.");
         }
-        projectMemberEntityRepository.deleteByProjectAndMemberIn(project, deletedMembers);
+        projectMemberRepository.deleteByProjectAndMemberIn(project, deletedMembers);
 
         // 새롭게 초대된 멤버들은 승인받기 전이므로 ProjectInvitedMember에 저장
         List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getInvitedMembersNicknames());
@@ -195,7 +194,7 @@ public class ProjectService {
                     .member(member)
                     .project(project)
                     .build();
-            projectInvitedMemberEntityRepository.save(entity);
+            projectInvitedMemberRepository.save(entity);
         }
     }
 
@@ -205,6 +204,6 @@ public class ProjectService {
                 .member(writer)
                 .project(project)
                 .build();
-        projectMemberEntityRepository.save(entity);
+        projectMemberRepository.save(entity);
     }
 }
