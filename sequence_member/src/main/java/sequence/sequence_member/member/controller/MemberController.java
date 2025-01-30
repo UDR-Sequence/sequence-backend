@@ -15,6 +15,7 @@ import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.member.service.InviteAccessService;
+import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
 
 import java.util.Map;
@@ -27,6 +28,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final InviteAccessService inviteAccessService;
+    private final MemberSearchService memberSearchService;
 
     @PostMapping("/join")
     public ApiResponseData<String> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
@@ -95,4 +97,9 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponseData.success(inviteAccessService.getAcceptedProjects(customUserDetails)));
     }
 
+    //닉네임으로 유저들 검색하는 컨트롤러
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname){
+        return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(nickname)));
+    }
 }
