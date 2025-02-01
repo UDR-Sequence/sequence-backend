@@ -35,11 +35,11 @@ public class ProjectInputDTO {
 
     @NotEmpty(message = "모집 하고자 하는 역할들을 선택해주세요")
     @Size(max = 20, message = "역할들은 20개 이하로 선택 해주세요.")
-    List<String> roles;
+    private List<String> roles;
 
     @NotEmpty(message = "필요로 하는 스킬들을 선택해주세요")
     @Size(max = 20, message = "스킬들은 20개 이하로 선택 해주세요.")
-    List<String> skills;
+    private List<String> skills;
 
     @NotNull(message = "진행 방식을 선택 해주세요")
     private MeetingOption meetingOption;
