@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.exception.AuthException;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.global.utils.DataConvertor;
@@ -135,7 +136,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
         MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername())
-                .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFindException("요청하는 유저가 존재하지 않습니다."));
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 수정할 수 있습니다.");
         }
@@ -145,12 +146,21 @@ public class ProjectService {
         // 삭제된 멤버들은 ProjectMember에서 삭제
         List<MemberEntity> deletedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getDeletedMembersNicknames());
         if(deletedMembers.contains(writer)){
-            throw new AuthException("작성자는 삭제할 수 없습니다.");
+            throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
         }
         projectMemberRepository.deleteByProjectAndMemberIn(project, deletedMembers);
 
         // 새롭게 초대된 멤버들은 승인받기 전이므로 ProjectInvitedMember에 저장
         List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getInvitedMembersNicknames());
+
+        // 기존에 초대된 멤버들 조회
+        List<MemberEntity> invitedMembersInDB = project.getInvitedMembers().stream()
+                .map(ProjectInvitedMember::getMember)
+                .toList();
+
+        // 기존에 초대된 상태인 멤버들은 중복으로 초대되지 않도록 제거
+        invitedMembers.removeAll(invitedMembersInDB);
+
         saveProjectInvitedMemberEntities(project, invitedMembers);
 
         return getProject(projectId);
