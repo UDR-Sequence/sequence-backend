@@ -37,11 +37,11 @@ public class ArchiveEntity {
     @Column(name = "status", nullable = false)
     private Byte status;
 
-    @ManyToMany
-    @JoinTable(
-            name = "ArchiveMember",
-            joinColumns = @JoinColumn(name = "archiveId"),
-            inverseJoinColumns = @JoinColumn(name = "memberId")
-    )
+    // ArchiveMember와 1:N 관계
+    @OneToMany(mappedBy = "archiveId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArchiveMemberEntity> archiveMembers;
+
+    public boolean isStatus() {
+        return status != null && status == 1;
+    }
 }

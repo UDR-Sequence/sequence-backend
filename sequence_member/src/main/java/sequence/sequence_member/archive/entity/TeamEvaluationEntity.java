@@ -34,8 +34,9 @@ public class TeamEvaluationEntity {
     @Column(name = "feedback")
     private String feedback;
 
-    @Column(name = "keyword", columnDefinition = "json")
-    @Comment("키워드")
+    // JSON 저장을 위한 컨버터 적용
+    @Column(name = "keyword", columnDefinition = "TEXT")
+    @Convert(converter = JsonStringConverter.class)
     private String keyword;
 
     @Column(name = "lineFeedback")
