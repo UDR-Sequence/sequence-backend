@@ -74,7 +74,7 @@ public class MemberEntity extends BaseTimeEntity {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceEntity> experiences=new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private EducationEntity education;
 
     public enum Gender{
