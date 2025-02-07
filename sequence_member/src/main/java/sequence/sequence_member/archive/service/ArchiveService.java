@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -21,6 +22,33 @@ import sequence.sequence_member.global.exception.CanNotFindResourceException;
 public class ArchiveService {
     
     private final ArchiveRepository archiveRepository;
+
+    /**
+     * 프로젝트 등록
+     * @param archiveRegisterInputDTO
+     * @return archiveOutputDTO
+     */
+
+    public Long createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+        // Archive 엔티티 생성
+        Archive archive = Archive.builder()
+                .title(archiveRegisterInputDTO.getTitle())
+                .description(archiveRegisterInputDTO.getDescription())
+                .duration(archiveRegisterInputDTO.getDuration())
+                .category(archiveRegisterInputDTO.getCategory())
+                .period(archiveRegisterInputDTO.getPeriod())
+                .status(archiveRegisterInputDTO.getStatus())
+                .thumbnail(archiveRegisterInputDTO.getThumbnail())
+                .link(archiveRegisterInputDTO.getLink())
+                .skills(archiveRegisterInputDTO.getSkills().toString())
+                .build();
+
+        // 엔티티 저장
+        Archive savedArchive = archiveRepository.save(archive);
+        
+        // 저장된 엔티티 id 반환
+        return savedArchive.getId();
+    }
     
     // 전체 아카이브 목록 조회 (정렬 추가)
     public ArchivePageResponseDTO getAllArchives(int page, SortType sortType) {
