@@ -2,11 +2,10 @@ package sequence.sequence_member.archive.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.service.ArchiveService;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
@@ -19,6 +18,20 @@ import sequence.sequence_member.global.response.Code;
 public class ArchiveController {
 
     private final ArchiveService archiveService;
+
+    /**
+     * 아카이브 등록 엔드포인트
+     * @param archiveRegisterInputDTO
+     * @return archiveOutputDTO
+     */
+
+    @PostMapping
+    public ResponseEntity<Long> createArchive(@Validated @RequestBody ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+        // 등록 서비스 호출
+        Long id = archiveService.createArchive(archiveRegisterInputDTO);
+        // 성공적으로 등록된 id 반환
+        return ResponseEntity.ok(id);
+    }
 
     // 전체 리스트 조회
     @GetMapping("/projects")
