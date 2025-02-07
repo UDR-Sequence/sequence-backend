@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import sequence.sequence_member.global.utils.JsonStringConverter;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.time.LocalDate;
@@ -18,18 +19,18 @@ import java.time.LocalDate;
 public class TeamEvaluationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "evaluationId", nullable = false)
-    private Long evaluationId;
+    @Column(name = "evaluation_id", nullable = false)
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "evaluatorId", nullable = false)
+    @JoinColumn(name = "evaluator_id", nullable = false)
     @Comment("평가자 ID")
-    private MemberEntity evaluatorId;
+    private MemberEntity evaluator_id;
 
     @ManyToOne
-    @JoinColumn(name = "evaluateeId", nullable = false)
+    @JoinColumn(name = "evaluatee_id", nullable = false)
     @Comment("피평가자 ID")
-    private MemberEntity evaluateeId;
+    private MemberEntity evaluatee_id;
 
     @Column(name = "feedback")
     private String feedback;

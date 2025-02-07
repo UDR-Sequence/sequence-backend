@@ -16,6 +16,14 @@ public class ArchiveService {
 
     private final ArchiveRepository archiveRepository;
 
+    // 아카이브 등록
+    @Transactional
+    public ArchiveDTO createArchive(ArchiveDTO archiveDTO) {
+        ArchiveEntity archive = convertToEntity(archiveDTO);
+        ArchiveEntity savedArchive = archiveRepository.save(archive);
+        return convertToDto(savedArchive);
+    }
+
     // 모든 아카이브 조회
     public List<ArchiveDTO> getAllArchives() {
         List<ArchiveEntity> archives = archiveRepository.findAll();
@@ -32,18 +40,10 @@ public class ArchiveService {
                 .collect(Collectors.toList());
     }
 
-    // 아카이브 등록
-    @Transactional
-    public ArchiveDTO createArchive(ArchiveDTO archiveDTO) {
-        ArchiveEntity archive = convertToEntity(archiveDTO);
-        ArchiveEntity savedArchive = archiveRepository.save(archive);
-        return convertToDto(savedArchive);
-    }
-
     // DTO → Entity 변환
     private ArchiveEntity convertToEntity(ArchiveDTO dto) {
         return ArchiveEntity.builder()
-                .archiveId(dto.getArchiveId())
+                .id(dto.getArchiveId())
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .duration(dto.getDuration())
@@ -55,7 +55,7 @@ public class ArchiveService {
     // Entity → DTO 변환
     private ArchiveDTO convertToDto(ArchiveEntity entity) {
         return ArchiveDTO.builder()
-                .archiveId(entity.getArchiveId())
+                .archiveId(entity.getId())
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .duration(entity.getDuration())

@@ -12,10 +12,6 @@ import sequence.sequence_member.member.dto.MemberDTO;
 @Builder
 public class ArchiveMemberDTO {
     private Long archiveMemberId;
-
-    // MemberDTO로 변환
-    private MemberDTO memberId;
-
-    // ArchiveDTO로 변환
-    private ArchiveDTO archiveId;
+    private MemberDTO member;
+    private ArchiveDTO archive;
 }

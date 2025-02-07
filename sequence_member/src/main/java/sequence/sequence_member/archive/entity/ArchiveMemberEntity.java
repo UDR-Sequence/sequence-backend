@@ -15,14 +15,15 @@ import sequence.sequence_member.member.entity.MemberEntity;
 public class ArchiveMemberEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long archiveMemberId;
+    @Column(name = "archive_member_id", nullable = false)
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "memberId", nullable = false)
-    private MemberEntity memberId;
+    @JoinColumn(name = "member_id", nullable = false)
+    private MemberEntity member;
 
     @ManyToOne
-    @JoinColumn(name = "archiveId", nullable = false)
-    private ArchiveEntity archiveId;
+    @JoinColumn(name = "archive_id", nullable = false)
+    private ArchiveEntity archive;
 }
 

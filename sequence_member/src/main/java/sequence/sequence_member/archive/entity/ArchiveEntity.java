@@ -17,8 +17,8 @@ import java.util.List;
 public class ArchiveEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "archiveId", nullable = false)
-    private Long archiveId;
+    @Column(name = "archive_id", nullable = false)
+    private Long id;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -38,7 +38,7 @@ public class ArchiveEntity {
     private Byte status;
 
     // ArchiveMember와 1:N 관계
-    @OneToMany(mappedBy = "archiveId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArchiveMemberEntity> archiveMembers;
 
     public boolean isStatus() {

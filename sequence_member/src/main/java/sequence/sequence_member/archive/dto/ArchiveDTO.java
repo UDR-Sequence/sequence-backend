@@ -32,9 +32,4 @@ public class ArchiveDTO {
     private Byte status;
 
     private List<ArchiveMemberDTO> archiveMembers;
-
-    // status 값이 1이면 true, 0이면 false로 반환
-    public boolean isStatus() {
-        return status != null && status == 1;
-    }
 }
