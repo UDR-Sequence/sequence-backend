@@ -23,14 +23,8 @@ public class ArchiveService {
     
     private final ArchiveRepository archiveRepository;
 
-    /**
-     * 프로젝트 등록
-     * @param archiveRegisterInputDTO
-     * @return archiveOutputDTO
-     */
-
-    public Long createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
-        // Archive 엔티티 생성
+    @Transactional
+    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
         Archive archive = Archive.builder()
                 .title(archiveRegisterInputDTO.getTitle())
                 .description(archiveRegisterInputDTO.getDescription())
@@ -40,14 +34,28 @@ public class ArchiveService {
                 .status(archiveRegisterInputDTO.getStatus())
                 .thumbnail(archiveRegisterInputDTO.getThumbnail())
                 .link(archiveRegisterInputDTO.getLink())
-                .skills(archiveRegisterInputDTO.getSkills().toString())
                 .build();
 
-        // 엔티티 저장
+        archive.setSkillsFromList(archiveRegisterInputDTO.getSkills());
+
         Archive savedArchive = archiveRepository.save(archive);
-        
-        // 저장된 엔티티 id 반환
-        return savedArchive.getId();
+
+        return ArchiveOutputDTO.builder()
+                .id(savedArchive.getId())
+                .title(savedArchive.getTitle())
+                .description(savedArchive.getDescription())
+                .duration(savedArchive.getDuration())
+                .category(savedArchive.getCategory())
+                .period(savedArchive.getPeriod())
+                .status(savedArchive.getStatus())
+                .thumbnail(savedArchive.getThumbnail())
+                .link(savedArchive.getLink())
+                .skills(savedArchive.getSkillList())
+                .view(savedArchive.getView())
+                .bookmark(savedArchive.getBookmark())
+                .createdDateTime(savedArchive.getCreatedDateTime())
+                .modifiedDateTime(savedArchive.getModifiedDateTime())
+                .build();
     }
     
     // 전체 아카이브 목록 조회 (정렬 추가)
