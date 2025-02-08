@@ -1,23 +1,22 @@
 package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 @Getter
 @Setter
 @Entity
 @Table(name = "experience")
+@NoArgsConstructor
 public class ExperienceEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +37,20 @@ public class ExperienceEntity extends BaseTimeEntity {
     private String experienceDescription;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @JoinColumn(name = "member_id")
     private MemberEntity member;
+
+    public ExperienceEntity(
+            ExperienceType experienceType, String experienceName,
+            Date experienceDuration, String experienceDescription,
+            MemberEntity member
+    ) {
+        this.experienceType = experienceType;
+        this.experienceName = experienceName;
+        this.experienceDuration = experienceDuration;
+        this.experienceDescription = experienceDescription;
+        this.member = member;
+    }
 
     public static List<ExperienceEntity> toExperienceEntity(MemberDTO memberDTO, MemberEntity memberEntity){
         List<ExperienceEntity> experienceEntities = new ArrayList<>();
@@ -58,6 +69,5 @@ public class ExperienceEntity extends BaseTimeEntity {
         }
 
         return experienceEntities;
-
     }
 }

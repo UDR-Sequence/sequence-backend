@@ -1,7 +1,6 @@
 package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
@@ -61,7 +60,6 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="profile_img")
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
-
     // AwardEntity와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AwardEntity> awards=new ArrayList<>();
@@ -74,7 +72,9 @@ public class MemberEntity extends BaseTimeEntity {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExperienceEntity> experiences=new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "education_id")
+
     private EducationEntity education;
 
     public enum Gender{
