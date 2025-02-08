@@ -15,6 +15,8 @@ import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.global.enums.enums.Status;
 
 import jakarta.validation.Valid;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,5 +63,13 @@ public class TeamEvaluationController {
             @PathVariable Long archiveId) {
         Map<String, Status> evaluationStatus = teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponseData.success(evaluationStatus));
+    }
+
+    @GetMapping("/{archiveId}/team-members")
+    public ResponseEntity<ApiResponseData<List<String>>> getTeamMembers(
+            @PathVariable Long archiveId) {
+        // 팀원의 목록을 가져오는 서비스 호출 (teamEvaluationService가 아닌 다른 서비스일 수 있음)
+        List<String> evaluators = teamEvaluationService.getEvaluators(archiveId);
+        return ResponseEntity.ok(ApiResponseData.success(evaluators));
     }
 } 

@@ -7,6 +7,8 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveMember;
 import sequence.sequence_member.archive.entity.TeamEvaluation;
 
+import java.util.List;
+
 public interface TeamEvaluationRepository extends JpaRepository<TeamEvaluation, Long> {
     
     // 평가자가 특정 피평가자를 평가했는지 확인
@@ -25,4 +27,7 @@ public interface TeamEvaluationRepository extends JpaRepository<TeamEvaluation, 
     
     // 특정 멤버가 받은 평가 수 조회
     long countByEvaluated(ArchiveMember evaluated);
+
+    @Query("SELECT DISTINCT t.evaluator FROM TeamEvaluation t WHERE t.evaluator.archive = :archive")
+    List<ArchiveMember> findDistinctEvaluatorsByArchive(Archive archive);
 } 

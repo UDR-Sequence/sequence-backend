@@ -129,4 +129,17 @@ public class TeamEvaluationService {
 
         return statusMap;
     }
+
+    public List<String> getEvaluators(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("아카이브 정보를 찾을 수 없습니다."));
+
+        // 해당 아카이브에서 평가를 진행한 평가자들의 목록 조회
+        List<ArchiveMember> evaluators = teamEvaluationRepository.findDistinctEvaluatorsByArchive(archive);
+
+        // 평가자들의 사용자명 리스트로 변환하여 반환
+        return evaluators.stream()
+                .map(evaluator -> evaluator.getMember().getUsername())
+                .toList();
+    }
 } 
