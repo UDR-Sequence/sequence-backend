@@ -16,6 +16,7 @@ public class MemberSearchService {
     @Transactional(readOnly = true)
     public List<String> searchMemberNicknames(String nickname){
         Pageable pageable = PageRequest.of(0, 20);  // 첫 페이지, 최대 20개
-        return memberRepository.searchMemberNicknames(nickname, pageable);
+        List<String> strings = memberRepository.searchMemberNicknames(nickname, pageable);
+        return strings;
     }
 }

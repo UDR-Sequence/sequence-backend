@@ -51,8 +51,11 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="portfolio", length = 150)
     private String portfolio; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
-    @Column(name="nickname", length = 45)
+    @Column(name="nickname", length = 45, unique = true)
     private String nickname;
+
+    @Column(name="school_name", nullable = false)
+    private String schoolName;
 
     @Column(name="profile_img")
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
@@ -71,6 +74,7 @@ public class MemberEntity extends BaseTimeEntity {
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "education_id")
+
     private EducationEntity education;
 
     public enum Gender{
@@ -88,6 +92,7 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setPhone(memberDTO.getPhone());
         memberEntity.setEmail(memberDTO.getEmail());
         memberEntity.setNickname(memberDTO.getNickname());
+        memberEntity.setSchoolName(memberDTO.getSchoolName());
         memberEntity.setIntroduction(memberDTO.getIntroduction());
         memberEntity.setPortfolio(memberDTO.getPortfolio());
         return memberEntity;

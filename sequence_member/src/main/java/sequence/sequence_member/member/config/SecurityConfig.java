@@ -99,6 +99,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
+                        .requestMatchers("/api/archive/**").permitAll()
                         .anyRequest().authenticated());
 
         http
