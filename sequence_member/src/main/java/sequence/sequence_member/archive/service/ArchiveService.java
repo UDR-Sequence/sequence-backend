@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
+import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -57,6 +58,45 @@ public class ArchiveService {
                 .modifiedDateTime(savedArchive.getModifiedDateTime())
                 .build();
     }
+
+    // 아카이브 등록 후 결과 조회
+    public ArchiveOutputDTO getArchiveById(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        return ArchiveOutputDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .description(archive.getDescription())
+                .duration(archive.getDuration())
+                .category(archive.getCategory())
+                .period(archive.getPeriod())
+                .status(archive.getStatus())
+                .thumbnail(archive.getThumbnail())
+                .link(archive.getLink())
+                .skills(archive.getSkillList())
+                .view(archive.getView())
+                .bookmark(archive.getBookmark())
+                .createdDateTime(archive.getCreatedDateTime())
+                .modifiedDateTime(archive.getModifiedDateTime())
+                .build();
+    }
+
+    // 아카이브 내용 수정
+    @Transactional
+    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        archive.updateArchive(archiveUpdateDTO);
+    }
+
+    // 아카이브 삭제
+    @Transactional
+    public void deleteArchive(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        archiveRepository.delete(archive);
+    }
+
     
     // 전체 아카이브 목록 조회 (정렬 추가)
     public ArchivePageResponseDTO getAllArchives(int page, SortType sortType) {
