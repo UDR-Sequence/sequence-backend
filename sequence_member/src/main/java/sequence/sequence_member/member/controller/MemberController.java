@@ -81,14 +81,14 @@ public class MemberController {
     @PostMapping("/invited-projects/{projectInvitedMemberId}")
     public ResponseEntity<ApiResponseData<String>> acceptInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
         inviteAccessService.acceptInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success("프로젝트 초대를 수락하였습니다."));
+        return ResponseEntity.ok(ApiResponseData.success(null));
     }
 
     //유저가 초대받은 프로젝트에 거절하는 컨트롤러
     @DeleteMapping("/invited-projects/{projectInvitedMemberId}")
     public ResponseEntity<ApiResponseData<String>> rejectInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
         inviteAccessService.rejectInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success("프로젝트 초대를 거절하였습니다."));
+        return ResponseEntity.ok(ApiResponseData.success(null));
     }
 
     //유저가 승인한(참여하는) 프로젝트 목록을 조회하는 컨트롤러
