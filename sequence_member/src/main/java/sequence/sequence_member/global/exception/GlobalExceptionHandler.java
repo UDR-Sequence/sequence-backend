@@ -12,6 +12,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 
+// 컨트롤러에 전달되는 예외들을 처리해주는 공통 핸들러
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

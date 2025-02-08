@@ -44,11 +44,13 @@ public class ProjectService {
      */
     @Transactional
     public void createProject(ProjectInputDTO projectInputDTO, CustomUserDetails customUserDetails){
-        MemberEntity memberEntity = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-        Project project = saveProjectEntity(projectInputDTO,memberEntity);
+        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        Project project = saveProjectEntity(projectInputDTO,writer);
+        // 만약 초대목록 멤버에 존재한다면 본인은 제거
+        projectInputDTO.getInvitedMembersNicknames().remove(writer.getNickname());
         List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectInputDTO.getInvitedMembersNicknames());
         saveProjectInvitedMemberEntities(project, invitedMembers);
-        savePrjectMemberEntity(project, memberEntity);
+        savePrjectMemberEntity(project, writer);
     }
 
     /**
@@ -149,6 +151,9 @@ public class ProjectService {
             throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
         }
         projectMemberRepository.deleteByProjectAndMemberIn(project, deletedMembers);
+
+        // 만약 초대목록 멤버에 존재한다면 본인은 제거
+        projectUpdateDTO.getInvitedMembersNicknames().remove(writer.getNickname());
 
         // 새롭게 초대된 멤버들은 승인받기 전이므로 ProjectInvitedMember에 저장
         List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getInvitedMembersNicknames());
