@@ -6,6 +6,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sequence.sequence_member.global.enums.enums.Category;
+import sequence.sequence_member.global.enums.enums.MeetingOption;
+import sequence.sequence_member.global.enums.enums.Period;
+import sequence.sequence_member.global.enums.enums.Step;
 import sequence.sequence_member.global.exception.AuthException;
 import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
@@ -14,16 +18,12 @@ import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
-import sequence.sequence_member.project.dto.CommentDTO;
-import sequence.sequence_member.project.dto.CommentOutputDTO;
-import sequence.sequence_member.project.dto.ProjectMemberOutputDTO;
-import sequence.sequence_member.project.dto.ProjectInputDTO;
-import sequence.sequence_member.project.dto.ProjectOutputDTO;
-import sequence.sequence_member.project.dto.ProjectUpdateDTO;
+import sequence.sequence_member.project.dto.*;
 import sequence.sequence_member.project.entity.Comment;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
+import sequence.sequence_member.project.mapper.PeriodMapper;
 import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
 import sequence.sequence_member.project.repository.ProjectMemberRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
@@ -221,4 +221,73 @@ public class ProjectService {
                 .build();
         projectMemberRepository.save(entity);
     }
+
+    //키워드에 해당하는 프로젝트들을 필터링
+    public List<ProjectFilterOutputDTO> getProjectsByKeywords(Category category,
+                                                              String periodKey,
+                                                              String roles,
+                                                              String skills,
+                                                              MeetingOption meetingOption,
+                                                              Step step){
+
+        Period period = PeriodMapper.PeriodCheck(periodKey);
+        List<Project> projects = projectRepository.findProjectsByFilteredKeywords(category,period,roles,skills,meetingOption,step);
+        List<ProjectFilterOutputDTO> projectFilterOutputDTOS = new ArrayList<>();
+
+        for(int i=0;i<projects.size();i++){
+            ProjectFilterOutputDTO projectFilterOutputDTO = ProjectFilterOutputDTO.builder()
+                    .id(projects.get(i).getId())
+                    .title(projects.get(i).getTitle())
+                    .writer(projects.get(i).getWriter().getNickname())
+                    .createdDate(Date.valueOf(projects.get(i).getCreatedDateTime().toLocalDate()))
+                    .roles(DataConvertor.stringToList(projects.get(i).getRoles()))
+                    .build();
+
+
+            projectFilterOutputDTOS.add(projectFilterOutputDTO);
+        }
+
+        return projectFilterOutputDTOS;
+
+    }
+
+    public List<ProjectFilterOutputDTO> getProjectsBySearch(String title){
+        List<Project> projects = projectRepository.findProjectsByFilterdSearch(title);
+        List<ProjectFilterOutputDTO> projectFilterOutputDTOS = new ArrayList<>();
+
+        for(Project project : projects){
+            ProjectFilterOutputDTO projectFilterOutputDTO = ProjectFilterOutputDTO.builder()
+                    .id(project.getId())
+                    .title(project.getTitle())
+                    .writer(project.getWriter().getNickname())
+                    .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                    .roles(DataConvertor.stringToList(project.getRoles()))
+                    .build();
+
+            projectFilterOutputDTOS.add(projectFilterOutputDTO);
+        }
+
+        return projectFilterOutputDTOS;
+    }
+
+    public List<ProjectFilterOutputDTO> getAllProjects(){
+        List<Project> projects =  projectRepository.findAll();
+        List<ProjectFilterOutputDTO> projectFilterOutputDTOS = new ArrayList<>();
+
+        for(Project project : projects){
+            ProjectFilterOutputDTO projectFilterOutputDTO = ProjectFilterOutputDTO.builder()
+                    .id(project.getId())
+                    .title(project.getTitle())
+                    .writer(project.getWriter().getNickname())
+                    .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                    .roles(DataConvertor.stringToList(project.getRoles()))
+                    .build();
+
+            projectFilterOutputDTOS.add(projectFilterOutputDTO);
+        }
+
+        return projectFilterOutputDTOS;
+
+    }
+
 }
