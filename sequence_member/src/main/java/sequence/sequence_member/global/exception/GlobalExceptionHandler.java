@@ -1,7 +1,6 @@
 package sequence.sequence_member.global.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -12,6 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 
+// 컨트롤러에 전달되는 예외들을 처리해주는 공통 핸들러
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -92,8 +92,8 @@ public class GlobalExceptionHandler {
     }
 
     // BadRequestException 예외 처리
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(BadRequestException ex){
+    @ExceptionHandler(BadRequestExeption.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(BadRequestExeption ex){
         Code code = Code.BAD_REQUEST;
         // 반환할 메시지와 HTTP 상태 코드 설정
         return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));

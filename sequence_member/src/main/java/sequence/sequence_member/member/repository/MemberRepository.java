@@ -28,17 +28,19 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
 
 //    List<String> findByNicknameContaining(String nickname, int limit);
 
-    @Query("""
+    @Query(value = """
     SELECT m.nickname
     FROM MemberEntity m
-    WHERE m.nickname LIKE %:nickname%
+    WHERE m.nickname LIKE CONCAT('%', :nickname, '%')
     ORDER BY
         CASE
             WHEN m.nickname = :nickname THEN 0
-            WHEN m.nickname LIKE :nickname% THEN 1
+            WHEN m.nickname LIKE CONCAT(:nickname, '%') THEN 1
             ELSE 2
         END,
+        LOCATE(:nickname, m.nickname),
         LENGTH(m.nickname) ASC
     """)
     List<String> searchMemberNicknames(@Param("nickname") String nickname, Pageable pageable);
+
 }
