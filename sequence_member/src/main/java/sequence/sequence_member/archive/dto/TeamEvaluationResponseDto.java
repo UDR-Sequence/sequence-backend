@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.enums.enums.Status;
+import sequence.sequence_member.archive.entity.TeamEvaluation;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +20,19 @@ public class TeamEvaluationResponseDto {
     private String feedback;           // 피드백 내용
     private String keyword;            // 키워드
     private String lineFeedback;       // 한줄 피드백
-    private Status status;             // 평가 상태
     private LocalDateTime createdDateTime;    // 생성 시간
     private LocalDateTime modifiedDateTime;   // 수정 시간
+
+    public static TeamEvaluationResponseDto from(TeamEvaluation evaluation) {
+        return TeamEvaluationResponseDto.builder()
+                .id(evaluation.getId())
+                .evaluatorId(evaluation.getEvaluator().getId())
+                .evaluatedId(evaluation.getEvaluated().getId())
+                .feedback(evaluation.getFeedback())
+                .keyword(evaluation.getKeyword())
+                .lineFeedback(evaluation.getLineFeedback())
+                .createdDateTime(evaluation.getCreatedDateTime())
+                .modifiedDateTime(evaluation.getModifiedDateTime())
+                .build();
+    }
 } 
