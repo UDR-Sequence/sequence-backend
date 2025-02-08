@@ -14,6 +14,8 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
 
     List<MemberEntity> findByNicknameIn(List<String> nickanmeList);
 
+    Optional<MemberEntity> findById(Long userId);
+
 //    List<String> findByNicknameContaining(String nickname, int limit);
 
     @Query("""

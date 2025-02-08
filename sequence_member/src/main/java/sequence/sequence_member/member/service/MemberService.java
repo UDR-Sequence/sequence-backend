@@ -1,5 +1,6 @@
 package sequence.sequence_member.member.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class MemberService {
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Transactional
     public void  save(MemberDTO memberDTO){
 
         //memberDTO의 비밀번호 값을 암호화하여 memberDTO에 저장하고 memberEntity로 변환하여 저장
@@ -44,10 +46,15 @@ public class MemberService {
         List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO, memberEntityCopy);
         EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
 
+        // 관계 설정
+        educationEntity.setMember(memberEntityCopy);
+        memberEntityCopy.setEducation(educationEntity);
+
         experienceRepository.saveAll(experienceEntities);
         careerRepository.saveAll(careerEntities);
         awardRepository.saveAll(awardEntities);
         educationRepository.save(educationEntity);
+        memberRepository.save(memberEntityCopy); // MemberEntity도 다시 저장하여 FK 설정
     }
 
     /* 회원가입 시, 유효성 체크 */
@@ -73,6 +80,4 @@ public class MemberService {
         }
         return memberRepository.findByUsername(username).isPresent();
     }
-
-
 }

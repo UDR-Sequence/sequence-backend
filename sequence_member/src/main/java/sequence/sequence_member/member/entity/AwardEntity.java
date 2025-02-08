@@ -1,8 +1,8 @@
 package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sequence.sequence_member.global.enums.enums.AwardType;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 @Entity
 @Getter
 @Setter
 @Table(name = "award")
+@NoArgsConstructor
 public class AwardEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +41,18 @@ public class AwardEntity extends BaseTimeEntity {
     @Temporal(TemporalType.DATE)
     private Date awardDuration;
 
+    public AwardEntity(
+            AwardType awardType, String organizer,
+            String awardName, Date awardDuration,
+            MemberEntity member
+    ) {
+        this.awardType = awardType;
+        this.organizer = organizer;
+        this.awardName = awardName;
+        this.awardDuration = awardDuration;
+        this.member = member;
+    }
+
     public static List<AwardEntity> toAwardEntity(MemberDTO memberDTO, MemberEntity memberEntity) {
         List<AwardEntity> awardEntities = new ArrayList<>();
 
@@ -55,7 +67,5 @@ public class AwardEntity extends BaseTimeEntity {
             awardEntities.add(awardEntity);
         }
         return awardEntities;
-
     }
-
 }
