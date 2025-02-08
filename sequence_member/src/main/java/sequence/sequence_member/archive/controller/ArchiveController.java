@@ -1,9 +1,11 @@
 package sequence.sequence_member.archive.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.service.ArchiveService;
@@ -19,18 +21,10 @@ public class ArchiveController {
 
     private final ArchiveService archiveService;
 
-    /**
-     * 아카이브 등록 엔드포인트
-     * @param archiveRegisterInputDTO
-     * @return archiveOutputDTO
-     */
-
     @PostMapping
-    public ResponseEntity<Long> createArchive(@Validated @RequestBody ArchiveRegisterInputDTO archiveRegisterInputDTO) {
-        // 등록 서비스 호출
-        Long id = archiveService.createArchive(archiveRegisterInputDTO);
-        // 성공적으로 등록된 id 반환
-        return ResponseEntity.ok(id);
+    public ResponseEntity<ArchiveOutputDTO> createArchive(@Valid @RequestBody ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+        ArchiveOutputDTO response = archiveService.createArchive(archiveRegisterInputDTO);
+        return ResponseEntity.ok(response);
     }
 
     // 전체 리스트 조회
