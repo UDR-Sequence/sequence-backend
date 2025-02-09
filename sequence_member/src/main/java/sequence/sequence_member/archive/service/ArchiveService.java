@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
+import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -21,6 +23,80 @@ import sequence.sequence_member.global.exception.CanNotFindResourceException;
 public class ArchiveService {
     
     private final ArchiveRepository archiveRepository;
+
+    @Transactional
+    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+        Archive archive = Archive.builder()
+                .title(archiveRegisterInputDTO.getTitle())
+                .description(archiveRegisterInputDTO.getDescription())
+                .duration(archiveRegisterInputDTO.getDuration())
+                .category(archiveRegisterInputDTO.getCategory())
+                .period(archiveRegisterInputDTO.getPeriod())
+                .status(archiveRegisterInputDTO.getStatus())
+                .thumbnail(archiveRegisterInputDTO.getThumbnail())
+                .link(archiveRegisterInputDTO.getLink())
+                .build();
+
+        archive.setSkillsFromList(archiveRegisterInputDTO.getSkills());
+
+        Archive savedArchive = archiveRepository.save(archive);
+
+        return ArchiveOutputDTO.builder()
+                .id(savedArchive.getId())
+                .title(savedArchive.getTitle())
+                .description(savedArchive.getDescription())
+                .duration(savedArchive.getDuration())
+                .category(savedArchive.getCategory())
+                .period(savedArchive.getPeriod())
+                .status(savedArchive.getStatus())
+                .thumbnail(savedArchive.getThumbnail())
+                .link(savedArchive.getLink())
+                .skills(savedArchive.getSkillList())
+                .view(savedArchive.getView())
+                .bookmark(savedArchive.getBookmark())
+                .createdDateTime(savedArchive.getCreatedDateTime())
+                .modifiedDateTime(savedArchive.getModifiedDateTime())
+                .build();
+    }
+
+    // 아카이브 등록 후 결과 조회
+    public ArchiveOutputDTO getArchiveById(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        return ArchiveOutputDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .description(archive.getDescription())
+                .duration(archive.getDuration())
+                .category(archive.getCategory())
+                .period(archive.getPeriod())
+                .status(archive.getStatus())
+                .thumbnail(archive.getThumbnail())
+                .link(archive.getLink())
+                .skills(archive.getSkillList())
+                .view(archive.getView())
+                .bookmark(archive.getBookmark())
+                .createdDateTime(archive.getCreatedDateTime())
+                .modifiedDateTime(archive.getModifiedDateTime())
+                .build();
+    }
+
+    // 아카이브 내용 수정
+    @Transactional
+    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        archive.updateArchive(archiveUpdateDTO);
+    }
+
+    // 아카이브 삭제
+    @Transactional
+    public void deleteArchive(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        archiveRepository.delete(archive);
+    }
+
     
     // 전체 아카이브 목록 조회 (정렬 추가)
     public ArchivePageResponseDTO getAllArchives(int page, SortType sortType) {
