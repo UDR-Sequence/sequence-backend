@@ -67,6 +67,9 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "skills")
     private String skills;  // "Java,Spring,JPA" 형태로 저장
 
+    @Column(name = "img_url")
+    private String imgUrl;
+
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -94,5 +97,20 @@ public class Archive extends BaseTimeEntity {
             return;
         }
         this.skills = String.join(",", skillList);
+    }
+
+    public List<String> getImageUrlsAsList() {
+        if (this.imgUrl == null || this.imgUrl.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(this.imgUrl.split(","));
+    }
+
+    public void setImageUrlsFromList(List<String> imageUrlList) {
+        if (imageUrlList == null || imageUrlList.isEmpty()) {
+            this.imgUrl = "";
+            return;
+        }
+        this.imgUrl = String.join(",", imageUrlList);
     }
 } 
