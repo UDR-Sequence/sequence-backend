@@ -1,5 +1,6 @@
 package sequence.sequence_member.member.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,8 @@ public class MemberService {
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public void  save(MemberDTO memberDTO){
+    @Transactional
+    public void save(MemberDTO memberDTO){
 
         //memberDTO의 비밀번호 값을 암호화하여 memberDTO에 저장하고 memberEntity로 변환하여 저장
         //엔티티 클래스는 데이터베이스 구조를 반영해야 하며, 비즈니스 로직(회원가입, 로그인, 비밀번호 암호화)과 분리되어야 한다.
@@ -44,10 +46,15 @@ public class MemberService {
         List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO, memberEntityCopy);
         EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
 
+        // 관계 설정
+        educationEntity.setMember(memberEntityCopy);
+        memberEntityCopy.setEducation(educationEntity);
+
         experienceRepository.saveAll(experienceEntities);
         careerRepository.saveAll(careerEntities);
         awardRepository.saveAll(awardEntities);
         educationRepository.save(educationEntity);
+        memberRepository.save(memberEntityCopy); // MemberEntity도 다시 저장하여 FK 설정
     }
 
     /* 회원가입 시, 유효성 체크 */
@@ -74,5 +81,17 @@ public class MemberService {
         return memberRepository.findByUsername(username).isPresent();
     }
 
+    public boolean checkNickname(String nickname){
+        if (nickname == null || nickname.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nickname cannot be null or empty.");
+        }
+        return memberRepository.findByNickname(nickname).isPresent();
+    }
 
+    public MemberEntity GetUser(String username){
+        if(username == null || username.trim().isEmpty()){
+            throw new IllegalArgumentException("아이디를 입력해주세요.");
+        }
+        return memberRepository.findByUsername(username).get();
+    }
 }

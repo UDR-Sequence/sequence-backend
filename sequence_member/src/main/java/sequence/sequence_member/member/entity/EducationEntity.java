@@ -1,11 +1,11 @@
 package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import org.intellij.lang.annotations.Pattern;
+import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.enums.enums.Degree;
+import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.converter.DesiredJobConverter;
@@ -19,12 +19,13 @@ import java.util.List;
 @Entity
 @Data
 @Table(name="education")
+@NoArgsConstructor
 public class EducationEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long    id ;
 
-    @OneToOne(mappedBy = "education")
+    @OneToOne
     @JoinColumn
     private MemberEntity member;
 
@@ -61,6 +62,24 @@ public class EducationEntity extends BaseTimeEntity {
     @Column(name = "desired_job")
     private List<sequence.sequence_member.global.enums.enums.ProjectRole> desiredJob;
 
+    public EducationEntity(
+            String schoolName, String major,
+            String grade, Date entranceDate,
+            Date graduationDate, Degree degree,
+            List<Skill> skillCategory, List<ProjectRole> desiredJob,
+            MemberEntity member
+    ) {
+       this.schoolName = schoolName;
+       this.major = major;
+       this.grade = grade;
+       this.entranceDate = entranceDate;
+       this.graduationDate = graduationDate;
+       this.degree = degree;
+       this.skillCategory = skillCategory;
+       this.desiredJob = desiredJob;
+       this.member = member;
+    }
+
     public static EducationEntity toEducationEntity(MemberDTO memberDTO, MemberEntity memberEntity){
         EducationEntity educationEntity = new EducationEntity();
 
@@ -75,5 +94,21 @@ public class EducationEntity extends BaseTimeEntity {
         educationEntity.setMember(memberEntity);
 
         return educationEntity;
+    }
+
+    public void updateEducation(
+            String schoolName, String major,
+            String grade, Date entranceDate,
+            Date graduationDate, Degree degree,
+            List<Skill> skillCategory, List<ProjectRole> desiredJob
+    ) {
+        this.schoolName = schoolName;
+        this.major = major;
+        this.grade = grade;
+        this.entranceDate = entranceDate;
+        this.graduationDate = graduationDate;
+        this.degree = degree;
+        this.skillCategory = skillCategory;
+        this.desiredJob = desiredJob;
     }
 }

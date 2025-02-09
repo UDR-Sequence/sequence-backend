@@ -70,6 +70,7 @@ public class Project extends BaseTimeEntity {
     private MeetingOption meetingOption;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Step step;
 
     @Column(columnDefinition = "TEXT", nullable = false)

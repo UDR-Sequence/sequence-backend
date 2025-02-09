@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
@@ -99,6 +100,7 @@ public class Archive extends BaseTimeEntity {
         this.skills = String.join(",", skillList);
     }
 
+<<<<<<< HEAD
     public List<String> getImageUrlsAsList() {
         if (this.imgUrl == null || this.imgUrl.isEmpty()) {
             return new ArrayList<>();
@@ -114,3 +116,17 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 } 
+=======
+    // 아카이브 수정 시 사용
+    public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
+        this.title = archiveUpdateDTO.getTitle();
+        this.description = archiveUpdateDTO.getDescription();
+        this.duration = archiveUpdateDTO.getDuration();
+        this.category = archiveUpdateDTO.getCategory();
+        this.period = archiveUpdateDTO.getPeriod();
+        this.status = archiveUpdateDTO.getStatus();
+        this.thumbnail = archiveUpdateDTO.getThumbnail();
+        this.link = archiveUpdateDTO.getLink();
+    }
+}
+>>>>>>> de922a7a0b4f7b6333021a0c3ce38b478dd4989a
