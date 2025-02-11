@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
@@ -67,6 +68,9 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "skills")
     private String skills;  // "Java,Spring,JPA" 형태로 저장
 
+    @Column(name = "img_url")
+    private String imgUrl;
+
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -95,4 +99,31 @@ public class Archive extends BaseTimeEntity {
         }
         this.skills = String.join(",", skillList);
     }
-} 
+
+    public List<String> getImageUrlsAsList() {
+        if (this.imgUrl == null || this.imgUrl.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(this.imgUrl.split(","));
+    }
+
+    public void setImageUrlsFromList(List<String> imageUrlList) {
+        if (imageUrlList == null || imageUrlList.isEmpty()) {
+            this.imgUrl = "";
+            return;
+        }
+        this.imgUrl = String.join(",", imageUrlList);
+    }
+
+    // 아카이브 수정 시 사용
+    public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
+        this.title = archiveUpdateDTO.getTitle();
+        this.description = archiveUpdateDTO.getDescription();
+        this.duration = archiveUpdateDTO.getDuration();
+        this.category = archiveUpdateDTO.getCategory();
+        this.period = archiveUpdateDTO.getPeriod();
+        this.status = archiveUpdateDTO.getStatus();
+        this.thumbnail = archiveUpdateDTO.getThumbnail();
+        this.link = archiveUpdateDTO.getLink();
+    }
+}

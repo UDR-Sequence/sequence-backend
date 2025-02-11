@@ -26,6 +26,7 @@ public class ArchiveOutputDTO {
     private String thumbnail;
     private String link;
     private List<String> skills;
+    private List<String> imgUrls;
     private Integer view;
     private Integer bookmark;
     private LocalDateTime createdDateTime;
