@@ -22,6 +22,7 @@ import sequence.sequence_member.member.jwt.LoginFilter;
 import sequence.sequence_member.member.repository.RefreshRepository;
 import sequence.sequence_member.member.service.TokenReissueService;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -71,7 +72,7 @@ public class SecurityConfig {
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setMaxAge(3600L);
 
-                                configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                                configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
                                 return configuration;
                             }
 
