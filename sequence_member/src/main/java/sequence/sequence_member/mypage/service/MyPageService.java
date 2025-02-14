@@ -33,17 +33,27 @@ public class MyPageService {
     private final EducationRepository educationRepository;
     private final ExperienceRepository experienceRepository;
 
-    // 마이페이지 조회
-    public MyPageDTO searchMyPage(String username) {
-        // 1. 회원 정보 가져오기
+    /**
+     * 주어진 사용자명(username)에 해당하는 마이페이지 정보를 조회합니다.
+     *
+     * @param username 조회할 사용자의 이름
+     * @return 사용자의 마이페이지 정보를 담은 DTO
+     * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
+     */
+    public MyPageDTO getMyProfile(String username) {
+        // 회원 정보 가져오기
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
-
-        log.info("member: {}", member.getEducation());
 
         return convertToDTO(member);
     }
 
+    /**
+     * MemberEntity를 DTO로 매핑하는 함수입니다.
+     *
+     * @param member DTO로 매핑할 멤버 엔티티
+     * @return 사용자의 마이페이지 정보를 담은 DTO
+     */
     private MyPageDTO convertToDTO(MemberEntity member) {
         MyPageDTO dto = new MyPageDTO();
         dto.setUsername(member.getUsername());
@@ -103,14 +113,16 @@ public class MyPageService {
     /**
      * 사용자 마이페이지 정보를 업데이트하는 메서드입니다.
      *
+     * @param myPageDTO 업데이트할 마이페이지 정보,
+     * @param username 업데이트할 유저의 이름
+     *
      * 현재는 기존 데이터를 삭제하고 새로 입력된 데이터를 저장하는 방식으로 구현되어 있습니다.
      * 이 방식은 입력에 없는 데이터를 삭제하기 위해 선택되었습니다. 왜냐하면, 입력된 데이터와 기존 데이터를 비교하여
      * 어떤 데이터를 삭제할지 결정하는 로직을 구현하기 어려운 상황이기 때문입니다.
      * 이 방식은 데이터가 많을 경우 성능에 비효율적일 수 있으므로, 향후 효율적인 방식으로 개선이 필요합니다.
      */
-    // 마이페이지 데이터 저장
     @Transactional
-    public void updateMyPage(MyPageDTO myPageDTO, String username) {
+    public void updateMyProfile(MyPageDTO myPageDTO, String username) {
         // 1. 회원 정보 가져오기
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
@@ -185,5 +197,19 @@ public class MyPageService {
                     educationRepository.save(newEducation);
                 }
         );
+    }
+
+    /**
+     * 주어진 nickname에 해당하는 마이페이지 정보를 조회합니다.
+     *
+     * @param nickname 조회할 회원의 nickname
+     * @return 사용자의 마이페이지 정보를 담은 DTO
+     */
+    public MyPageDTO getUserProfile(String nickname) {
+        // 회원 정보 가져오기
+        MemberEntity member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+        return convertToDTO(member);
     }
 }
