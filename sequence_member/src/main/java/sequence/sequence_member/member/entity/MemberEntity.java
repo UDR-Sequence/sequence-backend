@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
+import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setNickname(memberDTO.getNickname());
         memberEntity.setSchoolName(memberDTO.getSchoolName());
         memberEntity.setIntroduction(memberDTO.getIntroduction());
-        memberEntity.setPortfolio(memberDTO.getPortfolio());
+        memberEntity.setPortfolio(DataConvertor.listToString(memberDTO.getPortfolio()));
         return memberEntity;
     }
 }

@@ -12,6 +12,7 @@ import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.MemberEntity.Gender;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class MyPageDTO {
     private String phone;
 
     private String introduction;
-    private String portfolio; // todo - minio에 저장할 수 있도록 추가해야 함
+    private List<String> portfolio; // todo - minio에 저장할 수 있도록 추가해야 함
 
     @NotBlank(message = "닉네임은 필수 입력 값입니다.")
     private String nickname;
@@ -78,7 +79,8 @@ public class MyPageDTO {
     @Data
     public static class CareerDTO {
         private String companyName;
-        private Date careerDuration;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String careerDescription;
     }
 
@@ -86,7 +88,8 @@ public class MyPageDTO {
     public static class ExperienceDTO {
         private ExperienceType experienceType;
         private String experienceName;
-        private Date experienceDuration;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String experienceDescription;
     }
 }

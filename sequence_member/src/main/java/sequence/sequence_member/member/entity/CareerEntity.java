@@ -7,6 +7,7 @@ import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,17 +31,23 @@ public class CareerEntity extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date careerDuration;
+    private LocalDate startDate;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
+    private LocalDate endDate;
+
 
     @Column(nullable = false)
     private String careerDescription;
 
     public CareerEntity(
-            String companyName, Date careerDuration,
+            String companyName, LocalDate startDate, LocalDate endDate,
             String careerDescription, MemberEntity member
     ) {
         this.companyName = companyName;
-        this.careerDuration = careerDuration;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.careerDescription = careerDescription;
         this.member = member;
     }
@@ -53,7 +60,8 @@ public class CareerEntity extends BaseTimeEntity {
 
             careerEntity.setCompanyName(memberDTO.getCareers().get(i).getCompanyName());
             careerEntity.setCareerDescription(memberDTO.getCareers().get(i).getCareerDescription());
-            careerEntity.setCareerDuration(memberDTO.getCareers().get(i).getCareerDuration());
+            careerEntity.setStartDate(memberDTO.getCareers().get(i).getStartDate());
+            careerEntity.setEndDate(memberDTO.getCareers().get(i).getEndDate());
             careerEntity.setMember(memberEntity);
 
             careerEntities.add(careerEntity);

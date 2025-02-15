@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
@@ -55,21 +56,49 @@ public class MemberController {
         return "mainPage " + username;
     }
 
-    @RequestMapping("/check_username")
-    public ApiResponseData<String> checkUser(@RequestParam(name = "username",required = false) String username){
+    @GetMapping("/check_username")
+    public ResponseEntity<ApiResponseData<String>> checkUser(@RequestParam(name = "username") String username){
         // 파라미터 유효성 검사
         if (username == null || username.trim().isEmpty()) {
-            return ApiResponseData.failure(400,"아이디를 입력해주세요");
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.CAN_NOT_FIND_RESOURCE.getCode(), "아이디를 입력해주세요"));
         }
 
         //중복 아이디가 존재하는 경우
         if(memberService.checkUser(username)){
-            return ApiResponseData.failure(400,"동일한 아이디가 이미 존재합니다.");
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), "동일한 아이디가 이미 존재합니다."));
         }
 
         //아이디가 존재하지 않는 경우
-        return ApiResponseData.success("사용가능한 아이디 입니다.");
+        return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 아이디 입니다."));
     }
+
+    @GetMapping("/check_email")
+    public ResponseEntity<ApiResponseData<String>> checkEmail(@RequestParam(name = "email") String email){
+        if(email == null || email.trim().isEmpty()){
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.CAN_NOT_FIND_RESOURCE.getCode(), "이메일이 없습니다"));
+        }
+
+        if (memberService.checkEmail(email)) {
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), "동일한 이메일이 이미 존재합니다."));
+        }
+
+        return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 이메일 입니다."));
+    }
+
+    @GetMapping("/check_nickname")
+    public ResponseEntity<ApiResponseData<String>> checkNickname(@RequestParam(name = "nickname") String nickname){
+        if(nickname == null || nickname.trim().isEmpty()){
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.CAN_NOT_FIND_RESOURCE.getCode(), "닉네임이 없습니다"));
+        }
+
+        if (memberService.checkNickname(nickname)) {
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), "동일한 닉네임이 이미 존재합니다."));
+        }
+
+        return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
+    }
+
+
 
     //유저가 초대받은 프로젝트 목록을 조회하는 컨트롤러
     @GetMapping("/invited-projects")

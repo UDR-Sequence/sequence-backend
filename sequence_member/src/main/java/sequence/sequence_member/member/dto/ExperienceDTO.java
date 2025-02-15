@@ -2,6 +2,8 @@ package sequence.sequence_member.member.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.Getter;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
@@ -15,8 +17,11 @@ public class ExperienceDTO {
     @NotBlank(message = "경험명을 입력해주세요.")
     private String experienceName;
 
-    @NotNull(message = "경험기간을 입력해주세요.")
-    private Date experienceDuration;
+    @NotBlank(message = "시작 기간을 입력해주세요.")
+    private LocalDate startDate;
+
+    @NotBlank(message = "종료 기간을 입력해주세요.")
+    private LocalDate endDate;
 
     @NotBlank(message = "내용을 입력해주세요.")
     private String experienceDescription;

@@ -8,6 +8,7 @@ import sequence.sequence_member.global.enums.enums.ExperienceType;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +32,11 @@ public class ExperienceEntity extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date experienceDuration;
+    private LocalDate startDate;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
+    private LocalDate endDate;
 
     @Column(nullable = false)
     private String experienceDescription;
@@ -42,12 +47,13 @@ public class ExperienceEntity extends BaseTimeEntity {
 
     public ExperienceEntity(
             ExperienceType experienceType, String experienceName,
-            Date experienceDuration, String experienceDescription,
+            LocalDate startDate,LocalDate endDate, String experienceDescription,
             MemberEntity member
     ) {
         this.experienceType = experienceType;
         this.experienceName = experienceName;
-        this.experienceDuration = experienceDuration;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.experienceDescription = experienceDescription;
         this.member = member;
     }
@@ -60,7 +66,8 @@ public class ExperienceEntity extends BaseTimeEntity {
             //dto로 부터 입력받은 엔티티들을 하나하나씩 저장하기 위해서 엔티티 객체를 새로 만들어서 리스트에 저장
             ExperienceEntity experienceEntity = new ExperienceEntity();
             experienceEntity.setExperienceType(memberDTO.getExperiences().get(i).getExperienceType());
-            experienceEntity.setExperienceDuration(memberDTO.getExperiences().get(i).getExperienceDuration());
+            experienceEntity.setStartDate(memberDTO.getExperiences().get(i).getStartDate());
+            experienceEntity.setEndDate(memberDTO.getExperiences().get(i).getEndDate());
             experienceEntity.setExperienceDescription(memberDTO.getExperiences().get(i).getExperienceDescription());
             experienceEntity.setExperienceName(memberDTO.getExperiences().get(i).getExperienceName());
             experienceEntity.setMember(memberEntity);

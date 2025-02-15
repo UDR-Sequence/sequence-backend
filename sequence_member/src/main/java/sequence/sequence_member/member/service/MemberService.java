@@ -73,19 +73,30 @@ public class MemberService {
         return Collections.unmodifiableMap(validatorResult);
     }
 
+    //아이디 중복체크
     public boolean checkUser(String username){
 
         if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username cannot be null or empty.");
+            throw new IllegalArgumentException("아이디를 입력해주세요");
         }
         return memberRepository.findByUsername(username).isPresent();
     }
 
+    //닉네임 중복 체크
     public boolean checkNickname(String nickname){
         if (nickname == null || nickname.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nickname cannot be null or empty.");
+            throw new IllegalArgumentException("닉네임을 입력해주세요");
         }
         return memberRepository.findByNickname(nickname).isPresent();
+    }
+
+    //이메일 중복체크
+    public boolean checkEmail(String email){
+        if(email == null || email.trim().isEmpty()){
+            throw new IllegalArgumentException("이메일을 입력해주세요");
+        }
+        return memberRepository.findByEmail(email).isPresent();
+
     }
 
     public MemberEntity GetUser(String username){

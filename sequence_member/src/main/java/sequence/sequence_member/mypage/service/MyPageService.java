@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.entity.AwardEntity;
 import sequence.sequence_member.member.entity.CareerEntity;
 import sequence.sequence_member.member.entity.EducationEntity;
@@ -53,7 +54,7 @@ public class MyPageService {
         dto.setAddress(member.getAddress());
         dto.setPhone(member.getPhone());
         dto.setIntroduction(member.getIntroduction());
-        dto.setPortfolio(member.getPortfolio());
+        dto.setPortfolio(DataConvertor.stringToList(member.getPortfolio()));
         dto.setNickname(member.getNickname());
 
         dto.setAwards(member.getAwards().stream()
@@ -71,7 +72,8 @@ public class MyPageService {
                 .map(career -> {
                     MyPageDTO.CareerDTO careerDTO = new MyPageDTO.CareerDTO();
                     careerDTO.setCompanyName(career.getCompanyName());
-                    careerDTO.setCareerDuration(career.getCareerDuration());
+                    careerDTO.setStartDate(career.getStartDate());
+                    careerDTO.setEndDate(career.getEndDate());
                     careerDTO.setCareerDescription(career.getCareerDescription());
                     return careerDTO;
                 })
@@ -82,7 +84,8 @@ public class MyPageService {
                     MyPageDTO.ExperienceDTO experienceDTO = new MyPageDTO.ExperienceDTO();
                     experienceDTO.setExperienceType(experience.getExperienceType());
                     experienceDTO.setExperienceName(experience.getExperienceName());
-                    experienceDTO.setExperienceDuration(experience.getExperienceDuration());
+                    experienceDTO.setStartDate(experience.getStartDate());
+                    experienceDTO.setEndDate(experience.getEndDate());
                     experienceDTO.setExperienceDescription(experience.getExperienceDescription());
                     return experienceDTO;
                 })
@@ -126,7 +129,7 @@ public class MyPageService {
         member.setAddress(myPageDTO.getAddress());
         member.setPhone(myPageDTO.getPhone());
         member.setIntroduction(myPageDTO.getIntroduction());
-        member.setPortfolio(myPageDTO.getPortfolio());
+        member.setPortfolio(DataConvertor.listToString(myPageDTO.getPortfolio()));
         member.setNickname(myPageDTO.getNickname());
 
         // 수상 내역 업데이트
@@ -143,7 +146,7 @@ public class MyPageService {
         careerRepository.deleteAll(existingCareers);
 
         for (MyPageDTO.CareerDTO dto : myPageDTO.getCareers()) {
-            CareerEntity newCareer = new CareerEntity(dto.getCompanyName(), dto.getCareerDuration(), dto.getCareerDescription(), member);
+            CareerEntity newCareer = new CareerEntity(dto.getCompanyName(), dto.getStartDate(), dto.getEndDate(), dto.getCareerDescription(), member);
             careerRepository.save(newCareer);
         }
 
@@ -152,7 +155,7 @@ public class MyPageService {
         experienceRepository.deleteAll(existingExperiences);
 
         for (MyPageDTO.ExperienceDTO dto : myPageDTO.getExperiences()) {
-            ExperienceEntity newExperience = new ExperienceEntity(dto.getExperienceType(), dto.getExperienceName(), dto.getExperienceDuration(), dto.getExperienceDescription(), member);
+            ExperienceEntity newExperience = new ExperienceEntity(dto.getExperienceType(), dto.getExperienceName(), dto.getStartDate(),dto.getEndDate(), dto.getExperienceDescription(), member);
             experienceRepository.save(newExperience);
         }
 
