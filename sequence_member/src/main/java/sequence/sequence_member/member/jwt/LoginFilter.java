@@ -10,12 +10,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sequence.sequence_member.global.response.ApiResponseData;
+import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.service.TokenReissueService;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -73,7 +76,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     //로그인 성공시 실행하는 메서드 (여기서 jwt를 발급하면 된다)
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication){
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException{
         //유저 이름 찾기
         String username = authentication.getName();
 
@@ -82,15 +85,35 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);
 
+        // 실패 응답 객체 생성
+        ResponseEntity<ApiResponseData<String>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(null, "로그인을 성공하였습니다."));
+
+
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // JSON 변환 후 출력
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(responseBody.getBody()));
+        
     }
 
     //로그인 실패시 실행하는 메서드
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException failed){
-        response.setStatus(401);
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException failed) throws IOException{
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // 실패 응답 객체 생성
+        ResponseEntity<ApiResponseData<String>> responseBody = ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), "아이디 혹은 비밀번호를 다시 입력해주세요"));
+
+        // JSON 변환 후 출력
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(responseBody.getBody()));
     }
 
     private Cookie createCookie(String key, String value) {

@@ -32,28 +32,16 @@ public class MemberController {
     private final MemberSearchService memberSearchService;
 
     @PostMapping("/join")
-    public ApiResponseData<String> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
+    public ResponseEntity<ApiResponseData<String>> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
             Map<String, String> validatorResult = memberService.validateHandling(errors);
 
-            //ResponseMsg errorResponse = new ResponseMsg(400, "Validation Failed", validatorResult);
-            return ApiResponseData.failure(400, validatorResult.values().toString());
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), validatorResult.values().toString()));
         }
 
         memberService.save(memberDTO);
-        //ResponseMsg responseMsg = new ResponseMsg(200, "회원가입이 완료되었습니다.", null);
-        return ApiResponseData.success("회원가입이 완료되었습니다.");
-    }
-
-
-    //시큐리티 컨텍스트에 저장된 authtoken을 확인하는 용도로 컨트롤러 작성
-    //jwt는 stateless이지만, 생성되었을때, 세션을 통해 잠시 저장되었다가 삭제된다. (stateless로 봐도 무방하다)
-    @GetMapping("/")
-    public String mainPage(){
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        return "mainPage " + username;
+        return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
 
     @GetMapping("/check_username")
@@ -98,8 +86,6 @@ public class MemberController {
         return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
     }
 
-
-
     //유저가 초대받은 프로젝트 목록을 조회하는 컨트롤러
     @GetMapping("/invited-projects")
     public ResponseEntity<ApiResponseData<List<InviteProjectOutputDTO>>> getInvitedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
@@ -131,4 +117,5 @@ public class MemberController {
     public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname){
         return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(nickname)));
     }
+
 }
