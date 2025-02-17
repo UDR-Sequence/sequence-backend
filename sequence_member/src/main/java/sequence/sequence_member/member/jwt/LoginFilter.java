@@ -98,7 +98,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // JSON 변환 후 출력
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(responseBody.getBody()));
-        
+
     }
 
     //로그인 실패시 실행하는 메서드

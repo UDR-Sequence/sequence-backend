@@ -98,7 +98,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username").permitAll()
+                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
                         .requestMatchers("/api/archive/**").permitAll()
                         .anyRequest().authenticated());
@@ -118,7 +118,6 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
 
         return http.build();
 
