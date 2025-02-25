@@ -1,18 +1,21 @@
 package sequence.sequence_member.global.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 
 // 컨트롤러에 전달되는 예외들을 처리해주는 공통 핸들러
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // @Valid 유효성 검사에서 걸리는 예외 처리
@@ -62,6 +65,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(code.getStatus()).body(response);
     }
 
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ApiResponseData<String>> handleExpiredJwtException(ExpiredJwtException e){
+        return ResponseEntity.status(Code.EXPIRED_TOKEN.getStatus()).body(ApiResponseData.of(Code.VALIDATION_ERROR.getCode(),
+                e.getMessage(),null));
+    }
+
 /**
  * 커스텀 오류 처리
 * ---------------------------------------------------------------------------------------------------
@@ -98,4 +107,5 @@ public class GlobalExceptionHandler {
         // 반환할 메시지와 HTTP 상태 코드 설정
         return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
     }
+
 }

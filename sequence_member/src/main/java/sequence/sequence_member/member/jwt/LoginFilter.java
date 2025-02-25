@@ -80,7 +80,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //유저 이름 찾기
         String username = authentication.getName();
 
-        String access = jwtUtil.createJwt("access",username, 600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
+        String access = jwtUtil.createJwt("access",username,  600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
         String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
 
         tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);

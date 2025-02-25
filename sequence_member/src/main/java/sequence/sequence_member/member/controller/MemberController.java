@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
 import sequence.sequence_member.member.dto.CustomUserDetails;
@@ -32,7 +33,8 @@ public class MemberController {
     private final MemberSearchService memberSearchService;
 
     @PostMapping("/join")
-    public ResponseEntity<ApiResponseData<String>> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors){
+    public ResponseEntity<ApiResponseData<String>> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors,
+                                                        @RequestPart(required = false) MultipartFile authImgFile){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
             Map<String, String> validatorResult = memberService.validateHandling(errors);
