@@ -140,9 +140,9 @@ jobs:
               -e MAX_FILE_SIZE=${{secrets.MAX_FILE_SIZE}} \
               -e MAX_REQUEST_SIZE=${{secrets.MAX_REQUEST_SIZE}} \
               -e DATABASE_DRIVER=org.mariadb.jdbc.Driver \
-              -e DATABASE_URL= ${{secrets.DATABASE_URL}} \
-              -e DATABASE_USERNAME = ${{secrets.DATABASE_USERNAME}} \
-              -e DATABASE_PASSWORD = ${{secrets.DATABASE_PASSWORD}} 
+              -e DATABASE_URL=${{secrets.DATABASE_URL}} \
+              -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} \
+              -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} 
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
       
