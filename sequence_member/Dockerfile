@@ -1,5 +1,5 @@
 FROM openjdk:17-jdk-slim
-ARG JAR_FILE=build/libs/sequence_member-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} ./sequence_member-0.0.1-SNAPSHOT.jar
+WORKDIR /app
+COPY sequence_member/build/libs/your-app.jar app.jar
 ENV TZ=Asia/Seoul
-ENTRYPOINT ["java", "-jar", "./sequence_member-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
