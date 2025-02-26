@@ -112,4 +112,5 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ${{secrets.DOCKER_USERNAME}}/sequence:lates
+        working-directory: sequence_member
         
