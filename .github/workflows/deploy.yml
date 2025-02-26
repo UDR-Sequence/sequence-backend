@@ -96,15 +96,15 @@ jobs:
     - name: Docker Login
       uses: docker/login-action@v3.3.0
       with:
-        username: ${{ secretes.DOCKER_USERNAME }}
-        password: ${{ secretes.DOCKER_PASSOWRD }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSOWRD }}
     # Docker 이미지 빌드
     - name: Build Docker image
       run: |
-        docker build -t ${{secretes.DOCKER_USERNAME}}/sequence:latest .
+        docker build -t ${{secrete.DOCKER_USERNAME}}/sequence:latest .
       working-directory: sequence_member
     # Docker 이미지 푸시
     - name: Push Docker image
       run: |
-        docker push ${{secretes.DOCKER_USERNAME}}/sequence:lates
+        docker push ${{secrets.DOCKER_USERNAME}}/sequence:lates
       
