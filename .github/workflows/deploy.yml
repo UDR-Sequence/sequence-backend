@@ -89,12 +89,13 @@ jobs:
     - name: Build Docker image
       run: |
         docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
-
+      working-directory: sequence_member
     # Docker 이미지 푸시
     - name: Push Docker image
       run: |
         docker push ${{secrets.DOCKER_USERNAME}}/sequence:latest
-
+      working-directory: sequence_member
+      
   dependency-submission:
     runs-on: ubuntu-latest
     permissions:
