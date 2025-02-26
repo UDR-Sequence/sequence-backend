@@ -115,12 +115,34 @@ jobs:
       uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
       with:
         build-root-directory: sequence_member
+  
+  # ssh연결 및 실행
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            # 서버에서 최신 이미지 pull
+            docker pull ${{ secrets.DOCKER_USERNAME }}/sequence:latest
+            # 기존 컨테이너 종료 및 삭제 (존재하는 경우)
+            docker stop sequence-spring-container || true
+            docker rm sequence-spring-container || true
+            # 새로운 컨테이너 실행 (포트 및 필요한 환경 변수 지정 가능)
+            docker run -d --name sequence-spring-container --network sequence -p 10101:8080 \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e MAX_FILE_SIZE=${{ secrets.MAX_FILE_SIZE }} \
+              -e MAX_REQUEST_SIZE=${{ secrets.MAX_REQUEST_SIZE }} \
+              -e DATABASE_DRIVER=org.mariadb.jdbc.Driver \
+              -e DATABASE_URL= ${{ secrets.DATABASE_URL }} \
+              -e DATABASE_USERNAME = ${{ secrets.DATABASE_USERNAME }} \
+              -e DATABASE_PASSWORD = ${{ secrets.DATABASE_PASSOWRD }} 
+              ${{ secrets.DOCKER_USERNAME }}/sequence:latest
 
-
-#  docker-build-and-push:
-#    needs: [build, dependency-submission] #위에 작업 완료후 진행
-#    runs-on: ubuntu-latest
-#    steps:
-#
-
-        
+      
