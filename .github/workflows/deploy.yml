@@ -95,7 +95,7 @@ jobs:
       run: |
         docker push ${{secrets.DOCKER_USERNAME}}/sequence:latest
       working-directory: sequence_member
-      
+
   dependency-submission:
     runs-on: ubuntu-latest
     permissions:
