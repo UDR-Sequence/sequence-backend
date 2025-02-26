@@ -91,20 +91,24 @@ jobs:
       uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
       with:
         build-root-directory: sequence_member
-    
-    # 도커 로그인
-    - name: Docker Login
-      uses: docker/login-action@v3.3.0
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    # Docker 이미지 빌드
-    - name: Build Docker image
-      run: |
-        docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
-      working-directory: sequence_member
-    # Docker 이미지 푸시
-    - name: Push Docker image
-      run: |
-        docker push ${{secrets.DOCKER_USERNAME}}/sequence:lates
-      
+
+
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 도커 로그인
+      - name: Docker Login
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # Docker 이미지 빌드
+      - name: Build Docker image
+        run: |
+          docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
+        working-directory: sequence_member
+      # Docker 이미지 푸시
+      - name: Push Docker image
+        run: |
+          docker push ${{secrets.DOCKER_USERNAME}}/sequence:lates
+        
