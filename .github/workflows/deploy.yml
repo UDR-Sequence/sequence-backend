@@ -50,26 +50,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-      # 도커 로그인
-    - name: Docker Login
-      uses: docker/login-action@v3.3.0
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: List repository root
-      run: ls -la
-    - name: List sequence_member directory
-      run: ls -la sequence_member
-      # Docker 이미지 빌드
-    - name: Build Docker image
-      run: |
-        docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
-
-      # Docker 이미지 푸시
-    - name: Push Docker image
-      run: |
-        docker push ${{secrets.DOCKER_USERNAME}}/sequence:lates
     # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
     # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
     - name: Setup Gradle
@@ -81,6 +62,7 @@ jobs:
       run: ./gradlew build
       working-directory: sequence_member
 
+
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
     #
@@ -91,6 +73,27 @@ jobs:
     #
     # - name: Build with Gradle 8.9
     #   run: gradle build
+
+    # 도커 로그인
+    - name: Docker Login
+      uses: docker/login-action@v3.3.0
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: List repository root
+      run: ls -la
+    - name: List sequence_member directory
+      run: ls -la sequence_member
+    # Docker 이미지 빌드
+    - name: Build Docker image
+      run: |
+        docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
+
+    # Docker 이미지 푸시
+    - name: Push Docker image
+      run: |
+        docker push ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
   dependency-submission:
     runs-on: ubuntu-latest
