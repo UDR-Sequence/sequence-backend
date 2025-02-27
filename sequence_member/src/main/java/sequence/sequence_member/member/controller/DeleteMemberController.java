@@ -50,7 +50,7 @@ public class DeleteMemberController {
         deleteService.deleteRefreshAndMember(request);
 
         //성공 응답 반환
-        return ResponseEntity.ok().body(ApiResponseData.success(null, "회원탈퇴 성공적으로 완료되었습니다."));
+        return ResponseEntity.ok().body(ApiResponseData.success(member.getEmail(), "회원탈퇴 성공적으로 완료되었습니다."));
     }
 
 
