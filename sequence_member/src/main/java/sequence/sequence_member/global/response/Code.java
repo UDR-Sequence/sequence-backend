@@ -14,6 +14,8 @@ public enum Code {
      * 성공 0번대
      */
     SUCCESS(HttpStatus.OK, 200, "성공적으로 처리되었습니다."),
+    CREATED(HttpStatus.CREATED, 201, "성공적으로 생성되었습니다."),
+    ALREADY_EXISTS(HttpStatus.OK, 202, "이미 존재하는 리소스입니다."),
 
     /**
      * VALIDATION 관련 100번대

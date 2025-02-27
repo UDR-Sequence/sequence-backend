@@ -56,5 +56,4 @@ public class ProjectInputDTO {
     private String article;
 
     private String link;
-
 }
