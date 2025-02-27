@@ -22,11 +22,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
+import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 
 @Entity
 @Getter
@@ -115,7 +115,7 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 
-    // 아카이브 수정 시 사용
+    // 아카이브 업데이트 메서드 추가
     public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
         this.title = archiveUpdateDTO.getTitle();
         this.description = archiveUpdateDTO.getDescription();
@@ -125,5 +125,7 @@ public class Archive extends BaseTimeEntity {
         this.status = archiveUpdateDTO.getStatus();
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
+        setSkillsFromList(archiveUpdateDTO.getSkills());
+        setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
     }
-}
+} 

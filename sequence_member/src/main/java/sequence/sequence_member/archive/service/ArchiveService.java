@@ -16,6 +16,15 @@ import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.archive.entity.ArchiveMember;
+import sequence.sequence_member.archive.repository.ArchiveMemberRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import sequence.sequence_member.global.enums.enums.Status;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,62 +32,48 @@ import sequence.sequence_member.global.exception.CanNotFindResourceException;
 public class ArchiveService {
     
     private final ArchiveRepository archiveRepository;
+    private final MemberRepository memberRepository;
+    private final ArchiveMemberRepository archiveMemberRepository;
 
     @Transactional
-    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto) {
         Archive archive = Archive.builder()
-                .title(archiveRegisterInputDTO.getTitle())
-                .description(archiveRegisterInputDTO.getDescription())
-                .duration(archiveRegisterInputDTO.getDuration())
-                .category(archiveRegisterInputDTO.getCategory())
-                .period(archiveRegisterInputDTO.getPeriod())
-                .status(archiveRegisterInputDTO.getStatus())
-                .thumbnail(archiveRegisterInputDTO.getThumbnail())
-                .link(archiveRegisterInputDTO.getLink())
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .duration(dto.getDuration())
+                .category(dto.getCategory())
+                .period(dto.getPeriod())
+                .status(Status.평가전)
+                .thumbnail(dto.getThumbnail())
+                .link(dto.getLink())
                 .build();
 
-        archive.setSkillsFromList(archiveRegisterInputDTO.getSkills());
-
+        archive.setSkillsFromList(dto.getSkills());
         Archive savedArchive = archiveRepository.save(archive);
 
-        return ArchiveOutputDTO.builder()
-                .id(savedArchive.getId())
-                .title(savedArchive.getTitle())
-                .description(savedArchive.getDescription())
-                .duration(savedArchive.getDuration())
-                .category(savedArchive.getCategory())
-                .period(savedArchive.getPeriod())
-                .status(savedArchive.getStatus())
-                .thumbnail(savedArchive.getThumbnail())
-                .link(savedArchive.getLink())
-                .skills(savedArchive.getSkillList())
-                .view(savedArchive.getView())
-                .bookmark(savedArchive.getBookmark())
-                .createdDateTime(savedArchive.getCreatedDateTime())
-                .modifiedDateTime(savedArchive.getModifiedDateTime())
+        // 아카이브 멤버 등록
+        for (ArchiveRegisterInputDTO.ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+            MemberEntity member = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember archiveMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(member)
+                .role(memberDto.getRole())
                 .build();
+
+            archiveMemberRepository.save(archiveMember);
+        }
+
+        return convertToDTO(savedArchive);
     }
 
     // 아카이브 등록 후 결과 조회
     public ArchiveOutputDTO getArchiveById(Long archiveId) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 아카이브가 없습니다."));
-        return ArchiveOutputDTO.builder()
-                .id(archive.getId())
-                .title(archive.getTitle())
-                .description(archive.getDescription())
-                .duration(archive.getDuration())
-                .category(archive.getCategory())
-                .period(archive.getPeriod())
-                .status(archive.getStatus())
-                .thumbnail(archive.getThumbnail())
-                .link(archive.getLink())
-                .skills(archive.getSkillList())
-                .view(archive.getView())
-                .bookmark(archive.getBookmark())
-                .createdDateTime(archive.getCreatedDateTime())
-                .modifiedDateTime(archive.getModifiedDateTime())
-                .build();
+        
+        return convertToDTO(archive);
     }
 
     // 아카이브 내용 수정
@@ -86,6 +81,26 @@ public class ArchiveService {
     public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+        
+        // 기존 팀원 정보 삭제
+        archiveMemberRepository.deleteAllByArchive(archive);
+        
+        // 새로운 팀원 정보 등록
+        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
+            MemberEntity member = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember archiveMember = ArchiveMember.builder()
+                .archive(archive)
+                .member(member)
+                .role(memberDto.getRole())
+                .build();
+
+            archiveMemberRepository.save(archiveMember);
+        }
+        
+        // 나머지 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
     }
 
@@ -149,6 +164,14 @@ public class ArchiveService {
 
     // Archive 엔티티를 DTO로 변환
     private ArchiveOutputDTO convertToDTO(Archive archive) {
+        List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
+            .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
+                .username(archiveMember.getMember().getUsername())
+                .nickname(archiveMember.getMember().getNickname())
+                .role(archiveMember.getRole())
+                .build())
+            .collect(Collectors.toList());
+
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
                 .title(archive.getTitle())
@@ -156,13 +179,13 @@ public class ArchiveService {
                 .duration(archive.getDuration())
                 .category(archive.getCategory())
                 .period(archive.getPeriod())
-                .status(archive.getStatus()) 
                 .thumbnail(archive.getThumbnail())
                 .link(archive.getLink())
                 .skills(archive.getSkillList())
                 .imgUrls(archive.getImageUrlsAsList())
                 .view(archive.getView())
                 .bookmark(archive.getBookmark())
+                .members(memberDTOs)
                 .createdDateTime(archive.getCreatedDateTime())
                 .modifiedDateTime(archive.getModifiedDateTime())
                 .build();

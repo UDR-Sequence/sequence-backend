@@ -18,17 +18,27 @@ import java.util.List;
 public class ArchiveOutputDTO {
     private Long id;
     private String title;
-    private String description;
+    private String description; 
     private String duration;
     private Category category;
     private Period period;
-    private Status status;
     private String thumbnail;
     private String link;
     private List<String> skills;
     private List<String> imgUrls;
     private Integer view;
     private Integer bookmark;
+    private List<ArchiveMemberDTO> members;
     private LocalDateTime createdDateTime;
     private LocalDateTime modifiedDateTime;
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ArchiveMemberDTO {
+        private String username;
+        private String nickname;
+        private String role;
+    }
 } 

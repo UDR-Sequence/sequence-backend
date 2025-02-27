@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sequence.sequence_member.global.exception.BadRequestExeption;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
 import sequence.sequence_member.member.dto.CustomUserDetails;
@@ -55,7 +55,7 @@ public class InviteAccessService {
     @Transactional
     public void acceptInvite(CustomUserDetails customUserDetails, Long projectInvitedMemberId){
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-        ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BadRequestExeption("해당 프로젝트 초대가 유효하지 않습니다."));
+        ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BAD_REQUEST_EXCEPTION("해당 프로젝트 초대가 유효하지 않습니다."));
 
         projectMemberRepository.save(ProjectMember.builder()
                 .member(member)
@@ -68,7 +68,7 @@ public class InviteAccessService {
     @Transactional
     public void rejectInvite(CustomUserDetails customUserDetails, Long projectInvitedMemberId){
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-        ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BadRequestExeption("해당 프로젝트 초대가 유효하지 않습니다."));
+        ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BAD_REQUEST_EXCEPTION("해당 프로젝트 초대가 유효하지 않습니다."));
         projectInvitedMemberRepository.delete(projectInvitedMember);
     }
 

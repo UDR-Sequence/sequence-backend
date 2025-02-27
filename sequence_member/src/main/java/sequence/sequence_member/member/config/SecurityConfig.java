@@ -100,6 +100,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
+                        .requestMatchers("/api/archive/*/evaluations/**").authenticated()
                         .requestMatchers("/api/archive/**").permitAll()
                         .requestMatchers("/error").permitAll() // 예외 처리 로직 없을 때 Tomcat이 포워딩 하는 경로 접근 허용하여 예외 메세지 잘 전달되도록 허용
                         .anyRequest().authenticated());
