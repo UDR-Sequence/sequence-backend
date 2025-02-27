@@ -40,9 +40,9 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MAX_FILE_SIZE: ${{ secrets.MAX_FILE_SIZE }}
       MAX_REQUEST_SIZE : ${{ secrets.MAX_REQUEST_SIZE }}
-      MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}
-      MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}
+      MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
+      MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
+      MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
 
     
     steps:
@@ -146,9 +146,9 @@ jobs:
               -e DATABASE_URL=${{secrets.DATABASE_URL}} \
               -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} \
               -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
-              -e MINIO_ENDPOINT=${{secrets.MINIO_ENDPOINT} \
-              -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY} \
-              -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY} \
+              -e MINIO_ENDPOINT=${{secrets.MINIO_ENDPOINT}} \
+              -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
+              -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
       
