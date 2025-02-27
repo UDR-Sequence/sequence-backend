@@ -3,6 +3,7 @@ package sequence.sequence_member.member.controller;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,9 +33,9 @@ public class MemberController {
     private final InviteAccessService inviteAccessService;
     private final MemberSearchService memberSearchService;
 
-    @PostMapping("/join")
-    public ResponseEntity<ApiResponseData<String>> join(@RequestBody @Valid MemberDTO memberDTO, Errors errors,
-                                                        @RequestPart(required = false) MultipartFile authImgFile){
+    @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<ApiResponseData<String>> join(@RequestPart("memberDTO") @Valid MemberDTO memberDTO, Errors errors,
+                                                        @RequestPart(name="authImgFile" ,required = false) MultipartFile authImgFile){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
             Map<String, String> validatorResult = memberService.validateHandling(errors);
@@ -42,7 +43,7 @@ public class MemberController {
             return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), validatorResult.values().toString()));
         }
 
-        memberService.save(memberDTO);
+        memberService.save(memberDTO,authImgFile);
         return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
 
