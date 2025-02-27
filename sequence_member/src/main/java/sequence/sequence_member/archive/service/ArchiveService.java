@@ -81,26 +81,6 @@ public class ArchiveService {
     public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
-        
-        // 기존 팀원 정보 삭제
-        archiveMemberRepository.deleteAllByArchive(archive);
-        
-        // 새로운 팀원 정보 등록
-        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
-            MemberEntity member = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                    "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
-
-            ArchiveMember archiveMember = ArchiveMember.builder()
-                .archive(archive)
-                .member(member)
-                .role(memberDto.getRole())
-                .build();
-
-            archiveMemberRepository.save(archiveMember);
-        }
-        
-        // 나머지 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
     }
 
