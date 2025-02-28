@@ -8,7 +8,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.Member;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import sequence.sequence_member.global.exception.BaseException;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
-import sequence.sequence_member.member.entity.MemberEntity;
-import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.TokenReissueService;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -31,13 +27,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
 
-    private final MemberRepository memberRepository;
-
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, TokenReissueService tokenReissueService, MemberRepository memberRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, TokenReissueService tokenReissueService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.tokenReissueService = tokenReissueService;
-        this.memberRepository=memberRepository;
         //spring security는 대부분의 로직이 필터 단에서 동작하게 된다. 로그인 또한, 필터에서 처리되고, (자동으로 엔드포인트는 "/login" 이 된다.)
         //UsernamePasswordAuthenticationFilter에서 매핑되어 처리된다. 이 필터를 상속받아 LoginFilter를 만들게 된다.
         //security에서 설정해주는 기본 url("/login")을 /api/login으로 변경
@@ -86,16 +79,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException{
         //유저 이름 찾기
         String username = authentication.getName();
-        MemberEntity memberEntity = memberRepository.findByUsername(username).orElseThrow(()->new BaseException("해당 유저가 존재하지 않습니다."));
-        String nickname = memberEntity.getNickname();
 
-        String access = jwtUtil.createJwt("access",username,  600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
+        String access = jwtUtil.createJwt("access",username, 600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
         String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
 
         tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);
 
         // 실패 응답 객체 생성
-        ResponseEntity<ApiResponseData<String>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(nickname, "로그인을 성공하였습니다."));
+        ResponseEntity<ApiResponseData<String>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(null, "로그인을 성공하였습니다."));
 
 
         response.setHeader("access", access);

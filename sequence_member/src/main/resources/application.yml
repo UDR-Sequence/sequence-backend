@@ -6,7 +6,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -23,14 +23,8 @@ spring:
 
   servlet:
     multipart:
-      enabled: true
       max-file-size: ${MAX_FILE_SIZE}
       max-request-size: ${MAX_REQUEST_SIZE}
 
   jwt:
     secret: ${JWT_SECRET}
-
-minio:
-  endpoint: ${MINIO_ENDPOINT}
-  accessKey: ${MINIO_ACCESS_KEY}
-  secretKey: ${MINIO_SECRET_KEY}
