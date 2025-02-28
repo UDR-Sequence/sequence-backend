@@ -11,7 +11,7 @@ import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
 import sequence.sequence_member.global.exception.AuthException;
-import sequence.sequence_member.global.exception.BadRequestExeption;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.global.utils.DataConvertor;
@@ -148,7 +148,7 @@ public class ProjectService {
         // 삭제된 멤버들은 ProjectMember에서 삭제
         List<MemberEntity> deletedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getDeletedMembersNicknames());
         if(deletedMembers.contains(writer)){
-            throw new BadRequestExeption("작성자는 멤버에서 삭제할 수 없습니다.");
+            throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
         }
         projectMemberRepository.deleteByProjectAndMemberIn(project, deletedMembers);
 

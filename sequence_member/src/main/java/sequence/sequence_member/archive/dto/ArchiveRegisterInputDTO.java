@@ -15,9 +15,9 @@ import sequence.sequence_member.global.enums.enums.Status;
 import java.util.List;
 
 @Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ArchiveRegisterInputDTO {
 
     @NotEmpty(message = "제목을 입력해주세요.")
@@ -37,8 +37,6 @@ public class ArchiveRegisterInputDTO {
     @NotNull(message = "기간을 선택해주세요.")
     private Period period;
 
-    @NotNull(message = "상태를 선택해주세요.")
-    private Status status;
 
     private String thumbnail;
     private String link;
@@ -46,5 +44,15 @@ public class ArchiveRegisterInputDTO {
     @NotEmpty(message = "관련 기술을 선택해주세요.")
     @Size(max = 20, message = "관련 기술은 20개 이하로 선택해주세요.")
     private List<String> skills;
+
+    private List<ArchiveMemberDTO> archiveMembers;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ArchiveMemberDTO {
+        private String username;
+        private String role;
+    }
 }
 
