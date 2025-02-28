@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'sequence'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1-SNAPSHOT' //todo- 버전관리 전략 고민해보기
 
 java {
 	toolchain {

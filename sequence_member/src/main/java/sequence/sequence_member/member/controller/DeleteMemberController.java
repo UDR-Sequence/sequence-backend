@@ -30,11 +30,12 @@ public class DeleteMemberController {
     // 사용자 탈퇴 API
     @DeleteMapping("/api/user/delete")
     public ResponseEntity<ApiResponseData<String>> deleteProcess(@RequestBody DeleteInputDTO deleteInputDTO, HttpServletRequest request) {
-
         //비밀번호 비교
         if (!deleteInputDTO.getPassword().equals(deleteInputDTO.getConfirm_password())) {
             throw new CanNotFindResourceException("동일한 비밀번호를 입력해주세요");
         }
+
+        String refresh = deleteService.checkRefreshAndMember(request, deleteInputDTO.getUsername());
 
         MemberEntity member = memberService.GetUser(deleteInputDTO.getUsername());
 
@@ -47,10 +48,10 @@ public class DeleteMemberController {
         //멤버 정보 제거
         //삭제한 멤버 받아오기
         //삭제한 user 정보 deleteMember 테이블에 저장
-        deleteService.deleteRefreshAndMember(request);
+        deleteService.deleteRefreshAndMember(refresh);
 
         //성공 응답 반환
-        return ResponseEntity.ok().body(ApiResponseData.success(null, "회원탈퇴 성공적으로 완료되었습니다."));
+        return ResponseEntity.ok().body(ApiResponseData.success(member.getEmail(), "회원탈퇴 성공적으로 완료되었습니다."));
     }
 
 
