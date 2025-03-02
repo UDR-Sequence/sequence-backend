@@ -6,6 +6,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
+import org.springframework.web.multipart.MultipartFile;
+import sequence.sequence_member.global.utils.MultipartUtil;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.member.entity.*;
 import sequence.sequence_member.member.repository.*;
@@ -20,6 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final String SUFFIX = "auth";
+    private final String BUCKET_NAME = "user-auth-img";
+    private final MultipartUtil multipartUtil;
     private final MemberRepository memberRepository;
     private final AwardRepository awardRepository;
     private final CareerRepository careerRepository;
@@ -28,14 +33,16 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void save(MemberDTO memberDTO){
+    public void save(MemberDTO memberDTO, MultipartFile authImgFile){
 
-        //memberDTO의 비밀번호 값을 암호화하여 memberDTO에 저장하고 memberEntity로 변환하여 저장
-        //엔티티 클래스는 데이터베이스 구조를 반영해야 하며, 비즈니스 로직(회원가입, 로그인, 비밀번호 암호화)과 분리되어야 한다.
-        //그러므로, 엔티티 클래스에서 비밀번호 암호화를 하는 것은 적절하지 않다고 판단하여 service 단에서 처리.
         memberDTO.setPassword(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
 
         MemberEntity memberEntity = MemberEntity.toMemberEntity(memberDTO);
+
+        //파일명 생성
+        String fileName = multipartUtil.determineFileName(authImgFile, memberDTO.getUsername(), SUFFIX, BUCKET_NAME);
+        memberEntity.setProfileImg(fileName);
+
         //먼저 member 정보를 저장하고 나중에 외래키 값을 저장하기 위해서 멤버 정보를 먼저 저장
         memberRepository.save(memberEntity);
 
