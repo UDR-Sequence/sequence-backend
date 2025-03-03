@@ -1,8 +1,6 @@
 package sequence.sequence_member.mypage.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -10,26 +8,27 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
-import sequence.sequence_member.member.jwt.JWTUtil;
-import sequence.sequence_member.mypage.dto.MyPageDTO;
+import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
+import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
 
 @Controller
 @RequiredArgsConstructor
-@Slf4j
 public class MyPageController {
     private final MyPageService myPageService;
-    private final JWTUtil jwtUtil;
 
     @GetMapping("/api/mypage")
-    public ResponseEntity<ApiResponseData> getMyProfile(HttpServletRequest request) {
-
-        String username = jwtUtil.getUsername(request.getHeader("access"));
+    public ResponseEntity<ApiResponseData> getMyProfile(
+            @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
+            @RequestParam(defaultValue = "10") int size  // 사이즈 기본값 10
+    ) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
-            MyPageDTO myPageDTO = myPageService.getMyProfile(username);
+            MyPageResponseDTO myPageDTO = myPageService.getMyProfile(username, page, size);
             // 성공 응답 생성
             return ResponseEntity.ok(ApiResponseData.success(myPageDTO, "사용자 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
@@ -43,7 +42,7 @@ public class MyPageController {
     }
 
     @PutMapping("/api/mypage")
-    public ResponseEntity<ApiResponseData<String>> updateMyProfile(@RequestBody MyPageDTO myPageDTO) {
+    public ResponseEntity<ApiResponseData<String>> updateMyProfile(@RequestBody MyPageRequestDTO myPageDTO) {
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -57,9 +56,13 @@ public class MyPageController {
     }
 
     @GetMapping("/api/mypage/{nickname}")
-    public ResponseEntity<ApiResponseData> getUserProfile(@PathVariable String nickname) {
+    public ResponseEntity<ApiResponseData> getUserProfile(
+            @PathVariable String nickname,
+            @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
+            @RequestParam(defaultValue = "10") int size  // 사이즈 기본값 10
+    ) {
         try {
-            MyPageDTO userProfile = myPageService.getUserProfile(nickname);
+            MyPageResponseDTO userProfile = myPageService.getUserProfile(nickname, page, size);
             return ResponseEntity.ok(ApiResponseData.success(userProfile, nickname + "님의 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
             ApiResponseData errorResponse = ApiResponseData.failure(
@@ -69,5 +72,4 @@ public class MyPageController {
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus()).body(errorResponse);
         }
     }
-
 }
