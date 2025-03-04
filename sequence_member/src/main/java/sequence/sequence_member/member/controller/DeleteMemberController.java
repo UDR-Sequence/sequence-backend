@@ -40,6 +40,10 @@ public class DeleteMemberController {
 
         MemberEntity member = memberService.GetUser(deleteInputDTO.getUsername());
 
+        if (member.isDeleted() == true) {
+            throw new CanNotFindResourceException("이미 탈퇴된 회원 입니다.");
+        }
+
         //입력 비밀번호를 db와 비교
         if (!bCryptPasswordEncoder.matches(deleteInputDTO.getPassword(), member.getPassword())) {
             throw new CanNotFindResourceException("비밀번호가 일치하지 않습니다.");
