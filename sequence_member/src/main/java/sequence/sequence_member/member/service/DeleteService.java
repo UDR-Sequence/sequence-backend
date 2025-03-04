@@ -41,15 +41,17 @@ public class DeleteService {
         MemberEntity deleteMember = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new CanNotFindResourceException("사용자를 찾을 수 없습니다."));
 
-        //회원 정보 삭제
-        awardRepository.deleteByMemberId(deleteMember.getId());
-        careerRepository.deleteByMemberId(deleteMember.getId());
-        experienceRepository.deleteByMemberId(deleteMember.getId());
-        educationRepository.deleteByMemberId(deleteMember.getId());
+//        //회원 정보 삭제
+//        awardRepository.deleteByMemberId(deleteMember.getId());
+//        careerRepository.deleteByMemberId(deleteMember.getId());
+//        experienceRepository.deleteByMemberId(deleteMember.getId());
+//        educationRepository.deleteByMemberId(deleteMember.getId());
+//
+//        memberRepository.deleteByUsername(username);
 
-        memberRepository.deleteByUsername(username);
-
-        saveDeletedUser(deleteMember.getUsername(), deleteMember.getEmail());
+        //회원 비활성화
+        deleteMember.setDeleted(true);
+        memberRepository.save(deleteMember);
     }
 
     public String checkRefreshAndMember(HttpServletRequest request, String username){
