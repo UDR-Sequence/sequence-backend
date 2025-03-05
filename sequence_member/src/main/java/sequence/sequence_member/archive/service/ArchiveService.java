@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import sequence.sequence_member.global.enums.enums.Status;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +37,17 @@ public class ArchiveService {
     private final ArchiveMemberRepository archiveMemberRepository;
 
     @Transactional
-    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto) {
+    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Archive archive = Archive.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
-                .duration(dto.getDuration())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
                 .category(dto.getCategory())
-                .period(dto.getPeriod())
                 .status(Status.평가전)
                 .thumbnail(dto.getThumbnail())
                 .link(dto.getLink())
@@ -53,77 +58,106 @@ public class ArchiveService {
 
         // 아카이브 멤버 등록
         for (ArchiveRegisterInputDTO.ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
-            MemberEntity member = memberRepository.findByUsername(memberDto.getUsername())
+            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
 
-            ArchiveMember archiveMember = ArchiveMember.builder()
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
                 .archive(savedArchive)
-                .member(member)
+                .member(archiveMember)
                 .role(memberDto.getRole())
                 .build();
 
-            archiveMemberRepository.save(archiveMember);
+            archiveMemberRepository.save(newArchiveMember);
         }
 
         return convertToDTO(savedArchive);
     }
 
-    // 아카이브 등록 후 결과 조회
-    public ArchiveOutputDTO getArchiveById(Long archiveId) {
+    public ArchiveOutputDTO getArchiveById(Long archiveId, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아카이브가 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         
         return convertToDTO(archive);
     }
 
-    // 아카이브 내용 수정
     @Transactional
-    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
+    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        // 아카이브 멤버 검증
+        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
+        if (archiveMember == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        }
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         archive.updateArchive(archiveUpdateDTO);
     }
 
-    // 아카이브 삭제
     @Transactional
-    public void deleteArchive(Long archiveId) {
+    public void deleteArchive(Long archiveId, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        // 아카이브 멤버 검증
+        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
+        if (archiveMember == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        }
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         archiveRepository.delete(archive);
     }
 
-    
-    // 전체 아카이브 목록 조회 (정렬 추가)
-    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType) {
+    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
+        // 사용자 검증
+        memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
         
         if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
         
         return createArchivePageResponse(archivePage);
     }
-    
-    // 카테고리별 아카이브 검색 (정렬 추가)
-    public ArchivePageResponseDTO searchByCategory(Category category, int page, SortType sortType) {
+
+    public ArchivePageResponseDTO searchByCategory(Category category, int page, SortType sortType, String username) {
+        // 사용자 검증
+        memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findByCategory(category, pageable);
         
         if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
         
         return createArchivePageResponse(archivePage);
     }
-    /* */
-    // 제목으로 아카이브 검색 (정렬 추가)
-    public ArchivePageResponseDTO searchByTitle(String keyword, int page, SortType sortType) {
+
+    public ArchivePageResponseDTO searchByTitle(String keyword, int page, SortType sortType, String username) {
+        // 사용자 검증
+        memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findByTitleContaining(keyword, pageable);
         
         if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
         
         return createArchivePageResponse(archivePage);
@@ -156,9 +190,10 @@ public class ArchiveService {
                 .id(archive.getId())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
-                .duration(archive.getDuration())
+                .startDate(archive.getStartDate())
+                .endDate(archive.getEndDate())
+                .duration(archive.getDurationAsString())
                 .category(archive.getCategory())
-                .period(archive.getPeriod())
                 .thumbnail(archive.getThumbnail())
                 .link(archive.getLink())
                 .skills(archive.getSkillList())
