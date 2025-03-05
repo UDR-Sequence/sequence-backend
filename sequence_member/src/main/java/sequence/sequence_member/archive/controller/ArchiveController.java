@@ -66,7 +66,7 @@ public class ArchiveController {
         return ResponseEntity.ok(ApiResponseData.success(null, "아카이브 수정 성공"));
     }
 
-    // 아카이브 삭제
+    // 아카이브 삭제 // 
     @DeleteMapping("/{archiveId}")
     public ResponseEntity<ApiResponseData<String>> deleteArchiveById(
             @AuthenticationPrincipal CustomUserDetails userDetails,
