@@ -2,7 +2,7 @@ spring:
   application:
     name: sequence_member
   config:
-    import: optional:file:.env[.]yml
+    import: optional:file:.env[.properties]
 
   jpa:
     hibernate:

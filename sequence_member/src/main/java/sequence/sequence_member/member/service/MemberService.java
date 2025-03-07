@@ -2,6 +2,7 @@ package sequence.sequence_member.member.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -23,7 +24,9 @@ import java.util.Map;
 public class MemberService {
 
     private final String SUFFIX = "auth";
-    private final String BUCKET_NAME = "user-auth-img";
+    @Value("${MINIO_BUCKET_NAME}")
+    private  String BUCKET_NAME;
+
     private final MultipartUtil multipartUtil;
     private final MemberRepository memberRepository;
     private final AwardRepository awardRepository;
