@@ -19,29 +19,10 @@ import sequence.sequence_member.global.minio.service.MinioService;
 
 @Component
 @RequiredArgsConstructor
-public class MultipartUtil {
-    private String[] extensions = {"png", "jpeg", "jpg", "bmp"};
-    private List<String> allowedFileExtensions = new ArrayList<>(Arrays.asList(extensions));
+public class MultipartUtil{
 
     private final FileExtension fileExtension;
     private final MinioService minioService;
-
-
-//    @MethodDescription(description = "파일 확장자 추출")
-//    public String getFileExtension(MultipartFile file) {
-//        String originalFileName = file.getOriginalFilename();
-//        if (StringUtils.hasText(originalFileName)) {
-//            return originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
-//        }
-//        return "";
-//    }
-
-//    @MethodDescription(description = "파일 확장자를 확인합니다.")
-//    public void uploadFileExtensionCheck(String extension) {
-//        if (!allowedFileExtensions.contains(extension)) {
-//            throw new MultipartException();
-//        }
-//    }
 
     @MethodDescription(description = "파일을 업로드 하고, 파일 이름을 반환받습니다.")
     private String uploadFile(MultipartFile file, String userName, String suffix, String bucketName) {

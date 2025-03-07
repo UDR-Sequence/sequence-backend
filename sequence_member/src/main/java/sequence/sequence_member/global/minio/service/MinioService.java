@@ -31,7 +31,6 @@ import sequence.sequence_member.global.utils.MultipartUtil;
 public class MinioService {
 
     private final FileExtension fileExtension;
-
     private MinioClient minioClient;
 
     @Value("${MINIO_ENDPOINT}")
