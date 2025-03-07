@@ -10,6 +10,7 @@ import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import sequence.sequence_member.archive.dto.ArchiveMemberDTO;
 import sequence.sequence_member.archive.service.ArchiveService;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;

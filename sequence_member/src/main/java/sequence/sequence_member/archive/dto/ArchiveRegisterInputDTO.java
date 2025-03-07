@@ -46,12 +46,5 @@ public class ArchiveRegisterInputDTO {
 
     private List<ArchiveMemberDTO> archiveMembers;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ArchiveMemberDTO {
-        private String username;
-        private String role;
-    }
 }
 
