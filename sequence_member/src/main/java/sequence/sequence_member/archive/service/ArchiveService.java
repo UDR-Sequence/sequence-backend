@@ -133,29 +133,31 @@ public class ArchiveService {
         return createArchivePageResponse(archivePage);
     }
 
-    public ArchivePageResponseDTO searchByCategory(Category category, int page, SortType sortType, String username) {
+    public ArchivePageResponseDTO searchArchives(
+            Category category, 
+            String keyword, 
+            int page, 
+            SortType sortType, 
+            String username) {
+        
         // 사용자 검증
         memberRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByCategory(category, pageable);
+        Page<Archive> archivePage;
         
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
+        // null 체크를 통한 메서드 선택
+        if (category != null && keyword != null && !keyword.trim().isEmpty()) {
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCase(category, keyword.trim(), pageable);
+        } else if (category != null) {
+            archivePage = archiveRepository.findByCategory(category, pageable);
+        } else if (keyword != null && !keyword.trim().isEmpty()) {
+            archivePage = archiveRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
+        } else {
+            archivePage = archiveRepository.findAll(pageable);
         }
-        
-        return createArchivePageResponse(archivePage);
-    }
 
-    public ArchivePageResponseDTO searchByTitle(String keyword, int page, SortType sortType, String username) {
-        // 사용자 검증
-        memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
-        Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByTitleContaining(keyword, pageable);
-        
         if(archivePage.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
