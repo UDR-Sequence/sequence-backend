@@ -11,6 +11,7 @@ import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import sequence.sequence_member.archive.dto.ArchiveMemberDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -57,7 +58,7 @@ public class ArchiveService {
         Archive savedArchive = archiveRepository.save(archive);
 
         // 아카이브 멤버 등록
-        for (ArchiveRegisterInputDTO.ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
             MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
 
