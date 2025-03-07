@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import sequence.sequence_member.global.exception.BaseException;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
+import sequence.sequence_member.member.dto.LoginOutputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.TokenReissueService;
@@ -87,16 +88,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //유저 이름 찾기
         String username = authentication.getName();
         MemberEntity memberEntity = memberRepository.findByUsername(username).orElseThrow(()->new BaseException("해당 유저가 존재하지 않습니다."));
-        String nickname = memberEntity.getNickname();
-
+        
         String access = jwtUtil.createJwt("access",username,  600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
         String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
 
         tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);
 
         // 실패 응답 객체 생성
-        ResponseEntity<ApiResponseData<String>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(nickname, "로그인을 성공하였습니다."));
-
+        ResponseEntity<ApiResponseData<LoginOutputDTO>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(new LoginOutputDTO(memberEntity.getNickname(), memberEntity.getProfileImg()), "로그인을 성공하였습니다."));
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));

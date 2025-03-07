@@ -16,6 +16,16 @@ import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.archive.entity.ArchiveMember;
+import sequence.sequence_member.archive.repository.ArchiveMemberRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import sequence.sequence_member.global.enums.enums.Status;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,112 +33,133 @@ import sequence.sequence_member.global.exception.CanNotFindResourceException;
 public class ArchiveService {
     
     private final ArchiveRepository archiveRepository;
+    private final MemberRepository memberRepository;
+    private final ArchiveMemberRepository archiveMemberRepository;
 
     @Transactional
-    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO archiveRegisterInputDTO) {
+    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Archive archive = Archive.builder()
-                .title(archiveRegisterInputDTO.getTitle())
-                .description(archiveRegisterInputDTO.getDescription())
-                .duration(archiveRegisterInputDTO.getDuration())
-                .category(archiveRegisterInputDTO.getCategory())
-                .period(archiveRegisterInputDTO.getPeriod())
-                .status(archiveRegisterInputDTO.getStatus())
-                .thumbnail(archiveRegisterInputDTO.getThumbnail())
-                .link(archiveRegisterInputDTO.getLink())
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .category(dto.getCategory())
+                .status(Status.평가전)
+                .thumbnail(dto.getThumbnail())
+                .link(dto.getLink())
                 .build();
 
-        archive.setSkillsFromList(archiveRegisterInputDTO.getSkills());
-
+        archive.setSkillsFromList(dto.getSkills());
         Archive savedArchive = archiveRepository.save(archive);
 
-        return ArchiveOutputDTO.builder()
-                .id(savedArchive.getId())
-                .title(savedArchive.getTitle())
-                .description(savedArchive.getDescription())
-                .duration(savedArchive.getDuration())
-                .category(savedArchive.getCategory())
-                .period(savedArchive.getPeriod())
-                .status(savedArchive.getStatus())
-                .thumbnail(savedArchive.getThumbnail())
-                .link(savedArchive.getLink())
-                .skills(savedArchive.getSkillList())
-                .view(savedArchive.getView())
-                .bookmark(savedArchive.getBookmark())
-                .createdDateTime(savedArchive.getCreatedDateTime())
-                .modifiedDateTime(savedArchive.getModifiedDateTime())
+        // 아카이브 멤버 등록
+        for (ArchiveRegisterInputDTO.ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(archiveMember)
+                .role(memberDto.getRole())
                 .build();
+
+            archiveMemberRepository.save(newArchiveMember);
+        }
+
+        return convertToDTO(savedArchive);
     }
 
-    // 아카이브 등록 후 결과 조회
-    public ArchiveOutputDTO getArchiveById(Long archiveId) {
+    public ArchiveOutputDTO getArchiveById(Long archiveId, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아카이브가 없습니다."));
-        return ArchiveOutputDTO.builder()
-                .id(archive.getId())
-                .title(archive.getTitle())
-                .description(archive.getDescription())
-                .duration(archive.getDuration())
-                .category(archive.getCategory())
-                .period(archive.getPeriod())
-                .status(archive.getStatus())
-                .thumbnail(archive.getThumbnail())
-                .link(archive.getLink())
-                .skills(archive.getSkillList())
-                .view(archive.getView())
-                .bookmark(archive.getBookmark())
-                .createdDateTime(archive.getCreatedDateTime())
-                .modifiedDateTime(archive.getModifiedDateTime())
-                .build();
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        return convertToDTO(archive);
     }
 
-    // 아카이브 내용 수정
     @Transactional
-    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO) {
+    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        // 아카이브 멤버 검증
+        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
+        if (archiveMember == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        }
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         archive.updateArchive(archiveUpdateDTO);
     }
 
-    // 아카이브 삭제
     @Transactional
-    public void deleteArchive(Long archiveId) {
+    public void deleteArchive(Long archiveId, String username) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        // 아카이브 멤버 검증
+        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
+        if (archiveMember == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        }
+
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 아카이브가 없습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         archiveRepository.delete(archive);
     }
 
-    
-    // 전체 아카이브 목록 조회 (정렬 추가)
-    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType) {
+    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
+        // 사용자 검증
+        memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
         
         if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
         
         return createArchivePageResponse(archivePage);
     }
-    
-    // 카테고리별 아카이브 검색 (정렬 추가)
-    public ArchivePageResponseDTO searchByCategory(Category category, int page, SortType sortType) {
-        Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByCategory(category, pageable);
+
+    public ArchivePageResponseDTO searchArchives(
+            Category category, 
+            String keyword, 
+            int page, 
+            SortType sortType, 
+            String username) {
         
-        if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+        // 사용자 검증
+        memberRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        Pageable pageable = createPageableWithSort(page, sortType);
+        Page<Archive> archivePage;
+        
+        // null 체크를 통한 메서드 선택
+        if (category != null && keyword != null && !keyword.trim().isEmpty()) {
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCase(category, keyword.trim(), pageable);
+        } else if (category != null) {
+            archivePage = archiveRepository.findByCategory(category, pageable);
+        } else if (keyword != null && !keyword.trim().isEmpty()) {
+            archivePage = archiveRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
+        } else {
+            archivePage = archiveRepository.findAll(pageable);
         }
-        
-        return createArchivePageResponse(archivePage);
-    }
-    /* */
-    // 제목으로 아카이브 검색 (정렬 추가)
-    public ArchivePageResponseDTO searchByTitle(String keyword, int page, SortType sortType) {
-        Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByTitleContaining(keyword, pageable);
-        
+
         if(archivePage.isEmpty()) {
-            throw new CanNotFindResourceException("조건에 맞는 프로젝트를 찾을 수 없습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
         }
         
         return createArchivePageResponse(archivePage);
@@ -149,20 +180,29 @@ public class ArchiveService {
 
     // Archive 엔티티를 DTO로 변환
     private ArchiveOutputDTO convertToDTO(Archive archive) {
+        List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
+            .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
+                .username(archiveMember.getMember().getUsername())
+                .nickname(archiveMember.getMember().getNickname())
+                .role(archiveMember.getRole())
+                .build())
+            .collect(Collectors.toList());
+
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
-                .duration(archive.getDuration())
+                .startDate(archive.getStartDate())
+                .endDate(archive.getEndDate())
+                .duration(archive.getDurationAsString())
                 .category(archive.getCategory())
-                .period(archive.getPeriod())
-                .status(archive.getStatus()) 
                 .thumbnail(archive.getThumbnail())
                 .link(archive.getLink())
                 .skills(archive.getSkillList())
                 .imgUrls(archive.getImageUrlsAsList())
                 .view(archive.getView())
                 .bookmark(archive.getBookmark())
+                .members(memberDTOs)
                 .createdDateTime(archive.getCreatedDateTime())
                 .modifiedDateTime(archive.getModifiedDateTime())
                 .build();

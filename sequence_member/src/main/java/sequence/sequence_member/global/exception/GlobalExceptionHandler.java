@@ -112,11 +112,10 @@ public class GlobalExceptionHandler {
     }
 
     // BadRequestException 예외 처리
-    @ExceptionHandler(BadRequestExeption.class)
-    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(BadRequestExeption ex){
+    @ExceptionHandler(BAD_REQUEST_EXCEPTION.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(BAD_REQUEST_EXCEPTION ex){
         Code code = Code.BAD_REQUEST;
         // 반환할 메시지와 HTTP 상태 코드 설정
         return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
     }
-
 }
