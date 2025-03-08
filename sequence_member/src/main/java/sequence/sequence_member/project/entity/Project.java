@@ -82,6 +82,9 @@ public class Project extends BaseTimeEntity {
     @Column
     private String link;
 
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private Integer views;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
     private MemberEntity writer;

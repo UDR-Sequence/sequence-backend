@@ -1,5 +1,6 @@
 package sequence.sequence_member.project.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -37,14 +38,14 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId) {
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId)));
+    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request) {
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request)));
     }
 
     @PutMapping("/{projectId}")
     public ResponseEntity<ApiResponseData<ProjectOutputDTO>> updateProject(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody
-                                                                 ProjectUpdateDTO projectUpdateDTO){
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 수정 성공",projectService.updateProject(projectId, customUserDetails, projectUpdateDTO)));
+                                                                 ProjectUpdateDTO projectUpdateDTO, HttpServletRequest request){
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 수정 성공",projectService.updateProject(projectId, customUserDetails, projectUpdateDTO,request)));
     }
 
     @DeleteMapping("/{projectId}")

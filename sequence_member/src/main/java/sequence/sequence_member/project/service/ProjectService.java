@@ -1,5 +1,6 @@
 package sequence.sequence_member.project.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ public class ProjectService {
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final MemberRepository memberRepository;
+    private final ProjectViewService projectViewService;
 
     /**
      * Project를 생성하는 메인 로직 함수
@@ -59,7 +61,7 @@ public class ProjectService {
      * @return
      */
     @Transactional(readOnly = true)
-    public ProjectOutputDTO getProject(Long projectId){
+    public ProjectOutputDTO getProject(Long projectId, HttpServletRequest request){
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
 
         //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
@@ -105,6 +107,14 @@ public class ProjectService {
             commentOutputDTOS.add(commentOutputDTO);
         }
 
+        //views 조회
+        int views = 0;
+        try {
+            views = projectViewService.getViewsFromRedis(request, projectId);
+        }catch (Exception e){
+            views = project.getViews()+1;
+        }
+
         return ProjectOutputDTO.builder()
                 .id(project.getId())
                 .title(project.getTitle())
@@ -123,6 +133,7 @@ public class ProjectService {
                 .link(project.getLink())
                 .members(projectMemberOutputDTOS)
                 .comments(commentOutputDTOS)
+                .views(views)
                 .build();
     }
 
@@ -134,7 +145,7 @@ public class ProjectService {
      * @return
      */
     @Transactional
-    public ProjectOutputDTO updateProject(Long projectId, CustomUserDetails customUserDetails, ProjectUpdateDTO projectUpdateDTO) {
+    public ProjectOutputDTO updateProject(Long projectId, CustomUserDetails customUserDetails, ProjectUpdateDTO projectUpdateDTO,HttpServletRequest request) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
         MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername())
@@ -168,7 +179,7 @@ public class ProjectService {
 
         saveProjectInvitedMemberEntities(project, invitedMembers);
 
-        return getProject(projectId);
+        return getProject(projectId,request);
     }
 
     public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
