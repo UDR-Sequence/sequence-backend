@@ -1,8 +1,12 @@
 package sequence.sequence_member.report.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.report.dto.ReportRequestDTO;
 import sequence.sequence_member.report.dto.ReportResponseDTO;
@@ -11,6 +15,7 @@ import sequence.sequence_member.report.repository.ReportRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +23,30 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final JWTUtil jwtUtil;
 
     //신고내용을 db에 저장
-    public void submitReport(ReportRequestDTO reportRequestDTO){
+    public void submitReport(ReportRequestDTO reportRequestDTO, HttpServletRequest request){
+        // 쿠키 확인
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            throw new CanNotFindResourceException("로그인이 필요합니다.");
+        }
+
+        // Refresh 토큰 찾기
+        String refresh = null;
+        for (Cookie cookie : cookies) {
+            if ("refresh".equals(cookie.getName())) {
+                refresh = cookie.getValue();
+            }
+        }
+
+        //Refresh Token과 username이 일치하는지 확인
+        String tokenUsername = jwtUtil.getUsername(refresh);
+        if (!Objects.equals(tokenUsername, reportRequestDTO.getReporter())) {
+            throw new CanNotFindResourceException("요청한 사용자와 로그인된 사용자가 다릅니다.");
+        }
+
         boolean exist = memberRepository.existsByNickname(reportRequestDTO.getNickname());
         if(!exist){
             throw new CanNotFindResourceException("해당 유저가 존재하지 않습니다.");

@@ -1,5 +1,6 @@
 package sequence.sequence_member.report.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,9 @@ public class ReportController {
 
     //신고하기
     @PostMapping("/submit")
-    public ResponseEntity<ApiResponseData<String>> submitReport(@RequestBody ReportRequestDTO reportRequestDTO) {
+    public ResponseEntity<ApiResponseData<String>> submitReport(@RequestBody ReportRequestDTO reportRequestDTO, HttpServletRequest request) {
         //신고내역 저장
-        reportService.submitReport(reportRequestDTO);
+        reportService.submitReport(reportRequestDTO, request);
 
         //신고완료
         return ResponseEntity.ok().body(ApiResponseData.success(null,"신고가 완료되었습니다."));

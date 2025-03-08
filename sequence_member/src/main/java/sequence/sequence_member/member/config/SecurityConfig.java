@@ -96,7 +96,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/user/delete").permitAll()
+                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/user/delete", "/api/report/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
                         .requestMatchers("/api/archive/*/evaluations/**").authenticated()
                         .requestMatchers("/api/archive/**").permitAll()
