@@ -24,7 +24,7 @@ import java.util.Map;
 public class MemberService {
 
     private final String SUFFIX = "auth";
-    @Value("${MINIO_BUCKET_NAME}")
+    @Value("${minio.bucketName}")
     private  String BUCKET_NAME;
 
     private final MultipartUtil multipartUtil;
