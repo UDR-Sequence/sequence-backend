@@ -83,9 +83,9 @@ erdcloud : https://www.erdcloud.com/d/gYWeuxRwBSdStHtFD
 <br/>
 <br/>
 
-# 6. Technology Stack (기술 스택)
+# 5. Technology Stack (기술 스택)
 
-## 6.1 BackEnd
+## 5.1 BackEnd
 |  |  |  |
 |-----------------|-----------------|-----------------|
 | SpringBoot    |  <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=for-the-badge&logo=SpringBoot&logoColor=white" alt="SpringBoot" width="200"> | 3.4.3    |
@@ -96,7 +96,7 @@ erdcloud : https://www.erdcloud.com/d/gYWeuxRwBSdStHtFD
 
 <br/>
 
-## 6.2 Infra
+## 5.2 Infra
 |  |  |  |
 |-----------------|-----------------|-----------------|
 | MySQL  |  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white" alt="MySQL" width="200">    |  |
@@ -107,7 +107,7 @@ erdcloud : https://www.erdcloud.com/d/gYWeuxRwBSdStHtFD
 <br/>
 <br/>
 
-# 7. Development Workflow (개발 워크플로우)
+# 6. Development Workflow (개발 워크플로우)
 ## 브랜치 전략 (Branch Strategy)
 우리의 브랜치 전략은 아래와 같은 Git Flow를 기반으로 하며, 다음과 같은 브랜치를 사용합니다.
 
@@ -141,7 +141,7 @@ erdcloud : https://www.erdcloud.com/d/gYWeuxRwBSdStHtFD
 <br/>
 <br/>
 
-# 8. Convention
+# 7. Convention
 
 ## 네이밍 컨벤션
 함수명은 카멜 케이스를 기본으로 하고 컬럼명은 스네이크케이스를 기본으로 한다.
@@ -157,7 +157,7 @@ snake_case
 <br/>
 <br/>
 
-# 9. 커밋 컨벤션
+# 8. 커밋 컨벤션
 참고 : https://hqc24.tistory.com/9
 <br/>
 <br/>
