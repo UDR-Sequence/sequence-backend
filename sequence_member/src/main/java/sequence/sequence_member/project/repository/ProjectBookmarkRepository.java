@@ -1,0 +1,20 @@
+package sequence.sequence_member.project.repository;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import sequence.sequence_member.project.entity.Project;
+import sequence.sequence_member.project.entity.ProjectBookmark;
+
+@Repository
+public interface ProjectBookmarkRepository extends JpaRepository<ProjectBookmark, Long> {
+    boolean existsByMemberIdAndProjectId(Long memberId, Long projectId); // 북마크 존재 여부 확인
+
+    void deleteByMemberIdAndProjectId(Long memberId, Long projectId); // 북마크 삭제
+
+    // ✅ 유저가 북마크한 프로젝트 목록 조회
+    @Query("SELECT pb.project FROM ProjectBookmark pb WHERE pb.member.id = :memberId")
+    List<Project> findBookmarkedProjectsByMemberId(@Param("memberId") Long memberId);
+}
