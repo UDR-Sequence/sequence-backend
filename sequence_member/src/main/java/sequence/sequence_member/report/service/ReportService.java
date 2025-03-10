@@ -2,6 +2,7 @@ package sequence.sequence_member.report.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import sequence.sequence_member.report.repository.ReportRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +64,7 @@ public class ReportService {
         ReportEntity reportEntity = ReportEntity.builder()
                         .nickname(reportRequestDTO.getNickname())
                         .reporter(reportRequestDTO.getReporter())
-                        .reportType(ReportEntity.ReportType.fromDescription(reportRequestDTO.getReportType()))
+                        .reportTypes(reportRequestDTO.getReportType())
                         .reportContent(reportRequestDTO.getReportContent())
                         .build();
 
@@ -76,7 +78,9 @@ public class ReportService {
 
         for(ReportEntity reportEntity : reportEntities){
             reportResponseDTOS.add(ReportResponseDTO.builder()
-                    .reportType(reportEntity.getReportType().getDescription())
+                    .reportTypes(reportEntity.getReportTypes().stream()
+                            .map(ReportEntity.ReportType::getDescription)
+                            .collect(Collectors.toList()))
                     .reportContent(reportEntity.getReportContent())
                     .reporter(reportEntity.getReporter())
                     .build());
@@ -84,5 +88,4 @@ public class ReportService {
 
         return reportResponseDTOS;
     }
-
 }

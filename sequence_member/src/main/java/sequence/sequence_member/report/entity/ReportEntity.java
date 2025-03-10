@@ -5,6 +5,7 @@ import lombok.*;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Data
@@ -19,9 +20,13 @@ public class ReportEntity extends BaseTimeEntity {
     private String nickname;
     private String reporter;
 
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportType reportType;
+    @CollectionTable(name = "report_types", joinColumns = @JoinColumn(name = "report_id"))
+    @Column(name = "report_type")
+    private List<ReportType> reportTypes;
+
 
     @Column(columnDefinition = "TEXT", length = 500)
     private String reportContent;
