@@ -14,12 +14,12 @@ import sequence.sequence_member.project.repository.ProjectRepository;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProjectViewBackupService {
+public class ProjectViewBackupSchedule {
 
     private final StringRedisTemplate redisTemplate;
     private final ProjectRepository projectRepository;
 
-    @Scheduled(fixedRate = 60000*10) //분*10 = 10분마다 실행(todo - test를 위해 짧은 주리고 동기화중. 추후 수정)
+    @Scheduled(fixedRate = 60000*10*6) //분*10 = 1시간마다 실행(todo - test를 위해 짧은 주리고 동기화중. 추후 수정)
     @Transactional
     public void projectViewBackUpToDB(){
         log.info("Redis 조회수를 DB로 백업 중...");

@@ -16,6 +16,7 @@ import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.project.dto.ProjectFilterOutputDTO;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
+import sequence.sequence_member.project.dto.ProjectSummaryInfoDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.service.ProjectBookmarkService;
@@ -56,10 +57,26 @@ public class ProjectController {
         return ResponseEntity.ok().body(ApiResponseData.success(null, "프로젝트 삭제 성공"));
     }
 
-    //북마크 관련 엔드포인트
+    /**
+     * 북마크 관련 엔드포인트
+     * */
+    // 북마크 등록
     @PostMapping("/{projectId}/bookmark")
     public ResponseEntity<ApiResponseData<String>> addProjectBookmark(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         return ResponseEntity.ok().body(ApiResponseData.success(null,projectBookmarkService.addBookmark(customUserDetails, projectId)));
+    }
+    // 북마크 삭제
+    @DeleteMapping("/{projectId}/bookmark")
+    public ResponseEntity<ApiResponseData<String>> removeProjectBookmark(
+            @PathVariable("projectId") Long projectId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.success(null, projectBookmarkService.removeBookmark(customUserDetails, projectId)));
+    }
+    // 북마크한 프로젝트 목록 조회
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponseData<List<ProjectSummaryInfoDTO>>> getBookmarkedProjects(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.success(projectBookmarkService.getBookmarkedProjects(customUserDetails), "북마크한 프로젝트 목록을 조회하였습니다."));
     }
 
 
