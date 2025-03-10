@@ -79,10 +79,6 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
 
-    @Builder.Default
-    @Column(name = "bookmark", nullable = false, columnDefinition = "int default 0")
-    private Integer bookmark = 0;   // 북마크수
-
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {
         if (skills == null || skills.isEmpty()) {

@@ -27,8 +27,10 @@ public class ArchiveOutputDTO {
     private List<String> skills;
     private List<String> imgUrls;
     private Integer view;
-    private Integer bookmark;
+    private boolean isBookmarked;
+    private int bookmarkCount;
     private List<ArchiveMemberDTO> members;
+    private List<ArchiveCommentOutputDTO> comments;
     private LocalDateTime createdDateTime;
     private LocalDateTime modifiedDateTime;
 
