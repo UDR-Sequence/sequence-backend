@@ -96,7 +96,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/user/delete").permitAll()
+                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/user/delete", "/api/user/isDeleted").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
                         .requestMatchers("/api/archive/**").authenticated()
                         .requestMatchers("/error").permitAll() // 예외 처리 로직 없을 때 Tomcat이 포워딩 하는 경로 접근 허용하여 예외 메세지 잘 전달되도록 허용
