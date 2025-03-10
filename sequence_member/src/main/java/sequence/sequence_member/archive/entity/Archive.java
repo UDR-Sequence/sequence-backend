@@ -129,4 +129,9 @@ public class Archive extends BaseTimeEntity {
         setSkillsFromList(archiveUpdateDTO.getSkills());
         setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
     }
+
+    // 조회수 설정 메서드 추가
+    public void setView(Integer view) {
+        this.view = view;
+    }
 } 

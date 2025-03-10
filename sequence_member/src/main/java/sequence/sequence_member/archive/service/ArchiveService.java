@@ -30,6 +30,8 @@ import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import java.util.ArrayList;
 import sequence.sequence_member.archive.dto.ArchiveCommentOutputDTO;
 import sequence.sequence_member.archive.entity.ArchiveComment;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.repository.query.Param;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class ArchiveService {
     private final ArchiveMemberRepository archiveMemberRepository;
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveCommentRepository commentRepository;
+    private final ArchiveViewService archiveViewService;
 
     @Transactional
     public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto, String username) {
@@ -76,14 +79,17 @@ public class ArchiveService {
             archiveMemberRepository.save(newArchiveMember);
         }
 
-        return convertToDTO(savedArchive, username);
+        return convertToDTO(savedArchive, username, 0);
     }
 
-    public ArchiveOutputDTO getArchiveById(Long archiveId, String username) {
+    public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 아카이브가 없습니다."));
         
-        return convertToDTO(archive, username);
+        // Redis에서 조회수 처리
+        int viewCount = archiveViewService.getViewsFromRedis(request, archiveId);
+        
+        return convertToDTO(archive, username, viewCount);
     }
 
     @Transactional
@@ -181,7 +187,7 @@ public class ArchiveService {
     }
 
     // Archive 엔티티를 DTO로 변환
-    private ArchiveOutputDTO convertToDTO(Archive archive, String username) {
+    private ArchiveOutputDTO convertToDTO(Archive archive, String username, int viewCount) {
         List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
@@ -239,7 +245,7 @@ public class ArchiveService {
                 .link(archive.getLink())
                 .skills(archive.getSkillList())
                 .imgUrls(archive.getImageUrlsAsList())
-                .view(archive.getView())
+                .view(viewCount)
                 .isBookmarked(isBookmarked)
                 .bookmarkCount((int) bookmarkCount)
                 .members(memberDTOs)
@@ -252,7 +258,7 @@ public class ArchiveService {
     private ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
         return ArchivePageResponseDTO.builder()
                 .archives(archivePage.getContent().stream()
-                        .map(archive -> convertToDTO(archive, username))
+                        .map(archive -> convertToDTO(archive, username, archive.getView()))
                         .toList())
                 .totalPages(archivePage.getTotalPages())
                 .build();
