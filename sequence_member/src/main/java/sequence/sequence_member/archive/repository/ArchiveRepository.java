@@ -22,6 +22,8 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 제목으로만 검색
     Page<Archive> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 
-    
     // 전체 목록 조회는 JpaRepository의 findAll(Pageable) 사용
+
+    // 유저로 검색 (페이지네이션)
+    Page<Archive> findByArchiveMembers_Member_Id(Long memberId, Pageable pageable);
 } 
