@@ -22,6 +22,10 @@ jobs:
           MYSQL_PASSWORD: testpass
         ports:
           - 3306:3306
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
 
     env:
       DATABASE_URL: jdbc:mariadb://localhost:3306/testdb
@@ -36,7 +40,9 @@ jobs:
       MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
       MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
       MINIO_PW: ${{secrets.MINIO_PW}}
-    
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
