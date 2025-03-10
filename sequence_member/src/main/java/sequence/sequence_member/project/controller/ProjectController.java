@@ -18,6 +18,7 @@ import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 import sequence.sequence_member.project.entity.Project;
+import sequence.sequence_member.project.service.ProjectBookmarkService;
 import sequence.sequence_member.project.service.ProjectService;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectBookmarkService projectBookmarkService;
 
     @PostMapping()
     public ResponseEntity<ApiResponseData<String>> registerProject(@Valid @RequestBody ProjectInputDTO projectInputDTO, @AuthenticationPrincipal
@@ -53,6 +55,14 @@ public class ProjectController {
         projectService.deleteProject(projectId, customUserDetails);
         return ResponseEntity.ok().body(ApiResponseData.success(null, "프로젝트 삭제 성공"));
     }
+
+    //북마크 관련 엔드포인트
+    @PostMapping("/{projectId}/bookmark")
+    public ResponseEntity<ApiResponseData<String>> addProjectBookmark(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok().body(ApiResponseData.success(null,projectBookmarkService.addBookmark(customUserDetails, projectId)));
+    }
+
+
 
     @GetMapping("/filter/keyword")
     public ResponseEntity<ApiResponseData<List<ProjectFilterOutputDTO>>> filterKeyword(@RequestParam(name = "category", required = false) Category category,
