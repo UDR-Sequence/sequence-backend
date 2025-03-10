@@ -58,10 +58,10 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="school_name", nullable = false)
     private String schoolName;
 
-    @Column(name="profile_img")
+    @Column(name="profile_img", length = 400)
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
-    @Column
+    @Column(nullable = false, columnDefinition = "BOOLEAN")
     private boolean isDeleted;
 
     // AwardEntity와의 일대다 관계 설정

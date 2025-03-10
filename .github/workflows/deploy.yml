@@ -10,8 +10,6 @@ name: CI CD process
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -31,7 +29,11 @@ jobs:
           MYSQL_PASSWORD: testpass
         ports:
           - 3306:3306
-
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        
     env:
       DATABASE_URL: jdbc:mariadb://localhost:3306/testdb
       DATABASE_USERNAME: testuser
@@ -43,8 +45,12 @@ jobs:
       MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
       MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
       MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
-
-    
+      MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
+      MINIO_PW: ${{secrets.MINIO_PW}}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -149,6 +155,11 @@ jobs:
               -e MINIO_ENDPOINT=${{secrets.MINIO_ENDPOINT}} \
               -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
               -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
+              -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
+              -e MINIO_PW=${{secrets.MINIO_PW}} \
+              -e REDIS_HOST=${{secrets.REDIS_HOST}} \
+              -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
+              -e REDIS_PORT=${{secrets.REDIS_PORT}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
       

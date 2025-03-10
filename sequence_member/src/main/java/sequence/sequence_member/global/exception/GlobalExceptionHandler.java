@@ -87,6 +87,13 @@ public class GlobalExceptionHandler {
 * ---------------------------------------------------------------------------------------------------
 *
 */
+    //MultipartException 예외처리
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiResponseData<String>> handleCustomMultipartException(MultipartException ex){
+        Code code = Code.INVALID_FILE_EXTENSION;
+        return ResponseEntity.status(code.getStatus()).body(ApiResponseData.of(code.getCode(), code.getMessage()+": "+ ex.getMessage(),null));
+    }
+
     // UserNotFoundException 예외 처리
     @ExceptionHandler(UserNotFindException.class)
     public ResponseEntity<ApiResponseData<String>> handleCustomNotFoundException(UserNotFindException ex){

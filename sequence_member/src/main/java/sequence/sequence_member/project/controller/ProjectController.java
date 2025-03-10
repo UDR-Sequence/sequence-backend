@@ -1,5 +1,6 @@
 package sequence.sequence_member.project.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -15,8 +16,10 @@ import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.project.dto.ProjectFilterOutputDTO;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
+import sequence.sequence_member.project.dto.ProjectSummaryInfoDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 import sequence.sequence_member.project.entity.Project;
+import sequence.sequence_member.project.service.ProjectBookmarkService;
 import sequence.sequence_member.project.service.ProjectService;
 
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectBookmarkService projectBookmarkService;
 
     @PostMapping()
     public ResponseEntity<ApiResponseData<String>> registerProject(@Valid @RequestBody ProjectInputDTO projectInputDTO, @AuthenticationPrincipal
@@ -37,14 +41,14 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId) {
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId)));
+    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request) {
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request)));
     }
 
     @PutMapping("/{projectId}")
     public ResponseEntity<ApiResponseData<ProjectOutputDTO>> updateProject(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody
-                                                                 ProjectUpdateDTO projectUpdateDTO){
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 수정 성공",projectService.updateProject(projectId, customUserDetails, projectUpdateDTO)));
+                                                                 ProjectUpdateDTO projectUpdateDTO, HttpServletRequest request){
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 수정 성공",projectService.updateProject(projectId, customUserDetails, projectUpdateDTO,request)));
     }
 
     @DeleteMapping("/{projectId}")
@@ -52,6 +56,30 @@ public class ProjectController {
         projectService.deleteProject(projectId, customUserDetails);
         return ResponseEntity.ok().body(ApiResponseData.success(null, "프로젝트 삭제 성공"));
     }
+
+    /**
+     * 북마크 관련 엔드포인트
+     * */
+    // 북마크 등록
+    @PostMapping("/{projectId}/bookmark")
+    public ResponseEntity<ApiResponseData<String>> addProjectBookmark(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok().body(ApiResponseData.success(null,projectBookmarkService.addBookmark(customUserDetails, projectId)));
+    }
+    // 북마크 삭제
+    @DeleteMapping("/{projectId}/bookmark")
+    public ResponseEntity<ApiResponseData<String>> removeProjectBookmark(
+            @PathVariable("projectId") Long projectId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.success(null, projectBookmarkService.removeBookmark(customUserDetails, projectId)));
+    }
+    // 북마크한 프로젝트 목록 조회
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponseData<List<ProjectSummaryInfoDTO>>> getBookmarkedProjects(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.success(projectBookmarkService.getBookmarkedProjects(customUserDetails), "북마크한 프로젝트 목록을 조회하였습니다."));
+    }
+
+
 
     @GetMapping("/filter/keyword")
     public ResponseEntity<ApiResponseData<List<ProjectFilterOutputDTO>>> filterKeyword(@RequestParam(name = "category", required = false) Category category,
