@@ -52,6 +52,13 @@ public class ReportService {
             throw new CanNotFindResourceException("해당 유저가 존재하지 않습니다.");
         }
 
+        List<ReportResponseDTO> reportResponseDTOS = searchReport(reportRequestDTO.getNickname());
+        for (ReportResponseDTO reportResponseDTO : reportResponseDTOS) {
+            if(reportResponseDTO.getReporter().equals(reportRequestDTO.getReporter())){
+                throw new CanNotFindResourceException("이미 신고된 유저 입니다.");
+            }
+        }
+
         ReportEntity reportEntity = ReportEntity.builder()
                         .nickname(reportRequestDTO.getNickname())
                         .reporter(reportRequestDTO.getReporter())
