@@ -99,7 +99,7 @@ erdcloud : https://www.erdcloud.com/d/gYWeuxRwBSdStHtFD
 ## 5.2 Infra
 |  |  |  |
 |-----------------|-----------------|-----------------|
-| MySQL  |  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white" alt="MySQL" width="200">    |  |
+| MariaDB  |  <img src="https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=MariaDB&logoColor=white" alt="MariaDB" width="200">    |  |
 | phpmyadmin    |  <img src="https://img.shields.io/badge/phpmyadmin-6C78AF?style=for-the-badge&logo=phpmyadmin&logoColor=white" alt="phpmyadmin" width="200">    |   |
 | Nginx Proxy Manager |  <img src="https://img.shields.io/badge/Nginx Proxy Manager-F15833?style=for-the-badge&logo=NginxProxyManager&logoColor=white" alt="npm" width="200">    | latest |
 | Docker  |  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white" alt="docker" width="200">    |  |
