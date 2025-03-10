@@ -62,7 +62,7 @@ public class ReportService {
         ReportEntity reportEntity = ReportEntity.builder()
                         .nickname(reportRequestDTO.getNickname())
                         .reporter(reportRequestDTO.getReporter())
-                        .reportType(reportRequestDTO.getReportType())
+                        .reportType(ReportEntity.ReportType.fromDescription(reportRequestDTO.getReportType()))
                         .reportContent(reportRequestDTO.getReportContent())
                         .build();
 
@@ -76,7 +76,7 @@ public class ReportService {
 
         for(ReportEntity reportEntity : reportEntities){
             reportResponseDTOS.add(ReportResponseDTO.builder()
-                    .reportType(reportEntity.getReportType())
+                    .reportType(reportEntity.getReportType().getDescription())
                     .reportContent(reportEntity.getReportContent())
                     .reporter(reportEntity.getReporter())
                     .build());
