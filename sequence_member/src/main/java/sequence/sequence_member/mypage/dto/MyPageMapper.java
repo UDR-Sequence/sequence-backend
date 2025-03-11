@@ -1,8 +1,11 @@
 package sequence.sequence_member.mypage.dto;
 
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.entity.Archive;
+import sequence.sequence_member.archive.service.ArchiveService;
 import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.entity.MemberEntity;
 
@@ -11,6 +14,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class MyPageMapper {
+
+    private final ArchiveService archiveService;
+
+    public MyPageMapper(ArchiveService archiveService) {
+        this.archiveService = archiveService;
+    }
 
     /**
      * 멤버와 아카이브 페이지네이션 객체를 ResponseDTO 매핑하는 함수입니다.
@@ -75,34 +84,8 @@ public class MyPageMapper {
         dto.setExperiences(experiences);
 
         // ArchiveDTO 리스트 생성
-        List<MyPageResponseDTO.ArchiveDTO> archiveDTOList = archivePage.getContent().stream()
-                .map(archive -> new MyPageResponseDTO.ArchiveDTO(
-                        archive.getId(),
-                        archive.getTitle(),
-                        archive.getDescription(),
-                        archive.getDuration(),
-                        String.valueOf(archive.getCategory()),
-                        String.valueOf(archive.getPeriod()),
-                        String.valueOf(archive.getStatus()),
-                        archive.getThumbnail(),
-                        archive.getLink(),
-                        archive.getSkillList(),
-                        archive.getImageUrlsAsList(),
-                        archive.getView(),
-                        archive.getBookmark(),
-                        archive.getCreatedDateTime(),
-                        archive.getModifiedDateTime()
-                ))
-                .collect(Collectors.toList());
-
-        // PagedArchiveDTO 생성
-        dto.setPagedArchive(new MyPageResponseDTO.PagedArchiveDTO(
-                archiveDTOList,
-                archivePage.getNumber(),
-                archivePage.getTotalPages(),
-                archivePage.getTotalElements(),
-                archivePage.getSize()
-        ));
+        ArchivePageResponseDTO archivePageResponseDTO = archiveService.createArchivePageResponse(archivePage, member.getUsername());
+        dto.setArchivePageResponseDTO(archivePageResponseDTO);
 
         return dto;
     }
