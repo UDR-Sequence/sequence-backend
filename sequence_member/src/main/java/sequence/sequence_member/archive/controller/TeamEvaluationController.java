@@ -29,7 +29,7 @@ public class TeamEvaluationController {
     private final TeamEvaluationService teamEvaluationService;
 
     @PostMapping("/{archiveId}/evaluations")
-    public ResponseEntity<?> createTeamEvaluation(
+    public ResponseEntity<ApiResponseData<Void>> createTeamEvaluation(
             @PathVariable Long archiveId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody TeamEvaluationRequestDto requestDto) {
@@ -41,7 +41,7 @@ public class TeamEvaluationController {
     }
 
     @GetMapping("/{archiveId}/evaluations")
-    public ResponseEntity<?> getTeamEvaluations(
+    public ResponseEntity<ApiResponseData<List<TeamEvaluationResponseDto>>> getTeamEvaluations(
             @PathVariable Long archiveId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
     
@@ -49,10 +49,7 @@ public class TeamEvaluationController {
         return ResponseEntity.ok(ApiResponseData.success(evaluations));
     }
 
-    @GetMapping(
-        value = "/{archiveId}/evaluations/status",
-        produces = "application/json"
-    )
+    @GetMapping("/{archiveId}/evaluations/status")
     public ResponseEntity<ApiResponseData<Map<String, Status>>> getEvaluationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long archiveId) {
