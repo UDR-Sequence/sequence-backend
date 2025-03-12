@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
@@ -12,10 +13,12 @@ import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.archive.dto.ArchiveMemberDTO;
+import sequence.sequence_member.archive.dto.UserArchiveDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.archive.entity.ArchiveMember;
@@ -118,6 +121,20 @@ public class ArchiveService {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
         archiveRepository.delete(archive);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails){
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        List<Archive> latestArchives = archiveRepository.findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesccus((member.getId()));
+        List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+        for(Archive archive : latestArchives){
+            userArchiveDTOList.add(new UserArchiveDTO(archive));
+        }
+        return userArchiveDTOList;
     }
 
     public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
