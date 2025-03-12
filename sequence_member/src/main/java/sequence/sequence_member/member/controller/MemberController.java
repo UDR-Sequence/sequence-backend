@@ -30,7 +30,6 @@ import java.util.Map;
 public class MemberController {
 
     private final MemberService memberService;
-    private final InviteAccessService inviteAccessService;
     private final MemberSearchService memberSearchService;
 
     @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -89,31 +88,7 @@ public class MemberController {
         return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
     }
 
-    //유저가 초대받은 프로젝트 목록을 조회하는 컨트롤러
-    @GetMapping("/invited-projects")
-    public ResponseEntity<ApiResponseData<List<InviteProjectOutputDTO>>> getInvitedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok(ApiResponseData.success(inviteAccessService.getInvitedProjects(customUserDetails)));
-    }
 
-    //유저가 초대받은 프로젝트에 승인하는 컨트롤러
-    @PostMapping("/invited-projects/{projectInvitedMemberId}")
-    public ResponseEntity<ApiResponseData<String>> acceptInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
-        inviteAccessService.acceptInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success(null));
-    }
-
-    //유저가 초대받은 프로젝트에 거절하는 컨트롤러
-    @DeleteMapping("/invited-projects/{projectInvitedMemberId}")
-    public ResponseEntity<ApiResponseData<String>> rejectInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
-        inviteAccessService.rejectInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success(null));
-    }
-
-    //유저가 승인한(참여하는) 프로젝트 목록을 조회하는 컨트롤러
-    @GetMapping("/accepted-projects")
-    public ResponseEntity<ApiResponseData<List<AcceptProjectOutputDTO>>> getAcceptedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok(ApiResponseData.success(inviteAccessService.getAcceptedProjects(customUserDetails)));
-    }
 
     //닉네임으로 유저들 검색하는 컨트롤러
     @GetMapping("/search")
