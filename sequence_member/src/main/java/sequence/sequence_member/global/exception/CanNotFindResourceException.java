@@ -1,7 +1,9 @@
 package sequence.sequence_member.global.exception;
 
-public class CanNotFindResourceException extends RuntimeException {
+import sequence.sequence_member.global.response.Code;
+
+public class CanNotFindResourceException extends BaseException {
     public CanNotFindResourceException(String message) {
-        super(message);
+        super(Code.CAN_NOT_FIND_RESOURCE,message);
     }
 }

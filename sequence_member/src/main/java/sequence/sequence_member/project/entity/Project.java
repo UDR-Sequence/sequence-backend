@@ -32,7 +32,7 @@ import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -82,6 +82,9 @@ public class Project extends BaseTimeEntity {
     @Column
     private String link;
 
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private Integer views;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
     private MemberEntity writer;
@@ -126,5 +129,9 @@ public class Project extends BaseTimeEntity {
                 .stream() // Stream<ProjectMemberEntity>
                 .map(projectMemberentity-> projectMemberentity.getMember().getNickname()) // 각 객체의 username 필드 추출
                 .collect(Collectors.toList()); // List<String>으로 변환
+    }
+
+    public void setViews(int views){
+        this.views=views;
     }
 }

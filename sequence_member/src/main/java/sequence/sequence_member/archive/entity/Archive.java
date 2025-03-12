@@ -23,10 +23,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.enums.enums.Category;
-import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -47,15 +48,14 @@ public class Archive extends BaseTimeEntity {
     private String description;    
 
     @Column(nullable = false)
-    private String duration;       
+    private LocalDate startDate;  // 시작일
+
+    @Column(nullable = false)
+    private LocalDate endDate;    // 종료일
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;     // Category enum 사용
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Period period;         // Period enum 사용
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -78,10 +78,6 @@ public class Archive extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
-
-    @Builder.Default
-    @Column(name = "bookmark", nullable = false, columnDefinition = "int default 0")
-    private Integer bookmark = 0;   // 북마크수
 
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {
@@ -115,14 +111,19 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 
-    // 아카이브 업데이트 메서드 추가
+    // duration String 대신 날짜 기간을 반환하는 메서드
+    public String getDurationAsString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM");
+        return startDate.format(formatter) + " ~ " + endDate.format(formatter);
+    }
+
+    // 아카이브 업데이트 메서드 수정
     public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
         this.title = archiveUpdateDTO.getTitle();
         this.description = archiveUpdateDTO.getDescription();
-        this.duration = archiveUpdateDTO.getDuration();
+        this.startDate = archiveUpdateDTO.getStartDate();
+        this.endDate = archiveUpdateDTO.getEndDate();
         this.category = archiveUpdateDTO.getCategory();
-        this.period = archiveUpdateDTO.getPeriod();
-        this.status = archiveUpdateDTO.getStatus();
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
