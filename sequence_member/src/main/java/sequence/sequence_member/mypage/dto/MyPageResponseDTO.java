@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
+import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.global.enums.enums.AwardType;
 import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
@@ -69,7 +71,7 @@ public class MyPageResponseDTO {
     private List<CareerDTO> careers;
     private List<ExperienceDTO> experiences;
 
-    private PagedArchiveDTO pagedArchive;
+    private ArchivePageResponseDTO archivePageResponseDTO;
 
     public MyPageResponseDTO(
             String username, String name, Date birth, Gender gender, String address,
@@ -140,62 +142,6 @@ public class MyPageResponseDTO {
             this.startDate = startDate;
             this.endDate = endDate;
             this.experienceDescription = experienceDescription;
-        }
-    }
-
-    @Data
-    public static class ArchiveDTO {
-        private final Long id;
-        private final String title;
-        private final String description;
-        private final String duration;
-        private final String category;
-        private final String period;
-        private final String status;
-        private final String thumbnail;
-        private final String link;
-        private final List<String> skills;
-        private final List<String> imageUrls;
-        private final Integer view;
-        private final Integer bookmark;
-        private final LocalDateTime createdDateTime;
-        private final LocalDateTime modifiedDateTime;
-
-        public ArchiveDTO(Long id, String title, String description, String duration, String category, String period,
-                          String status, String thumbnail, String link, List<String> skills, List<String> imageUrls,
-                          Integer view, Integer bookmark, LocalDateTime createdDateTime, LocalDateTime modifiedDateTime) {
-            this.id = id;
-            this.title = title;
-            this.description = description;
-            this.duration = duration;
-            this.category = category;
-            this.period = period;
-            this.status = status;
-            this.thumbnail = thumbnail;
-            this.link = link;
-            this.skills = skills;
-            this.imageUrls = imageUrls;
-            this.view = view;
-            this.bookmark = bookmark;
-            this.createdDateTime = createdDateTime;
-            this.modifiedDateTime = modifiedDateTime;
-        }
-    }
-
-    @Data
-    public static class PagedArchiveDTO {
-        private final List<ArchiveDTO> archives;
-        private final int currentPage;
-        private final int totalPages;
-        private final long totalElements;
-        private final int pageSize;
-
-        public PagedArchiveDTO(List<ArchiveDTO> archiveDTOList, int number, int totalPages, long totalElements, int size) {
-            this.archives = archiveDTOList;
-            this.currentPage = number;
-            this.totalPages = totalPages;
-            this.totalElements = totalElements;
-            this.pageSize = size;
         }
     }
 }

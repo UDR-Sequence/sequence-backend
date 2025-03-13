@@ -254,7 +254,7 @@ public class ArchiveService {
                 .build();
     }
 
-    private ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
+    public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
         return ArchivePageResponseDTO.builder()
                 .archives(archivePage.getContent().stream()
                         .map(archive -> convertToDTO(archive, username, archive.getView()))
