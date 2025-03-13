@@ -46,7 +46,7 @@ public class ArchiveService {
     private final ArchiveViewService archiveViewService;
 
     @Transactional
-    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto, String username) {
+    public Long createArchive(ArchiveRegisterInputDTO dto, String username) {
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
@@ -73,13 +73,12 @@ public class ArchiveService {
             ArchiveMember newArchiveMember = ArchiveMember.builder()
                 .archive(savedArchive)
                 .member(archiveMember)
-                .role(memberDto.getRole())
                 .build();
 
             archiveMemberRepository.save(newArchiveMember);
         }
 
-        return convertToDTO(savedArchive, username, 0);
+        return savedArchive.getId();  // 아카이브 ID 반환
     }
 
     public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {

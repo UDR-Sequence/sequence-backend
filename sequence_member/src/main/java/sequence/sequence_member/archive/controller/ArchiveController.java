@@ -16,6 +16,8 @@ import sequence.sequence_member.global.enums.enums.SortType;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,11 +28,18 @@ public class ArchiveController {
 
     // 아카이브 등록
     @PostMapping
-    public ResponseEntity<ApiResponseData<String>> createArchive(
+    public ResponseEntity<ApiResponseData<Long>> createArchive(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ArchiveRegisterInputDTO archiveRegisterInputDTO) {
-        archiveService.createArchive(archiveRegisterInputDTO, userDetails.getUsername());
-        return ResponseEntity.ok(ApiResponseData.success(null, "아카이브 등록 성공"));
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        Long archiveId = archiveService.createArchive(archiveRegisterInputDTO, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponseData.of(
+            Code.SUCCESS.getCode(),
+            "아카이브 등록 성공",
+            archiveId
+        ));
     }
 
     // 아카이브 등록 후 결과 조회
