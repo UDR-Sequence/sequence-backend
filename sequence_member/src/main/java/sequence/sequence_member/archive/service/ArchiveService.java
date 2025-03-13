@@ -129,7 +129,7 @@ public class ArchiveService {
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
-        List<Archive> latestArchives = archiveRepository.findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesccus((member.getId()));
+        List<Archive> latestArchives = archiveRepository.findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
         List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
         for(Archive archive : latestArchives){
             userArchiveDTOList.add(new UserArchiveDTO(archive));

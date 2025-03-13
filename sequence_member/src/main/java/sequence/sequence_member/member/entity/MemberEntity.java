@@ -78,7 +78,6 @@ public class MemberEntity extends BaseTimeEntity {
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "education_id")
-
     private EducationEntity education;
 
     public enum Gender{

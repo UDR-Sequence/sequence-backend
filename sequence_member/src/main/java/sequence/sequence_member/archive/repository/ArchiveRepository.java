@@ -29,7 +29,5 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     Page<Archive> findByArchiveMembers_Member_Id(Long memberId, Pageable pageable);
 
     // 유저가 참여하고 있는 아카이브 조회 (최신순 5개)
-    List<Archive> findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc(Long memberId);
-
-    List<Archive> findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesccus(Long archiveMembersMemberId);
+    List<Archive> findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc(Long archiveMembersMemberId);
 }
