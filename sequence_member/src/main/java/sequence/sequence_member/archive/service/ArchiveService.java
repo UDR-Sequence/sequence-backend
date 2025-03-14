@@ -65,7 +65,7 @@ public class ArchiveService {
         archive.setSkillsFromList(dto.getSkills());
         Archive savedArchive = archiveRepository.save(archive);
 
-        // 아카이브 멤버 등록
+        // 아카이브 멤버 등록 (roles 포함)
         for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
             MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
@@ -74,7 +74,8 @@ public class ArchiveService {
                 .archive(savedArchive)
                 .member(archiveMember)
                 .build();
-
+            
+            newArchiveMember.setRolesFromList(memberDto.getRoles());
             archiveMemberRepository.save(newArchiveMember);
         }
 
@@ -195,7 +196,7 @@ public class ArchiveService {
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
-                .role(archiveMember.getRole())
+                .role(archiveMember.getRoles())
                 .build())
             .collect(Collectors.toList());
 
@@ -255,6 +256,7 @@ public class ArchiveService {
                 .createdDateTime(archive.getCreatedDateTime())
                 .modifiedDateTime(archive.getModifiedDateTime())
                 .comments(commentDTOs)
+                .roles(archive.getRoleList())
                 .build();
     }
 

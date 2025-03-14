@@ -2,7 +2,6 @@ package sequence.sequence_member.archive.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,9 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +68,9 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "img_url")
     private String imgUrl;
 
+    @Column(name = "roles")
+    private String roles;  // "백엔드,프론트엔드,디자이너" 형태로 저장
+
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -117,6 +117,23 @@ public class Archive extends BaseTimeEntity {
         return startDate.format(formatter) + " ~ " + endDate.format(formatter);
     }
 
+    // roles를 List<String>으로 변환하는 메서드
+    public List<String> getRoleList() {
+        if (roles == null || roles.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(roles.split(","));
+    }
+
+    // List<String>을 문자열로 변환하는 메서드
+    public void setRolesFromList(List<String> roleList) {
+        if (roleList == null || roleList.isEmpty()) {
+            this.roles = "";
+            return;
+        }
+        this.roles = String.join(",", roleList);
+    }
+
     // 아카이브 업데이트 메서드 수정
     public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
         this.title = archiveUpdateDTO.getTitle();
@@ -128,6 +145,7 @@ public class Archive extends BaseTimeEntity {
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
         setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        setRolesFromList(archiveUpdateDTO.getRoles());
     }
 
     // 조회수 설정 메서드 추가
