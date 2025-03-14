@@ -12,6 +12,8 @@ import sequence.sequence_member.archive.service.ArchiveCommentService;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
@@ -68,18 +70,31 @@ public class ArchiveCommentController {
             @PathVariable Long archiveId,
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequestDTO requestDto) {
-        
-        commentService.deleteComment(
-            archiveId, 
-            commentId, 
-            requestDto.getWriter()
-        );
+        try {
+            commentService.deleteComment(
+                archiveId, 
+                commentId, 
+                requestDto.getWriter()
+            );
 
-        return ResponseEntity.ok(ApiResponseData.of(
-            Code.SUCCESS.getCode(),
-            "댓글이 삭제되었습니다.",
-            null
-        ));
+            return ResponseEntity.ok(ApiResponseData.of(
+                Code.SUCCESS.getCode(),
+                "댓글이 삭제되었습니다.",
+                null
+            ));
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode() == HttpStatus.BAD_REQUEST && 
+                e.getReason().equals("이미 삭제된 댓글입니다.")) {
+                return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponseData.of(
+                        Code.BAD_REQUEST.getCode(),
+                        "이미 삭제된 댓글입니다.",
+                        null
+                    ));
+            }
+            throw e;
+        }
     }
 
     // 댓글 목록 조회

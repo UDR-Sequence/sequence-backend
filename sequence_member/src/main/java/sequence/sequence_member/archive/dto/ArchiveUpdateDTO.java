@@ -32,6 +32,10 @@ public class ArchiveUpdateDTO {
     private String thumbnail;
     private String link;
 
+    @NotEmpty(message = "역할을 선택해주세요.")
+    @Size(max = 20, message = "역할은 20개 이하로 선택해주세요.")
+    private List<String> roles;
+
     @NotEmpty(message = "관련 기술을 선택해주세요.")
     @Size(max = 20, message = "관련 기술은 20개 이하로 선택해주세요.")
     private List<String> skills;
@@ -48,4 +52,11 @@ public class ArchiveUpdateDTO {
         private String username;
         private String role;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ArchiveRoleDTO {
+        private String role;
+    }   
 }
