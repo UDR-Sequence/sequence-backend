@@ -126,9 +126,11 @@ public class ArchiveService {
     }
 
     public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
-        // 사용자 검증
-        memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        // username이 null이 아닐 때만 사용자 검증
+        if (username != null) {
+            memberRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        }
 
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
@@ -147,9 +149,11 @@ public class ArchiveService {
             SortType sortType, 
             String username) {
         
-        // 사용자 검증
-        memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        // username이 null이 아닐 때만 사용자 검증
+        if (username != null) {
+            memberRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        }
 
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage;

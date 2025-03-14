@@ -48,10 +48,13 @@ public class ArchiveController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("archiveId") Long archiveId,
             HttpServletRequest request) {
+        
+        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        
         return ResponseEntity.ok().body(ApiResponseData.of(
             Code.SUCCESS.getCode(), 
             "아카이브 상세 조회 성공", 
-            archiveService.getArchiveById(archiveId, userDetails.getUsername(), request)
+            archiveService.getArchiveById(archiveId, username, request)
         ));
     }
 
@@ -81,14 +84,16 @@ public class ArchiveController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "LATEST") SortType sortType) {
         
+        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        
         return ResponseEntity.ok().body(ApiResponseData.of(
                 Code.SUCCESS.getCode(),
                 "아카이브 프로젝트 리스트 조회에 성공했습니다.",
-                archiveService.getAllArchives(page, sortType, userDetails.getUsername())
+                archiveService.getAllArchives(page, sortType, username)
         ));
     }
 
-    // 검색 (카테고리 또는 키워드)
+    // 검색
     @GetMapping("/projects/search")
     public ResponseEntity<ApiResponseData<ArchivePageResponseDTO>> searchArchives(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -97,10 +102,12 @@ public class ArchiveController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "LATEST") SortType sortType) {
         
+        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        
         return ResponseEntity.ok().body(ApiResponseData.of(
                 Code.SUCCESS.getCode(),
                 "검색 결과를 성공적으로 조회했습니다.",
-                archiveService.searchArchives(category, keyword, page, sortType, userDetails.getUsername())
+                archiveService.searchArchives(category, keyword, page, sortType, username)
         ));
     }
 } 

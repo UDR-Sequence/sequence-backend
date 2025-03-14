@@ -39,6 +39,12 @@ public class ArchiveMember extends BaseTimeEntity {
     @JoinColumn(name = "archive_id")
     private Archive archive;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String role;    // 아카이브에서의 역할
+
+    @Builder
+    public ArchiveMember(Archive archive, MemberEntity member) {
+        this.archive = archive;
+        this.member = member;
+    }
 } 
