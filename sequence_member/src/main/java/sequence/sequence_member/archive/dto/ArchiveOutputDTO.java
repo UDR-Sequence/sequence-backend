@@ -33,6 +33,7 @@ public class ArchiveOutputDTO {
     private List<ArchiveCommentOutputDTO> comments;
     private LocalDateTime createdDateTime;
     private LocalDateTime modifiedDateTime;
+    private List<String> roles;
 
     @Getter
     @Builder
