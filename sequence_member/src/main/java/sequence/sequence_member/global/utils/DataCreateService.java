@@ -29,7 +29,7 @@ public class DataCreateService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> generatUserBatch(int batchNumber, int batchSize) {
+    public CompletableFuture<Void> generateUserBatch(int batchNumber, int batchSize) {
         List<MemberEntity> members = new ArrayList<>();
         long startTime = System.currentTimeMillis();  // 시작 시간 측정
         log.info("데이터 삽입 시작 (멀티스레드)");

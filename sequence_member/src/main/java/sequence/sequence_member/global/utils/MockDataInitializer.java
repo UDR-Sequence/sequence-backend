@@ -31,7 +31,7 @@ public class MockDataInitializer implements ApplicationRunner {
         for (int batchNumber = 0; batchNumber < TOTAL_USERS / BATCH_SIZE; batchNumber++) {
             int finalBatchNumber = batchNumber;
             CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                    dataCreateService.generateBatch(finalBatchNumber, BATCH_SIZE), executorService);
+                    dataCreateService.generateUserBatch(finalBatchNumber, BATCH_SIZE), executorService);
             futures.add(future);
         }
 
