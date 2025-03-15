@@ -9,6 +9,6 @@ import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 @Getter
 @AllArgsConstructor
 public class ProjectArchiveAlarmDTO {
-    List<InviteProjectOutputDTO> inviteProjectOutputDTOList;
-    List<UserArchiveDTO> userArchiveDTOList;
+    List<InviteProjectOutputDTO> inviteProjectOutputList;
+    List<UserArchiveDTO> userArchiveList;
 }

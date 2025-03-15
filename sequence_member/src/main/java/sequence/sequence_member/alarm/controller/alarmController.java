@@ -2,7 +2,6 @@ package sequence.sequence_member.alarm.controller;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,7 +28,7 @@ public class alarmController {
     private final ArchiveService archiveService;
 
     //유저가 초대받은 프로젝트 목록과 최신 아카이빙 프로젝트 최대 5개 조회
-    @GetMapping("/project-archive-")
+    @GetMapping("/project-archive")
     public ResponseEntity<ApiResponseData<ProjectArchiveAlarmDTO>> getProjectArchiveAlarm(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         List<InviteProjectOutputDTO> invitedProjects = inviteAccessService.getInvitedProjects(customUserDetails);
         List<UserArchiveDTO> userArchiveList = archiveService.getUserArchiveList(customUserDetails);
