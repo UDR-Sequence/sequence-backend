@@ -82,6 +82,11 @@ public class ArchiveCommentService {
         ArchiveComment comment = commentRepository.findByIdAndArchiveAndWriter(commentId, archive, writer)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
 
+        // 이미 삭제된 댓글인지 확인
+        if (comment.isDeleted()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 삭제된 댓글입니다.");
+        }
+
         comment.delete();
     }
 

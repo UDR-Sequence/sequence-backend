@@ -19,6 +19,10 @@ import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,6 +43,27 @@ public class ArchiveMember extends BaseTimeEntity {
     @JoinColumn(name = "archive_id")
     private Archive archive;
 
-    @Column(nullable = false)
-    private String role;    // 아카이브에서의 역할
+    @Column(name = "roles")
+    private String roles;  // "백엔드,프론트엔드" 형태로 저장
+
+    @Builder
+    public ArchiveMember(Archive archive, MemberEntity member) {
+        this.archive = archive;
+        this.member = member;
+    }
+
+    public List<String> getRoleList() {
+        if (roles == null || roles.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(roles.split(","));
+    }
+
+    public void setRolesFromList(List<String> roleList) {
+        if (roleList == null || roleList.isEmpty()) {
+            this.roles = "";
+            return;
+        }
+        this.roles = String.join(",", roleList);
+    }
 } 
