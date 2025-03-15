@@ -29,15 +29,16 @@ public class DataCreateService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> generateBatch(int batchNumber, int batchSize) {
+    public CompletableFuture<Void> generatUserBatch(int batchNumber, int batchSize) {
         List<MemberEntity> members = new ArrayList<>();
         long startTime = System.currentTimeMillis();  // 시작 시간 측정
         log.info("데이터 삽입 시작 (멀티스레드)");
+        String password = passwordEncoder.encode("password");
         try {
             for (int i = 0; i < batchSize; i++) {
                 MemberEntity member = new MemberEntity();
                 member.setUsername(batchNumber + "_" + i + "_username");
-                member.setPassword(passwordEncoder.encode("password"));
+                member.setPassword(password);
                 member.setName(batchNumber + "_" + i + "_" + faker.name().name());
                 member.setBirth(Date.from(faker.date().birthday(18, 50).toInstant().atZone(ZoneId.systemDefault()).toInstant()));
                 member.setGender(faker.bool().bool() ? MemberEntity.Gender.M : MemberEntity.Gender.F);
