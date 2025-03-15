@@ -131,6 +131,18 @@ public class Project extends BaseTimeEntity {
                 .collect(Collectors.toList()); // List<String>으로 변환
     }
 
+    public void setMembers(List<ProjectMember> projectMembers){
+        this.members = projectMembers;
+    }
+
+    public void setInvitedMembers(List<ProjectInvitedMember> projectInvitedMembers){
+        this.invitedMembers = projectInvitedMembers;
+    }
+
+    public void setComments(List<Comment> comments){
+        this.comments = comments;
+    }
+
     public void setViews(int views){
         this.views=views;
     }
