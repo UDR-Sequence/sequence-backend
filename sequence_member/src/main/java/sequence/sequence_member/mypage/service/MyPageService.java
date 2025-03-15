@@ -64,7 +64,6 @@ public class MyPageService {
         dto.setAddress(member.getAddress());
         dto.setPhone(member.getPhone());
         dto.setIntroduction(member.getIntroduction());
-        dto.setPortfolio(DataConvertor.stringToList(member.getPortfolio()));
         dto.setNickname(member.getNickname());
 
         dto.setAwards(member.getAwards().stream()
@@ -141,7 +140,6 @@ public class MyPageService {
         member.setAddress(myPageDTO.getAddress());
         member.setPhone(myPageDTO.getPhone());
         member.setIntroduction(myPageDTO.getIntroduction());
-        member.setPortfolio(DataConvertor.listToString(myPageDTO.getPortfolio()));
         member.setNickname(myPageDTO.getNickname());
 
         // 수상 내역 업데이트
