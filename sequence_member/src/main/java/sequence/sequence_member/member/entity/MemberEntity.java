@@ -49,20 +49,22 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="introduction", nullable = false)
     private String introduction;
 
-    @Column(name="portfolio", length = 150)
-    private String portfolio; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
-
     @Column(name="nickname", length = 45, unique = true)
     private String nickname;
 
     @Column(name="school_name", nullable = false)
     private String schoolName;
 
-    @Column(name="profile_img", length = 400)
+    @Column(name="profile_img", length = 500)
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
     @Column(nullable = false, columnDefinition = "BOOLEAN")
     private boolean isDeleted;
+
+
+    // portfolio와의 일대다 관계 설정
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PortfolioEntity> portfolios=new ArrayList<>();
 
     // AwardEntity와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -97,7 +99,6 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setNickname(memberDTO.getNickname());
         memberEntity.setSchoolName(memberDTO.getSchoolName());
         memberEntity.setIntroduction(memberDTO.getIntroduction());
-        memberEntity.setPortfolio(DataConvertor.listToString(memberDTO.getPortfolio()));
         return memberEntity;
     }
 }

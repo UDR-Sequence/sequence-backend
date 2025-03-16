@@ -41,3 +41,4 @@ minio:
   accessKey: ${MINIO_ACCESS_KEY}
   secretKey: ${MINIO_SECRET_KEY}
   bucketName: ${MINIO_BUCKET_NAME}
+  portfolio_bucketName : ${MINIO_PORTFOLIO_BUCKET_NAME}
