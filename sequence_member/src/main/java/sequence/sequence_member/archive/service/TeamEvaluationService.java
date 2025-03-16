@@ -182,7 +182,6 @@ public class TeamEvaluationService {
             .filter(archiveMember -> !archiveMember.getId().equals(evaluator.getId()))
             .map(evaluated -> TeamEvaluationResponseDto.EvaluatedInfo.builder()
                 .username(evaluated.getMember().getUsername())
-                .role(evaluated.getRole())
                 .profileImg(evaluated.getMember().getProfileImg())
                 .build())
             .collect(Collectors.toList());
@@ -190,7 +189,6 @@ public class TeamEvaluationService {
         return List.of(TeamEvaluationResponseDto.builder()
             .evaluator(TeamEvaluationResponseDto.EvaluatorInfo.builder()
                 .username(evaluator.getMember().getUsername())
-                .role(evaluator.getRole())
                 .profileImg(evaluator.getMember().getProfileImg())
                 .build())
             .evaluated(evaluatedList)

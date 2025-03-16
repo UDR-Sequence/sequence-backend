@@ -25,7 +25,6 @@ public class TeamEvaluationResponseDto {
     @AllArgsConstructor
     public static class EvaluatorInfo {
         private String username;
-        private String role;
         private String profileImg;
     }
 
@@ -35,7 +34,6 @@ public class TeamEvaluationResponseDto {
     @AllArgsConstructor
     public static class EvaluatedInfo {
         private String username;
-        private String role;
         private String profileImg;
     }
 
@@ -43,12 +41,10 @@ public class TeamEvaluationResponseDto {
         return TeamEvaluationResponseDto.builder()
                 .evaluator(EvaluatorInfo.builder()
                     .username(evaluation.getEvaluator().getMember().getUsername())
-                    .role(evaluation.getEvaluator().getRole())
                     .profileImg(evaluation.getEvaluator().getMember().getProfileImg())
                     .build())
                 .evaluated((List<EvaluatedInfo>) EvaluatedInfo.builder()
                     .username(evaluation.getEvaluated().getMember().getUsername())
-                    .role(evaluation.getEvaluated().getRole())
                     .profileImg(evaluation.getEvaluated().getMember().getProfileImg())
                     .build())
                 .build();

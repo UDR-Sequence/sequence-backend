@@ -2,7 +2,6 @@ package sequence.sequence_member.archive.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,9 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,10 +20,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.enums.enums.Category;
-import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -47,15 +45,14 @@ public class Archive extends BaseTimeEntity {
     private String description;    
 
     @Column(nullable = false)
-    private String duration;       
+    private LocalDate startDate;  // 시작일
+
+    @Column(nullable = false)
+    private LocalDate endDate;    // 종료일
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;     // Category enum 사용
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Period period;         // Period enum 사용
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -71,6 +68,9 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "img_url")
     private String imgUrl;
 
+    @Column(name = "roles")
+    private String roles;  // "백엔드,프론트엔드,디자이너" 형태로 저장
+
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -78,10 +78,6 @@ public class Archive extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
-
-    @Builder.Default
-    @Column(name = "bookmark", nullable = false, columnDefinition = "int default 0")
-    private Integer bookmark = 0;   // 북마크수
 
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {
@@ -115,17 +111,45 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 
-    // 아카이브 업데이트 메서드 추가
+    // duration String 대신 날짜 기간을 반환하는 메서드
+    public String getDurationAsString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM");
+        return startDate.format(formatter) + " ~ " + endDate.format(formatter);
+    }
+
+    // roles를 List<String>으로 변환하는 메서드
+    public List<String> getRoleList() {
+        if (roles == null || roles.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(roles.split(","));
+    }
+
+    // List<String>을 문자열로 변환하는 메서드
+    public void setRolesFromList(List<String> roleList) {
+        if (roleList == null || roleList.isEmpty()) {
+            this.roles = "";
+            return;
+        }
+        this.roles = String.join(",", roleList);
+    }
+
+    // 아카이브 업데이트 메서드 수정
     public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
         this.title = archiveUpdateDTO.getTitle();
         this.description = archiveUpdateDTO.getDescription();
-        this.duration = archiveUpdateDTO.getDuration();
+        this.startDate = archiveUpdateDTO.getStartDate();
+        this.endDate = archiveUpdateDTO.getEndDate();
         this.category = archiveUpdateDTO.getCategory();
-        this.period = archiveUpdateDTO.getPeriod();
-        this.status = archiveUpdateDTO.getStatus();
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
         setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        setRolesFromList(archiveUpdateDTO.getRoles());
+    }
+
+    // 조회수 설정 메서드 추가
+    public void setView(Integer view) {
+        this.view = view;
     }
 } 
