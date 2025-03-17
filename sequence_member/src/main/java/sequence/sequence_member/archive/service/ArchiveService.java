@@ -63,6 +63,12 @@ public class ArchiveService {
                 .build();
 
         archive.setSkillsFromList(dto.getSkills());
+        
+        // 이미지 URL 설정
+        if (dto.getImgUrls() != null && !dto.getImgUrls().isEmpty()) {
+            archive.setImageUrlsFromList(dto.getImgUrls());
+        }
+        
         Archive savedArchive = archiveRepository.save(archive);
 
         // 아카이브 멤버 등록 (프로필 이미지 포함)
