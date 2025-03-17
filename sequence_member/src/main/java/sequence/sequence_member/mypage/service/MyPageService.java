@@ -60,7 +60,7 @@ public class MyPageService {
     public void updateMyProfile(MyPageRequestDTO myPageDTO, String username) {
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
-
+      
         if (!Objects.equals(myPageDTO.getUsername(), username)) {
             throw new IllegalArgumentException("아이디는 변경할 수 없습니다.");
         }

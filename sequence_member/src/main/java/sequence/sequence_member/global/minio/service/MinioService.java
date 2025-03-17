@@ -36,7 +36,7 @@ public class MinioService {
     @MethodDescription(description = "minio 서버에 파일 업로드")
     public String uploadFileMinio(String bucketName, String fileName, MultipartFile file) throws Exception {
 
-        // 업로드 진행 전 파일 확장자 확인
+        // 업로드 진행 전 파일 확장자 한번 더 확인
         uploadFileCheck(file);
 
         //해당 버킷이 존재하지 않는 경우 버킷을 새로 생성
