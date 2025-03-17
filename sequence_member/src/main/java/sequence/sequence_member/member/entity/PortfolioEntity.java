@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Setter
+@Getter @Setter
 @Table(name = "portfolio")
 public class PortfolioEntity {
 
