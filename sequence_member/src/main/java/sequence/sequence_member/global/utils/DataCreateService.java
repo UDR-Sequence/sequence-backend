@@ -50,7 +50,7 @@ public class DataCreateService {
                 member.setPhone(faker.numerify("010-####-####"));  // 한국식 번호
                 member.setEmail(batchNumber + "_" + i + "_" + faker.internet().emailAddress());
                 member.setIntroduction(faker.lorem().sentence());
-                member.setPortfolio(faker.internet().url());
+//                member.setPortfolios(faker.internet().url());
                 member.setNickname(batchNumber + "_" + i + "_" + faker.funnyName().name());
                 member.setSchoolName(faker.educator().university());
                 member.setProfileImg(faker.internet().avatar());

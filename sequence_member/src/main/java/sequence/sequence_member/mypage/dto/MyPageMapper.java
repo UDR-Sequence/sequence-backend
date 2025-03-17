@@ -1,12 +1,10 @@
 package sequence.sequence_member.mypage.dto;
 
-import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.service.ArchiveService;
-import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.util.List;
@@ -37,7 +35,6 @@ public class MyPageMapper {
                 member.getAddress(),
                 member.getPhone(),
                 member.getIntroduction(),
-                DataConvertor.stringToList(member.getPortfolio()),
                 member.getNickname(),
                 member.getEducation().getSchoolName(),
                 member.getEducation().getMajor(),
@@ -48,6 +45,14 @@ public class MyPageMapper {
                 member.getEducation().getSkillCategory(),
                 member.getEducation().getDesiredJob()
         );
+
+        // PortfolioDTO 리스트 생성
+        List<MyPageResponseDTO.PortfolioDTO> portfolios = member.getPortfolios().stream()
+                .map(portfolio -> new MyPageResponseDTO.PortfolioDTO(
+                        portfolio.getPortfolioUrl()
+                ))
+                .collect(Collectors.toList());
+        dto.setPortfolios(portfolios);
 
         // AwardDTO 리스트 생성
         List<MyPageResponseDTO.AwardDTO> awards = member.getAwards().stream()

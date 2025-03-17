@@ -28,15 +28,15 @@ public class MemberController {
 
     @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> join(@RequestPart("memberDTO") @Valid MemberDTO memberDTO, Errors errors,
-                                                        @RequestPart(name="authImgFile" ,required = false) MultipartFile authImgFile){
+                                                        @RequestPart(name="authImgFile" ,required = false) MultipartFile authImgFile,
+                                                        @RequestPart(name="portfolios",required=false) List<MultipartFile> portfolios){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
             Map<String, String> validatorResult = memberService.validateHandling(errors);
-
             return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), validatorResult.values().toString()));
         }
 
-        memberService.save(memberDTO,authImgFile);
+        memberService.save(memberDTO,authImgFile,portfolios);
         return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
 

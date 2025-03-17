@@ -14,10 +14,7 @@ import sequence.sequence_member.member.entity.*;
 import sequence.sequence_member.member.repository.*;
 
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,26 +22,45 @@ public class MemberService {
 
     private final String SUFFIX = "auth";
     @Value("${minio.bucketName}")
-    private  String BUCKET_NAME;
+    private String PROFILE_BUCKET_NAME;
+
+    @Value("${minio.portfolio_bucketName}")
+    private String PORTFOLIO_BUCKET_NAME;
+
+    private final String profileImg = "profile";
+    private final String portfolioFile = "portfolio";
 
     private final MultipartUtil multipartUtil;
     private final MemberRepository memberRepository;
     private final AwardRepository awardRepository;
     private final CareerRepository careerRepository;
+    private final PortfolioRepository portfolioRepository;
     private final EducationRepository educationRepository;
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void save(MemberDTO memberDTO, MultipartFile authImgFile){
+    public void save(MemberDTO memberDTO, MultipartFile authImgFile, List<MultipartFile> portfolios){
 
         memberDTO.setPassword(bCryptPasswordEncoder.encode(memberDTO.getPassword()));
 
         MemberEntity memberEntity = MemberEntity.toMemberEntity(memberDTO);
 
         //파일명 생성
-        String fileName = multipartUtil.determineFileName(authImgFile, memberDTO.getUsername(), SUFFIX, BUCKET_NAME);
+        String fileName = multipartUtil.determineFileName(authImgFile, memberDTO.getUsername(), SUFFIX, PROFILE_BUCKET_NAME, profileImg);
         memberEntity.setProfileImg(fileName);
+
+        String portfolioName;
+        List<String> portfolioNames = new ArrayList<>();
+
+        //첨부한 포트폴리오가 없는 경우, 포트폴리오를 서버에 업로드 하지도 않고, 이름도 생성하지 않는다.
+        if(portfolios!=null && !portfolios.isEmpty()){
+            for(MultipartFile portfolio : portfolios){
+                portfolioName=multipartUtil.determineFileName(portfolio,memberDTO.getUsername(),SUFFIX, PORTFOLIO_BUCKET_NAME, portfolioFile);
+                portfolioNames.add(portfolioName);
+            }
+        }
+
 
         //먼저 member 정보를 저장하고 나중에 외래키 값을 저장하기 위해서 멤버 정보를 먼저 저장
         memberRepository.save(memberEntity);
@@ -54,8 +70,14 @@ public class MemberService {
         List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO, memberEntityCopy);
         List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO, memberEntityCopy);
         List<CareerEntity> careerEntities  = CareerEntity.toCareerEntity(memberDTO, memberEntityCopy);
-        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
 
+        //첨부한 포트폴리오가 없는 경우 포트폴리오 url을 DB에 저장하지 않는다.
+        if(portfolios!=null && !portfolios.isEmpty()){
+            List<PortfolioEntity> portfolioEntities = PortfolioEntity.toPortfolioEntity(portfolioNames,memberEntityCopy);
+            portfolioRepository.saveAll(portfolioEntities);
+        }
+
+        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
         // 관계 설정
         educationEntity.setMember(memberEntityCopy);
         memberEntityCopy.setEducation(educationEntity);
