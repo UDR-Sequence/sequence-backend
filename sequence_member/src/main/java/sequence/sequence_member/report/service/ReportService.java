@@ -78,6 +78,8 @@ public class ReportService {
 
         for(ReportEntity reportEntity : reportEntities){
             reportResponseDTOS.add(ReportResponseDTO.builder()
+                    .id(reportEntity.getId())
+                    .nickname(reportEntity.getNickname())
                     .reportTypes(reportEntity.getReportTypes().stream()
                             .map(ReportEntity.ReportType::getDescription)
                             .collect(Collectors.toList()))
