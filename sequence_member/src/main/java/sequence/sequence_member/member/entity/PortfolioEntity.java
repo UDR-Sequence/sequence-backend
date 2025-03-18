@@ -12,6 +12,8 @@ import java.util.List;
 
 @Entity
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "portfolio")
 public class PortfolioEntity {
 
@@ -27,6 +29,7 @@ public class PortfolioEntity {
     @JoinColumn
     private MemberEntity member;
 
+
     public static List<PortfolioEntity> toPortfolioEntity(List<String> portfolioNames, MemberEntity memberEntityCopy) {
         List<PortfolioEntity> portfolioEntities = new ArrayList<>();
 
@@ -37,5 +40,11 @@ public class PortfolioEntity {
             portfolioEntities.add(portfolioEntity);
         }
         return portfolioEntities;
+    }
+
+
+    public PortfolioEntity(String url, MemberEntity member) {
+        this.portfolioUrl = url;
+        this.member = member;
     }
 }
