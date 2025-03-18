@@ -1,6 +1,7 @@
 package sequence.sequence_member.mypage.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
@@ -17,6 +20,8 @@ import sequence.sequence_member.mypage.dto.MyActivityResponseDTO;
 import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
 import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -44,13 +49,17 @@ public class MyPageController {
         }
     }
 
-    @PutMapping("/api/mypage")
-    public ResponseEntity<ApiResponseData<String>> updateMyProfile(@RequestBody MyPageRequestDTO myPageDTO) {
+    @PutMapping(value = "/api/mypage", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<ApiResponseData<String>> updateMyProfile(
+            @RequestPart(name = "myPageDTO") MyPageRequestDTO myPageDTO,
+            @RequestPart(name = "authImgFile", required = false) MultipartFile authImgFile,
+            @RequestPart(name = "portfolios", required = false) List<MultipartFile> portfolios
+    ) {
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
-            myPageService.updateMyProfile(myPageDTO, username);
+            myPageService.updateMyProfile(myPageDTO, username, authImgFile, portfolios);
             return ResponseEntity.ok(ApiResponseData.success("마이페이지 수정이 완료되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus())

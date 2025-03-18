@@ -7,10 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.member.entity.EducationEntity;
+import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.report.dto.ReportRequestDTO;
 import sequence.sequence_member.report.dto.ReportResponseDTO;
+import sequence.sequence_member.report.dto.ReportTargetDTO;
 import sequence.sequence_member.report.entity.ReportEntity;
 import sequence.sequence_member.report.repository.ReportRepository;
 
@@ -90,4 +93,23 @@ public class ReportService {
 
         return reportResponseDTOS;
     }
+
+    public ReportTargetDTO getReportTarget(String nickname) {
+        MemberEntity member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new CanNotFindResourceException("해당 유저가 존재하지 않습니다."));
+
+        EducationEntity education = member.getEducation();
+        if (education == null) {
+            throw new CanNotFindResourceException("해당 유저의 학력 정보가 존재하지 않습니다.");
+        }
+
+        return new ReportTargetDTO(
+                member.getNickname(),
+                education.getSchoolName(),
+                education.getMajor(),
+                education.getGrade(),
+                education.getDegree()
+        );
+    }
+
 }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveBookmark;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
@@ -70,7 +71,10 @@ public class MyPageService {
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
     @Transactional
-    public void updateMyProfile(MyPageRequestDTO myPageDTO, String username) {
+    public void updateMyProfile(
+            MyPageRequestDTO myPageDTO, String username,
+            MultipartFile authImgFile, List<MultipartFile> portfolios
+    ) {
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
       
@@ -78,7 +82,7 @@ public class MyPageService {
             throw new IllegalArgumentException("아이디는 변경할 수 없습니다.");
         }
 
-        myPageUpdateService.updateProfile(member, myPageDTO);
+        myPageUpdateService.updateProfile(member, myPageDTO, authImgFile, portfolios);
     }
 
     /**
