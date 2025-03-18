@@ -13,7 +13,6 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
-import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.entity.Project;
 
 @Repository
@@ -46,5 +45,5 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
     List<Project> findAllProjects();
 
     // 특정 사용자가 작성한 Project 게시글을 조회
-    Page<Project> findByProjectMembers_Member_Id(Long memberId, Pageable pageable);
+    Page<Project> findByWriter_Id(Long memberId, Pageable pageable);
 }

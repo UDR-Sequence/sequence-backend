@@ -136,7 +136,7 @@ public class MyPageService {
 
         } else {
             // 작성한 Project 게시글 조회
-            Page<Project> writtenProjects = projectRepository.findByProjectMembers_Member_Id(member.getId(), writtenPageable);
+            Page<Project> writtenProjects = projectRepository.findByWriter_Id(member.getId(), writtenPageable);
             writtenPosts = writtenProjects.stream()
                     .map(this::mapToPostDTO)
                     .collect(Collectors.toList());

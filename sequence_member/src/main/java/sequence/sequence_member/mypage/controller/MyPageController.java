@@ -86,7 +86,7 @@ public class MyPageController {
     }
 
     //내활동 조회
-    @GetMapping("/{nickname}/my-activity")
+    @GetMapping("api/mypage/{nickname}/my-activity")
     public ResponseEntity<ApiResponseData<MyActivityResponseDTO>> getMyActivity(
             @PathVariable String nickname,
             @RequestParam(defaultValue = "0") int writtenPage,
