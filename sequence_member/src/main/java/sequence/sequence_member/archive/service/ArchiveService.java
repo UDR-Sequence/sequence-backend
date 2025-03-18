@@ -159,10 +159,7 @@ public class ArchiveService {
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
         
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -193,10 +190,7 @@ public class ArchiveService {
             archivePage = archiveRepository.findAll(pageable);
         }
 
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -283,10 +277,14 @@ public class ArchiveService {
     }
 
     public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
+        List<ArchiveOutputDTO> archives = archivePage.isEmpty() ? 
+                new ArrayList<>() : 
+                archivePage.getContent().stream()
+                    .map(archive -> convertToDTO(archive, username, archive.getView()))
+                    .toList();
+        
         return ArchivePageResponseDTO.builder()
-                .archives(archivePage.getContent().stream()
-                        .map(archive -> convertToDTO(archive, username, archive.getView()))
-                        .toList())
+                .archives(archives)
                 .totalPages(archivePage.getTotalPages())
                 .build();
     }
