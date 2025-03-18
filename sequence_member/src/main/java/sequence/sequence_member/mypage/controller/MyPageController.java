@@ -2,6 +2,7 @@ package sequence.sequence_member.mypage.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
+import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.mypage.dto.MyActivityResponseDTO;
 import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
 import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
@@ -71,5 +74,20 @@ public class MyPageController {
             );
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus()).body(errorResponse);
         }
+    }
+
+    //내활동 조회
+    @GetMapping("/{nickname}/my-activity")
+    public ResponseEntity<ApiResponseData<MyActivityResponseDTO>> getMyActivity(
+            @PathVariable String nickname,
+            @RequestParam(defaultValue = "0") int writtenPage,
+            @RequestParam(defaultValue = "0") int bookmarkedPage,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "project") String type,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        MyActivityResponseDTO responseDTO = myPageService.getMyActivity(
+                nickname, writtenPage, bookmarkedPage, size, type, customUserDetails);
+        return ResponseEntity.ok(ApiResponseData.success(responseDTO));
     }
 }
