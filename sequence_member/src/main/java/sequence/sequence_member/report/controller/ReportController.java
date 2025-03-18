@@ -8,6 +8,7 @@ import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.report.dto.ReportRequestDTO;
 import sequence.sequence_member.report.dto.ReportResponseDTO;
+import sequence.sequence_member.report.dto.ReportTargetDTO;
 import sequence.sequence_member.report.service.ReportService;
 
 import java.util.List;
@@ -32,6 +33,12 @@ public class ReportController {
     @GetMapping("/{nickname}")
     public ResponseEntity<ApiResponseData<List<ReportResponseDTO>>> getReport(@PathVariable("nickname") String nickname) {
         return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "신고내역 조회가 성공했습니다.",reportService.searchReport(nickname)));
+    }
+
+    // 신고 대상 정보 조회
+    @GetMapping("/target/{nickname}")
+    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportTarget(@PathVariable("nickname") String nickname) {
+        return ResponseEntity.ok().body(ApiResponseData.success(reportService.getReportTarget(nickname), "신고 대상 정보 조회 성공"));
     }
 
 }
