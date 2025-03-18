@@ -124,7 +124,13 @@ public class Archive extends BaseTimeEntity {
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
-        setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        
+        // 이미지 URL 설정
+        if (archiveUpdateDTO.getImgUrls() != null && !archiveUpdateDTO.getImgUrls().isEmpty()) {
+            setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        } else {
+            this.imgUrl = "";  // imgUrls가 없으면 비움
+        }
     }
 
     // 조회수 설정 메서드 추가

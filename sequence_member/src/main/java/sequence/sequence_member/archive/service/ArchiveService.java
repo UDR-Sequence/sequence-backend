@@ -112,7 +112,26 @@ public class ArchiveService {
 
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
+        
+        // 기존 팀원 정보 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        // 새로운 팀원 정보 등록
+        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
+            MemberEntity newMember = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(archive)
+                .member(newMember)
+                .profileImg(newMember.getProfileImg())  // 프로필 이미지 설정
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
     }
 
     @Transactional
