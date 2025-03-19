@@ -20,6 +20,8 @@ import java.util.HashMap;
 import sequence.sequence_member.global.exception.ArchiveNotFoundException;
 import java.util.stream.Collectors;
 import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
+import java.util.ArrayList;
+import sequence.sequence_member.global.enums.enums.ProjectRole;
 
 @Service
 @RequiredArgsConstructor
@@ -52,18 +54,18 @@ public class TeamEvaluationService {
         }
 
         for (TeamEvaluationRequestDto.EvaluationItem evaluation : requestDto.getEvaluations()) {
-            // 피평가자 찾기
-            MemberEntity evaluatedMember = memberRepository.findByUsername(evaluation.getEvaluatedUserName())
-                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("피평가자를 찾을 수 없습니다: " + evaluation.getEvaluatedUserName()));
+            // 피평가자 찾기 - nickname으로 변경
+            MemberEntity evaluatedMember = memberRepository.findByNickname(evaluation.getEvaluatedNickname())
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("피평가자를 찾을 수 없습니다: " + evaluation.getEvaluatedNickname()));
             
             ArchiveMember evaluated = archiveMemberRepository.findByMemberAndArchive_Id(evaluatedMember, archiveId);
             if (evaluated == null) {
-                throw new BAD_REQUEST_EXCEPTION("피평가자가 해당 아카이브의 멤버가 아닙니다: " + evaluation.getEvaluatedUserName());
+                throw new BAD_REQUEST_EXCEPTION("피평가자가 해당 아카이브의 멤버가 아닙니다: " + evaluation.getEvaluatedNickname());
             }
 
             // 이미 평가했는지 확인
             if (teamEvaluationRepository.existsByEvaluatorAndEvaluated(evaluator, evaluated)) {
-                throw new BAD_REQUEST_EXCEPTION("이미 평가를 완료했습니다: " + evaluation.getEvaluatedUserName());
+                throw new BAD_REQUEST_EXCEPTION("이미 평가를 완료했습니다: " + evaluation.getEvaluatedNickname());
             }
 
             // 키워드 리스트를 JSON 배열 형식으로 변환
@@ -78,11 +80,11 @@ public class TeamEvaluationService {
                     .build();
 
             if (!teamEvaluation.validateSameArchive()) {
-                throw new BAD_REQUEST_EXCEPTION("같은 아카이브의 멤버만 평가할 수 있습니다: " + evaluation.getEvaluatedUserName());
+                throw new BAD_REQUEST_EXCEPTION("같은 아카이브의 멤버만 평가할 수 있습니다: " + evaluation.getEvaluatedNickname());
             }
 
             if (!teamEvaluation.validateSelfEvaluation()) {
-                throw new BAD_REQUEST_EXCEPTION("자기 자신은 평가할 수 없습니다: " + evaluation.getEvaluatedUserName());
+                throw new BAD_REQUEST_EXCEPTION("자기 자신은 평가할 수 없습니다: " + evaluation.getEvaluatedNickname());
             }
 
             teamEvaluationRepository.save(teamEvaluation);
@@ -153,9 +155,9 @@ public class TeamEvaluationService {
         // 해당 아카이브에서 평가를 진행한 평가자들의 목록 조회
         List<ArchiveMember> evaluators = teamEvaluationRepository.findDistinctEvaluatorsByArchive(archive);
 
-        // 평가자들의 사용자명 리스트로 변환하여 반환
+        // 평가자들의 닉네임 리스트로 변환하여 반환
         return evaluators.stream()
-                .map(evaluator -> evaluator.getMember().getUsername())
+                .map(evaluator -> evaluator.getMember().getNickname())
                 .toList();
     }
 
@@ -174,22 +176,39 @@ public class TeamEvaluationService {
             throw new BAD_REQUEST_EXCEPTION("해당 아카이브의 멤버가 아닙니다.");
         }
 
+        // 평가자의 역할 정보 가져오기
+        List<ProjectRole> evaluatorRoles = new ArrayList<>();
+        if (member.getEducation() != null && member.getEducation().getDesiredJob() != null) {
+            evaluatorRoles = member.getEducation().getDesiredJob();
+        }
+
         // 아카이브의 모든 멤버 조회
         List<ArchiveMember> allMembers = archiveMemberRepository.findAllByArchiveId(archiveId);
         
         // 평가 대상 목록 생성 (자신 제외)
         List<TeamEvaluationResponseDto.EvaluatedInfo> evaluatedList = allMembers.stream()
             .filter(archiveMember -> !archiveMember.getId().equals(evaluator.getId()))
-            .map(evaluated -> TeamEvaluationResponseDto.EvaluatedInfo.builder()
-                .username(evaluated.getMember().getUsername())
-                .profileImg(evaluated.getMember().getProfileImg())
-                .build())
+            .map(evaluated -> {
+                // 각 멤버의 역할 정보 가져오기
+                List<ProjectRole> roles = new ArrayList<>();
+                MemberEntity evaluatedMember = evaluated.getMember();
+                if (evaluatedMember.getEducation() != null && evaluatedMember.getEducation().getDesiredJob() != null) {
+                    roles = evaluatedMember.getEducation().getDesiredJob();
+                }
+                
+                return TeamEvaluationResponseDto.EvaluatedInfo.builder()
+                    .nickname(evaluatedMember.getNickname())
+                    .profileImg(evaluatedMember.getProfileImg())
+                    .roles(roles)  // 역할 정보 추가
+                    .build();
+            })
             .collect(Collectors.toList());
 
         return List.of(TeamEvaluationResponseDto.builder()
             .evaluator(TeamEvaluationResponseDto.EvaluatorInfo.builder()
-                .username(evaluator.getMember().getUsername())
-                .profileImg(evaluator.getMember().getProfileImg())
+                .nickname(member.getNickname())
+                .profileImg(member.getProfileImg())
+                .roles(evaluatorRoles)  // 역할 정보 추가
                 .build())
             .evaluated(evaluatedList)
             .build());

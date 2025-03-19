@@ -38,18 +38,6 @@ public interface ArchiveCommentRepository extends JpaRepository<ArchiveComment, 
         String writer
     );
 
-    // 특정 아카이브의 모든 댓글 수 조회
-    long countByArchiveId(Long archiveId);
 
-    // 특정 댓글의 대댓글 수 조회
-    long countByParentId(Long parentId);
-
-    // 특정 아카이브의 삭제되지 않은 댓글 수 조회
-    long countByArchiveIdAndIsDeletedFalse(Long archiveId);
-
-    // 특정 아카이브의 모든 댓글 삭제 (아카이브 삭제 시 사용)
-    void deleteAllByArchiveId(Long archiveId);
-
-    // 특정 부모 댓글이 존재하는지 확인
-    boolean existsByIdAndIsDeletedFalse(Long parentId);
+    void deleteByArchiveId(Long archiveId);
 } 
