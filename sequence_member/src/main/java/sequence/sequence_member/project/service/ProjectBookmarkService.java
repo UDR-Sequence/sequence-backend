@@ -82,29 +82,4 @@ public class ProjectBookmarkService {
         return "북마크 삭제 성공";
     }
 
-    @Transactional(readOnly = true)
-    public List<ProjectSummaryInfoDTO> getBookmarkedProjects(CustomUserDetails customUserDetails) {
-        StringBuilder errMessgage=new StringBuilder(); //만약 null이 아닐경우 오류가 발생한것
-        // 유저와 프로젝트 존재 여부 확인
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
-
-        if(member == null){
-            errMessgage.append("멤버를 찾을 수 없습니다.\n");
-        }
-
-        // 북마크한 프로젝트 목록 조회
-        List<Project> bookmarkedProjects = bookmarkRepository.findBookmarkedProjectsByMemberId(member.getId());
-
-        // DTO 변환 후 반환
-        return bookmarkedProjects.stream()
-                .map(project -> ProjectSummaryInfoDTO.builder()
-                        .projectId(project.getId())
-                        .projectTitle(project.getTitle())
-                        .projectName(project.getProjectName())
-                        .projectWriterNickname(project.getWriter().getNickname())
-                        .category(project.getCategory())
-                        .build()
-                )
-                .collect(Collectors.toList());
-    }
 }

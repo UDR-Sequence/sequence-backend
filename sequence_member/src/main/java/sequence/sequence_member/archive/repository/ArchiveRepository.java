@@ -32,8 +32,9 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     List<Archive> findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc(Long archiveMembersMemberId);
 
     // 전체 목록 조회는 JpaRepository의 findAll(Pageable) 사용
-    
-
     @Query("SELECT a.view FROM Archive a WHERE a.id = :archiveId")
     Optional<Integer> findViewById(@Param("archiveId") Long archiveId);
+
+    // member로 본인이 작성한 아카이브 전체 조회
+
 } 
