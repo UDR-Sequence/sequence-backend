@@ -71,7 +71,7 @@ public class MyPageResponseDTO {
 
     private ArchivePageResponseDTO archivePageResponseDTO;
 
-    private MyActivityResponseDTO myActivityResponseDTO;
+    private MyActivityResponseDTO myActivityResponseDTO = null;
 
     public MyPageResponseDTO(
             String username, String name, Date birth, Gender gender, String address,
