@@ -1,16 +1,7 @@
 package sequence.sequence_member.archive.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +14,8 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import sequence.sequence_member.member.entity.MemberEntity;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -38,6 +31,11 @@ public class Archive extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 작성자 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id",nullable = false)
+    private MemberEntity writer;
+    
     @Column(nullable = false)
     private String title;          
 
@@ -75,6 +73,9 @@ public class Archive extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
+
+    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArchiveComment> comments;
 
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {

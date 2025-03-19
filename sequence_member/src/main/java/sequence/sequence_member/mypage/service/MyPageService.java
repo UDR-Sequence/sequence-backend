@@ -11,13 +11,22 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
+import sequence.sequence_member.archive.entity.ArchiveBookmark;
+import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.global.exception.AuthException;
+import sequence.sequence_member.global.exception.UserNotFindException;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
-import sequence.sequence_member.mypage.dto.MyPageMapper;
-import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
-import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
+import sequence.sequence_member.mypage.dto.*;
+import sequence.sequence_member.project.entity.Project;
+import sequence.sequence_member.project.entity.ProjectBookmark;
+import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
+import sequence.sequence_member.project.repository.ProjectRepository;
 
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +38,9 @@ public class MyPageService {
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
     private final MyPageMapper myPageMapper;
-
+    private final ProjectRepository projectRepository;
+    private final ProjectBookmarkRepository projectBookmarkRepository;
+    private final ArchiveBookmarkRepository archiveBookmarkRepository;
     /**
      * 주어진 사용자명(username)에 해당하는 마이페이지 정보를 조회합니다.
      *
@@ -46,8 +57,9 @@ public class MyPageService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
-
-        return myPageMapper.toDTO(member, archivePage);
+        MyPageResponseDTO response = myPageMapper.toDTO(member, archivePage);
+        response.setMyActivityResponseDTO(getMyActivity(member));
+        return response;
     }
 
     /**
@@ -91,5 +103,55 @@ public class MyPageService {
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
 
         return myPageMapper.toDTO(member, archivePage);
+    }
+
+
+
+    private MyActivityResponseDTO getMyActivity(MemberEntity member) {
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
+        // archive조회
+        List<Archive> archiveWriteList = archiveRepository.findByWriter(member, sort);
+        List<ArchiveBookmark> archiveBookmarkList = archiveBookmarkRepository.findAllByUsername(member.getUsername(),sort);
+
+        List<PostDTO> archiveWrittenPosts = archiveWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> archiveBookmarkedPosts = archiveBookmarkList.stream()
+                .map(archiveBookmark -> mapToPostDTO(archiveBookmark.getArchive()))
+                .toList();
+
+        MyArchiveDTO myArchiveDTO = new MyArchiveDTO(archiveWrittenPosts, archiveBookmarkedPosts);
+
+        // project조회
+        List<Project> projectWriteList = projectRepository.findByWriter(member,sort);
+        List<ProjectBookmark> projectBookmarkList = projectBookmarkRepository.findAllByMember(member,sort);
+        List<PostDTO> projectWrittenPosts = projectWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> projectBookmarkedPosts = projectBookmarkList.stream()
+                .map(projectBookmark -> mapToPostDTO(projectBookmark.getProject()))
+                .toList();
+        MyProjectDTO myProjectDTO = new MyProjectDTO(projectWrittenPosts, projectBookmarkedPosts);
+
+        return new MyActivityResponseDTO(myProjectDTO,myArchiveDTO);
+    }
+
+    private PostDTO mapToPostDTO(Archive archive) {
+        return new PostDTO(
+                archive.getTitle(),
+                archive.getId(),
+                Date.from(archive.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
+                archive.getComments().size() // 댓글 수
+        );
+    }
+
+    private PostDTO mapToPostDTO(Project project) {
+        return new PostDTO(
+                project.getTitle(),
+                project.getId(),
+                Date.from(project.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
+                project.getComments().size()
+        );
     }
 }

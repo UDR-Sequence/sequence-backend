@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ArchiveMemberDTO {
-    private String username;
+    private String nickname;
     private String profileImg;
 }
