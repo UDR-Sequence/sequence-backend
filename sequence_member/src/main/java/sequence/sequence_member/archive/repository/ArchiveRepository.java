@@ -35,6 +35,6 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     @Query("SELECT a.view FROM Archive a WHERE a.id = :archiveId")
     Optional<Integer> findViewById(@Param("archiveId") Long archiveId);
 
-
+    // member로 본인이 작성한 아카이브 전체 조회
 
 } 

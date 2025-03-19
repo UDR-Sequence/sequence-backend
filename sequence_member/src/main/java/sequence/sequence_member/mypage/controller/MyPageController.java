@@ -89,14 +89,10 @@ public class MyPageController {
     @GetMapping("api/mypage/{nickname}/my-activity")
     public ResponseEntity<ApiResponseData<MyActivityResponseDTO>> getMyActivity(
             @PathVariable String nickname,
-            @RequestParam(defaultValue = "0") int writtenPage,
-            @RequestParam(defaultValue = "0") int bookmarkedPage,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "project") String type,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         MyActivityResponseDTO responseDTO = myPageService.getMyActivity(
-                nickname, writtenPage, bookmarkedPage, size, type, customUserDetails);
+                nickname, customUserDetails);
         return ResponseEntity.ok(ApiResponseData.success(responseDTO));
     }
 }

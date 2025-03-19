@@ -107,7 +107,7 @@ public class MyPageService {
 
 
 
-    public MyActivityResponseDTO getMyActivity(String nickname, int writtenPage, int bookmarkedPage, int size, String type, CustomUserDetails customUserDetails) {
+    public MyActivityResponseDTO getMyActivity(String nickname, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
                 .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
 
@@ -115,40 +115,16 @@ public class MyPageService {
             throw new AuthException("본인 프로필에서만 조회할 수 있습니다.");
         }
 
-        Pageable writtenPageable = PageRequest.of(writtenPage, size, Sort.by("createdDateTime").descending());
-        Pageable bookmarkedPageable = PageRequest.of(bookmarkedPage, size, Sort.by("createdDateTime").descending());
+        // archive조회
+        MyArchiveDTO myArchiveDTO = new MyArchiveDTO();
 
-        List<PostDTO> writtenPosts;
-        List<PostDTO> bookmarkedPosts;
+        List<PostDTO> archiveWrittenPosts;
+        List<PostDTO> archiveBookmarkedPosts;
+        MyProjectDTO myProjectDTO = new MyProjectDTO();
+        List<PostDTO> projectWrittenPosts;
+        List<PostDTO> projectBookmarkedPosts;
 
-        if ("archive".equals(type)) {
-            // 작성한 Archive 게시글 조회
-            Page<Archive> writtenArchives = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), writtenPageable);
-            writtenPosts = writtenArchives.stream()
-                    .map(this::mapToPostDTO)
-                    .collect(Collectors.toList());
-
-            // 북마크한 Archive 게시글 조회
-            Page<ArchiveBookmark> bookmarkedArchives = archiveBookmarkRepository.findByUsername(member.getUsername(), bookmarkedPageable);
-            bookmarkedPosts = bookmarkedArchives.stream()
-                    .map(bookmark -> mapToPostDTO(bookmark.getArchive()))
-                    .collect(Collectors.toList());
-
-        } else {
-            // 작성한 Project 게시글 조회
-            Page<Project> writtenProjects = projectRepository.findByWriter_Id(member.getId(), writtenPageable);
-            writtenPosts = writtenProjects.stream()
-                    .map(this::mapToPostDTO)
-                    .collect(Collectors.toList());
-
-            // 북마크한 Project 게시글 조회
-            Page<ProjectBookmark> bookmarkedProjects = projectBookmarkRepository.findByMember_Id(member.getId(), bookmarkedPageable);
-            bookmarkedPosts = bookmarkedProjects.stream()
-                    .map(bookmark -> mapToPostDTO(bookmark.getProject()))
-                    .collect(Collectors.toList());
-        }
-
-        return new MyActivityResponseDTO(writtenPosts, bookmarkedPosts);
+        return new MyActivityResponseDTO(myProjectDTO,myArchiveDTO);
     }
 
     private PostDTO mapToPostDTO(Archive archive) {

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import sequence.sequence_member.archive.dto.ArchiveCommentOutputDTO;
 import sequence.sequence_member.archive.entity.ArchiveComment;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.repository.query.Param;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +54,7 @@ public class ArchiveService {
 
         Archive archive = Archive.builder()
                 .title(dto.getTitle())
+                .writer(member)
                 .description(dto.getDescription())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
@@ -74,10 +73,15 @@ public class ArchiveService {
         
         Archive savedArchive = archiveRepository.save(archive);
 
+        //작성자 본인도 멤버에 추가
+        dto.getArchiveMembers().add(new ArchiveMemberDTO(member.getNickname(), member.getProfileImg()));
+
+
+        //todo - 혹시모르니 중복 제거하는 로직도 추가되어야할것 같음.
         // 아카이브 멤버 등록 (프로필 이미지 포함)
         for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
-            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+            MemberEntity archiveMember = memberRepository.findByNickname(memberDto.getNickname())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getNickname()));
 
             ArchiveMember newArchiveMember = ArchiveMember.builder()
                 .archive(savedArchive)
@@ -262,6 +266,7 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
+                .writerNickname(archive.getWriter().getUsername())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())
