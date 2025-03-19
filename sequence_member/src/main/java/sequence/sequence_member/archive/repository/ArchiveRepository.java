@@ -3,11 +3,14 @@ package sequence.sequence_member.archive.repository;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.global.enums.enums.Category;
+import sequence.sequence_member.member.entity.MemberEntity;
+
 import java.util.Optional;
 
 public interface ArchiveRepository extends JpaRepository<Archive, Long> {
@@ -35,6 +38,7 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     @Query("SELECT a.view FROM Archive a WHERE a.id = :archiveId")
     Optional<Integer> findViewById(@Param("archiveId") Long archiveId);
 
-    // member로 본인이 작성한 아카이브 전체 조회
+    // 특정 멤버가 작성한 모든 아카이빙 글을 조회
+    List<Archive> findByWriter(MemberEntity writer, Sort sort);
 
 } 
