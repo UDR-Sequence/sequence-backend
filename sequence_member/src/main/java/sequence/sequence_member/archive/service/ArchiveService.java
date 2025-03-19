@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import sequence.sequence_member.archive.dto.ArchiveCommentOutputDTO;
 import sequence.sequence_member.archive.entity.ArchiveComment;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.repository.query.Param;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +54,7 @@ public class ArchiveService {
 
         Archive archive = Archive.builder()
                 .title(dto.getTitle())
+                .writer(member)
                 .description(dto.getDescription())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
@@ -66,19 +65,30 @@ public class ArchiveService {
                 .build();
 
         archive.setSkillsFromList(dto.getSkills());
+        
+        // 이미지 URL 설정
+        if (dto.getImgUrls() != null && !dto.getImgUrls().isEmpty()) {
+            archive.setImageUrlsFromList(dto.getImgUrls());
+        }
+        
         Archive savedArchive = archiveRepository.save(archive);
 
-        // 아카이브 멤버 등록 (roles 포함)
+        //작성자 본인도 멤버에 추가
+        dto.getArchiveMembers().add(new ArchiveMemberDTO(member.getNickname(), member.getProfileImg()));
+
+
+        //todo - 혹시모르니 중복 제거하는 로직도 추가되어야할것 같음.
+        // 아카이브 멤버 등록 (프로필 이미지 포함)
         for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
-            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+            MemberEntity archiveMember = memberRepository.findByNickname(memberDto.getNickname())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getNickname()));
 
             ArchiveMember newArchiveMember = ArchiveMember.builder()
                 .archive(savedArchive)
                 .member(archiveMember)
+                .profileImg(archiveMember.getProfileImg())  // 멤버의 프로필 이미지 저장
                 .build();
             
-            newArchiveMember.setRolesFromList(memberDto.getRoles());
             archiveMemberRepository.save(newArchiveMember);
         }
 
@@ -109,7 +119,26 @@ public class ArchiveService {
 
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
+        
+        // 기존 팀원 정보 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        // 새로운 팀원 정보 등록
+        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
+            MemberEntity newMember = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(archive)
+                .member(newMember)
+                .profileImg(newMember.getProfileImg())  // 프로필 이미지 설정
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
     }
 
     @Transactional
@@ -153,10 +182,7 @@ public class ArchiveService {
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
         
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -187,10 +213,7 @@ public class ArchiveService {
             archivePage = archiveRepository.findAll(pageable);
         }
 
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -213,7 +236,7 @@ public class ArchiveService {
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
-                .role(archiveMember.getRoles())
+                .profileImg(archiveMember.getProfileImg())  // 프로필 이미지 추가
                 .build())
             .collect(Collectors.toList());
 
@@ -256,6 +279,7 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
+                .writerNickname(archive.getWriter().getNickname())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())
@@ -273,15 +297,18 @@ public class ArchiveService {
                 .createdDateTime(archive.getCreatedDateTime())
                 .modifiedDateTime(archive.getModifiedDateTime())
                 .comments(commentDTOs)
-                .roles(archive.getRoleList())
                 .build();
     }
 
     public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
+        List<ArchiveOutputDTO> archives = archivePage.isEmpty() ? 
+                new ArrayList<>() : 
+                archivePage.getContent().stream()
+                    .map(archive -> convertToDTO(archive, username, archive.getView()))
+                    .toList();
+        
         return ArchivePageResponseDTO.builder()
-                .archives(archivePage.getContent().stream()
-                        .map(archive -> convertToDTO(archive, username, archive.getView()))
-                        .toList())
+                .archives(archives)
                 .totalPages(archivePage.getTotalPages())
                 .build();
     }

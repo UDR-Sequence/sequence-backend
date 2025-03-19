@@ -3,6 +3,7 @@ package sequence.sequence_member.mypage.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
+import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.mypage.dto.MyActivityResponseDTO;
 import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
 import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
@@ -80,5 +83,16 @@ public class MyPageController {
             );
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus()).body(errorResponse);
         }
+    }
+
+    //내활동 조회
+    @GetMapping("api/mypage/{nickname}/my-activity")
+    public ResponseEntity<ApiResponseData<MyActivityResponseDTO>> getMyActivity(
+            @PathVariable String nickname,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        MyActivityResponseDTO responseDTO = myPageService.getMyActivity(
+                nickname, customUserDetails);
+        return ResponseEntity.ok(ApiResponseData.success(responseDTO));
     }
 }

@@ -42,28 +42,15 @@ public class ArchiveMember extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "archive_id")
     private Archive archive;
-
-    @Column(name = "roles")
-    private String roles;  // "백엔드,프론트엔드" 형태로 저장
+    
+    @Column(name = "profile_img")
+    private String profileImg;  // 멤버의 프로필 이미지 URL
 
     @Builder
-    public ArchiveMember(Archive archive, MemberEntity member) {
+    public ArchiveMember(Archive archive, MemberEntity member, String profileImg) {
         this.archive = archive;
         this.member = member;
+        this.profileImg = profileImg;
     }
 
-    public List<String> getRoleList() {
-        if (roles == null || roles.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(roles.split(","));
-    }
-
-    public void setRolesFromList(List<String> roleList) {
-        if (roleList == null || roleList.isEmpty()) {
-            this.roles = "";
-            return;
-        }
-        this.roles = String.join(",", roleList);
-    }
 } 

@@ -2,6 +2,9 @@ package sequence.sequence_member.project.repository;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +13,6 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
-import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.entity.Project;
 
 @Repository
@@ -41,4 +43,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
 
     @Query("SELECT p From Project p")
     List<Project> findAllProjects();
+
+    // 특정 사용자가 작성한 Project 게시글을 조회
+    Page<Project> findByWriter_Id(Long memberId, Pageable pageable);
 }

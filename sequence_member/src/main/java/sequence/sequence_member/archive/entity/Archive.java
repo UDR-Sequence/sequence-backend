@@ -1,16 +1,7 @@
 package sequence.sequence_member.archive.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +14,8 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import sequence.sequence_member.member.entity.MemberEntity;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -38,6 +31,11 @@ public class Archive extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 작성자 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id",nullable = false)
+    private MemberEntity writer;
+    
     @Column(nullable = false)
     private String title;          
 
@@ -68,9 +66,6 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "img_url")
     private String imgUrl;
 
-    @Column(name = "roles")
-    private String roles;  // "백엔드,프론트엔드,디자이너" 형태로 저장
-
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -78,6 +73,9 @@ public class Archive extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
+
+    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArchiveComment> comments;
 
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {
@@ -117,23 +115,6 @@ public class Archive extends BaseTimeEntity {
         return startDate.format(formatter) + " ~ " + endDate.format(formatter);
     }
 
-    // roles를 List<String>으로 변환하는 메서드
-    public List<String> getRoleList() {
-        if (roles == null || roles.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return Arrays.asList(roles.split(","));
-    }
-
-    // List<String>을 문자열로 변환하는 메서드
-    public void setRolesFromList(List<String> roleList) {
-        if (roleList == null || roleList.isEmpty()) {
-            this.roles = "";
-            return;
-        }
-        this.roles = String.join(",", roleList);
-    }
-
     // 아카이브 업데이트 메서드 수정
     public void updateArchive(ArchiveUpdateDTO archiveUpdateDTO) {
         this.title = archiveUpdateDTO.getTitle();
@@ -144,8 +125,13 @@ public class Archive extends BaseTimeEntity {
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
-        setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
-        setRolesFromList(archiveUpdateDTO.getRoles());
+        
+        // 이미지 URL 설정
+        if (archiveUpdateDTO.getImgUrls() != null && !archiveUpdateDTO.getImgUrls().isEmpty()) {
+            setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        } else {
+            this.imgUrl = "";  // imgUrls가 없으면 비움
+        }
     }
 
     // 조회수 설정 메서드 추가

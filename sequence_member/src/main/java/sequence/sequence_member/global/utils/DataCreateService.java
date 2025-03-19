@@ -50,7 +50,6 @@ public class DataCreateService {
                 member.setPhone(faker.numerify("010-####-####"));  // 한국식 번호
                 member.setEmail(batchNumber + "_" + i + "_" + faker.internet().emailAddress());
                 member.setIntroduction(faker.lorem().sentence());
-//                member.setPortfolios(faker.internet().url());
                 member.setNickname(batchNumber + "_" + i + "_" + faker.funnyName().name());
                 member.setSchoolName(faker.educator().university());
                 member.setProfileImg(faker.internet().avatar());
@@ -107,6 +106,15 @@ public class DataCreateService {
                             member
                     ));
                 });
+
+                // 랜덤 Portfolio 추가 (0~2개)
+                int portfolioCount = faker.number().numberBetween(0, 3);
+                IntStream.range(0, portfolioCount).forEach(j -> member.getPortfolios().add(
+                        new PortfolioEntity(
+                                faker.internet().url(),  // 랜덤 포트폴리오 URL
+                                member
+                        )
+                ));
 
                 members.add(member);
             }
