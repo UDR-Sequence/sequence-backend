@@ -33,7 +33,7 @@ public class Archive extends BaseTimeEntity {
 
     // 작성자 추가
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
+    @JoinColumn(name = "writer_id",nullable = false)
     private MemberEntity writer;
     
     @Column(nullable = false)

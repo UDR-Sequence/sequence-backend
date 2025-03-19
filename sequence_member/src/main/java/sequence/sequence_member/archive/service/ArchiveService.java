@@ -266,7 +266,7 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
-                .writerNickname(archive.getWriter().getUsername())
+                .writerNickname(archive.getWriter().getNickname())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())
