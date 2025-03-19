@@ -5,11 +5,13 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.Code;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.member.service.MemberSearchService;
@@ -86,8 +88,8 @@ public class MemberController {
 
     //닉네임으로 유저들 검색하는 컨트롤러
     @GetMapping("/search")
-    public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname){
-        return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(nickname)));
+    public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(customUserDetails,nickname)));
     }
 
 }

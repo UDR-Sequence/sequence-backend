@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+//todo - 페이지 정보도 함께 return 해줘야함.
 // 응답 데이터를 담을 DTO
 @Getter
 @AllArgsConstructor
