@@ -29,7 +29,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,8 +57,9 @@ public class MyPageService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
-
-        return myPageMapper.toDTO(member, archivePage);
+        MyPageResponseDTO response = myPageMapper.toDTO(member, archivePage);
+        response.setMyActivityResponseDTO(getMyActivity(member));
+        return response;
     }
 
     /**
@@ -107,14 +107,7 @@ public class MyPageService {
 
 
 
-    public MyActivityResponseDTO getMyActivity(String nickname, CustomUserDetails customUserDetails) {
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
-                .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-
-        if (!member.getNickname().equals(nickname)) {
-            throw new AuthException("본인 프로필에서만 조회할 수 있습니다.");
-        }
-
+    private MyActivityResponseDTO getMyActivity(MemberEntity member) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
         // archive조회

@@ -84,15 +84,4 @@ public class MyPageController {
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus()).body(errorResponse);
         }
     }
-
-    //내활동 조회
-    @GetMapping("api/mypage/{nickname}/my-activity")
-    public ResponseEntity<ApiResponseData<MyActivityResponseDTO>> getMyActivity(
-            @PathVariable String nickname,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
-    ) {
-        MyActivityResponseDTO responseDTO = myPageService.getMyActivity(
-                nickname, customUserDetails);
-        return ResponseEntity.ok(ApiResponseData.success(responseDTO));
-    }
 }
