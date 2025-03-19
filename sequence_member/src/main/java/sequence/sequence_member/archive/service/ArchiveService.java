@@ -59,6 +59,9 @@ public class ArchiveService {
     
     @Value("${MINIO_ARCHIVE_IMG}")
     private String ARCHIVE_IMG_BUCKET;
+    
+    @Value("${MINIO_ARCHIVE_THUMBNAIL}")
+    private String ARCHIVE_THUMBNAIL_BUCKET;  // 썸네일 버킷 추가
 
     public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {
         // Optional로 아카이브 조회
@@ -146,6 +149,7 @@ public class ArchiveService {
         
         // 4. 아카이브 멤버 삭제
         archiveMemberRepository.deleteByArchiveId(archiveId);
+        
         
         // 5. 최종적으로 아카이브 삭제
         archiveRepository.delete(archive);
@@ -309,7 +313,12 @@ public class ArchiveService {
     }
 
     @Transactional
-    public Long createArchiveWithImages(ArchiveRegisterInputDTO dto, String username, List<MultipartFile> imageFiles) throws Exception {
+    public Long createArchiveWithImages(
+            ArchiveRegisterInputDTO dto, 
+            String username, 
+            MultipartFile thumbnailFile,  // 썸네일 파일 추가
+            List<MultipartFile> imageFiles) throws Exception {
+        
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsername(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
@@ -321,16 +330,25 @@ public class ArchiveService {
                 .endDate(dto.getEndDate())
                 .category(dto.getCategory())
                 .status(Status.평가전)
-                .thumbnail(dto.getThumbnail())
                 .link(dto.getLink())
                 .writer(member)
                 .build();
 
         archive.setSkillsFromList(dto.getSkills());
         
-        // 이미지 업로드 처리
+        // 썸네일 이미지 업로드 처리
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            String thumbnailFileName = "thumbnail_" + System.currentTimeMillis() + "_" + thumbnailFile.getOriginalFilename();
+            String thumbnailUrl = minioService.uploadFileMinio(ARCHIVE_THUMBNAIL_BUCKET, thumbnailFileName, thumbnailFile);
+            archive.setThumbnailFileName(thumbnailFileName);
+            archive.setThumbnail(thumbnailUrl);
+        } else {
+            archive.setThumbnail(dto.getThumbnail());  // DTO에서 제공한 URL 사용
+        }
+        
+        // 이미지 업로드 처리 (기존 코드 유지)
         List<String> imageUrls = new ArrayList<>();
-        List<String> fileNames = new ArrayList<>();  // 파일명 저장 리스트
+        List<String> fileNames = new ArrayList<>();
         
         if (imageFiles != null && !imageFiles.isEmpty()) {
             for (MultipartFile imageFile : imageFiles) {
@@ -338,12 +356,12 @@ public class ArchiveService {
                     String fileName = "archive_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
                     String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
                     imageUrls.add(imageUrl);
-                    fileNames.add(fileName);  // 파일명 저장
+                    fileNames.add(fileName);
                 }
             }
             if (!imageUrls.isEmpty()) {
                 archive.setImageUrlsFromList(imageUrls);
-                archive.setFileNamesFromList(fileNames);  // 파일명 저장
+                archive.setFileNamesFromList(fileNames);
             }
         } else {
             archive.setImageUrlsFromList(new ArrayList<>());
@@ -390,25 +408,43 @@ public class ArchiveService {
     }
 
     @Transactional
-    public boolean updateArchiveWithImages(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, 
-                                        String username, List<MultipartFile> newImageFiles) throws Exception {
-        // 사용자 검증
+    public boolean updateArchiveWithImages(
+            Long archiveId, 
+            ArchiveUpdateDTO archiveUpdateDTO, 
+            String username,
+            MultipartFile thumbnailFile,
+            List<MultipartFile> newImageFiles) throws Exception {
+            
+        // 사용자 검증 및 아카이브 존재 여부 확인 (기존 코드 유지)
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
 
-        // 아카이브 존재 여부 확인
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
         
-        // 작성자 검증 - 작성자만 수정 가능
+        // 작성자 검증
         if (!archive.getWriter().getId().equals(member.getId())) {
             throw new AuthException("아카이브 수정 권한이 없습니다.");
+        }
+        
+        // 썸네일 업데이트 처리
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            // 새 썸네일 업로드
+            String thumbnailFileName = "thumbnail_" + archiveId + "_" + System.currentTimeMillis() + "_" + thumbnailFile.getOriginalFilename();
+            String thumbnailUrl = minioService.uploadFileMinio(ARCHIVE_THUMBNAIL_BUCKET, thumbnailFileName, thumbnailFile);
+            
+            // DTO의 썸네일 URL 업데이트
+            archive.setThumbnailFileName(thumbnailFileName);
+            archive.setThumbnail(thumbnailUrl);
+        } else if (archiveUpdateDTO.getThumbnail() != null) {
+            // DTO에서 제공한 URL만 업데이트 (파일은 변경 없음)
+            archive.setThumbnail(archiveUpdateDTO.getThumbnail());
         }
         
         // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
         
-        // 새 이미지 업로드 및 처리
+        // 새 이미지 업로드 및 처리 (기존 코드 유지)
         List<String> newImageUrls = new ArrayList<>();
         if (newImageFiles != null && !newImageFiles.isEmpty()) {
             for (MultipartFile imageFile : newImageFiles) {

@@ -33,12 +33,16 @@ public class ArchiveController {
     
     @Value("${minio.archive_img}")
     private String ARCHIVE_IMG_BUCKET;
+    
+    @Value("${minio.archive_thumbnail}")
+    private String ARCHIVE_THUMBNAIL_BUCKET;
 
     // 아카이브 등록 - form-data로 변경
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<Long>> createArchive(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart("archiveData") @Valid ArchiveRegisterInputDTO archiveRegisterInputDTO,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) throws Exception {
             
         if (userDetails == null) {
@@ -47,7 +51,8 @@ public class ArchiveController {
         
         Long archiveId = archiveService.createArchiveWithImages(
             archiveRegisterInputDTO, 
-            userDetails.getUsername(), 
+            userDetails.getUsername(),
+            thumbnailFile,
             imageFiles
         );
         
@@ -86,6 +91,7 @@ public class ArchiveController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("archiveId") Long archiveId,
             @RequestPart("archiveData") @Valid ArchiveUpdateDTO archiveUpdateDTO,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) throws Exception {
         
         if (userDetails == null) {
@@ -96,6 +102,7 @@ public class ArchiveController {
             archiveId, 
             archiveUpdateDTO, 
             userDetails.getUsername(),
+            thumbnailFile,
             imageFiles
         );
         
