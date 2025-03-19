@@ -115,14 +115,31 @@ public class MyPageService {
             throw new AuthException("본인 프로필에서만 조회할 수 있습니다.");
         }
 
-        // archive조회
-        MyArchiveDTO myArchiveDTO = new MyArchiveDTO();
 
-        List<PostDTO> archiveWrittenPosts;
-        List<PostDTO> archiveBookmarkedPosts;
-        MyProjectDTO myProjectDTO = new MyProjectDTO();
-        List<PostDTO> projectWrittenPosts;
-        List<PostDTO> projectBookmarkedPosts;
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
+        // archive조회
+        List<Archive> archiveWriteList = archiveRepository.findByWriter(member, sort);
+        List<ArchiveBookmark> archiveBookmarkList = archiveBookmarkRepository.findAllByUsername(member.getUsername(),sort);
+
+        List<PostDTO> archiveWrittenPosts = archiveWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> archiveBookmarkedPosts = archiveBookmarkList.stream()
+                .map(archiveBookmark -> mapToPostDTO(archiveBookmark.getArchive()))
+                .toList();
+
+        MyArchiveDTO myArchiveDTO = new MyArchiveDTO(archiveWrittenPosts, archiveBookmarkedPosts);
+
+        // project조회
+        List<Project> projectWriteList = projectRepository.findByWriter(member,sort);
+        List<ProjectBookmark> projectBookmarkList = projectBookmarkRepository.findAllByMember(member,sort);
+        List<PostDTO> projectWrittenPosts = projectWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> projectBookmarkedPosts = projectBookmarkList.stream()
+                .map(projectBookmark -> mapToPostDTO(projectBookmark.getProject()))
+                .toList();
+        MyProjectDTO myProjectDTO = new MyProjectDTO(projectWrittenPosts, projectBookmarkedPosts);
 
         return new MyActivityResponseDTO(myProjectDTO,myArchiveDTO);
     }
@@ -130,7 +147,6 @@ public class MyPageService {
     private PostDTO mapToPostDTO(Archive archive) {
         return new PostDTO(
                 archive.getTitle(),
-                "archive",
                 archive.getId(),
                 Date.from(archive.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
                 archive.getComments().size() // 댓글 수
@@ -140,7 +156,6 @@ public class MyPageService {
     private PostDTO mapToPostDTO(Project project) {
         return new PostDTO(
                 project.getTitle(),
-                "project",
                 project.getId(),
                 Date.from(project.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
                 project.getComments().size()

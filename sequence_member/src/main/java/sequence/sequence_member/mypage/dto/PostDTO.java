@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 // 게시글 정보를 담을 DTO
@@ -13,8 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class PostDTO {
     private String title;
-    private String type; // "project" 또는 "archive"
-    private Long id;
+    private Long articleId;
     private Date createdDate;
     private int numberOfComments;
 }
