@@ -40,6 +40,8 @@ import java.util.Optional;
 import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
 import org.springframework.web.server.ResponseStatusException;
 import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
+import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.global.exception.AuthException;
 
 @Service
 @RequiredArgsConstructor
@@ -85,12 +87,6 @@ public class ArchiveService {
         
         MemberEntity member = memberOpt.get();
 
-        // 아카이브 멤버 검증
-        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
-        if (archiveMember == null) {
-            return false;
-        }
-
         // 아카이브 존재 여부 확인
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
         if (archiveOpt.isEmpty()) {
@@ -98,6 +94,11 @@ public class ArchiveService {
         }
         
         Archive archive = archiveOpt.get();
+        
+        // 작성자 검증 - 작성자만 수정 가능
+        if (!archive.getWriter().getId().equals(member.getId())) {
+            return false;
+        }
         
         // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
@@ -128,9 +129,8 @@ public class ArchiveService {
         
         Archive archive = archiveOpt.get();
         
-        // 아카이브 멤버 검증
-        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
-        if (archiveMember == null) {
+        // 작성자 검증 - 작성자만 삭제 가능
+        if (!archive.getWriter().getId().equals(member.getId())) {
             return false;
         }
         
@@ -309,7 +309,7 @@ public class ArchiveService {
     }
 
     @Transactional
-    public Long createArchiveWithImages(ArchiveRegisterInputDTO dto, String username, List<MultipartFile> imageFiles) {
+    public Long createArchiveWithImages(ArchiveRegisterInputDTO dto, String username, List<MultipartFile> imageFiles) throws Exception {
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsername(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
@@ -323,82 +323,99 @@ public class ArchiveService {
                 .status(Status.평가전)
                 .thumbnail(dto.getThumbnail())
                 .link(dto.getLink())
+                .writer(member)
                 .build();
 
         archive.setSkillsFromList(dto.getSkills());
         
-        // 이미지 업로드 처리 - 이미지가 있을 때만 진행
+        // 이미지 업로드 처리
         List<String> imageUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();  // 파일명 저장 리스트
+        
         if (imageFiles != null && !imageFiles.isEmpty()) {
             for (MultipartFile imageFile : imageFiles) {
-                // 빈 파일이 아닐 때만 처리
                 if (!imageFile.isEmpty()) {
-                    try {
-                        String fileName = "archive_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-                        String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
-                        imageUrls.add(imageUrl);
-                    } catch (Exception e) {
-                        // 전역 예외 처리기로 예외를 전달
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미지 업로드 실패: " + e.getMessage());
-                    }
+                    String fileName = "archive_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                    String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                    imageUrls.add(imageUrl);
+                    fileNames.add(fileName);  // 파일명 저장
                 }
             }
-            // 이미지 URL이 있을 때만 설정
             if (!imageUrls.isEmpty()) {
                 archive.setImageUrlsFromList(imageUrls);
+                archive.setFileNamesFromList(fileNames);  // 파일명 저장
             }
-        }
-        // 이미지가 없을 경우 빈 문자열 설정 (NULL 방지)
-        else {
+        } else {
             archive.setImageUrlsFromList(new ArrayList<>());
+            archive.setFileNamesFromList(new ArrayList<>());
         }
         
         Archive savedArchive = archiveRepository.save(archive);
 
+        // 아카이브 멤버 등록 (작성자를 포함한 모든 멤버)
+        boolean writerAdded = false;  // 작성자가 이미 멤버 목록에 있는지 확인하는 플래그
+        
+        // 입력된 멤버 목록 처리
+        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+            // nickname으로 사용자 찾기
+            MemberEntity archiveMember = memberRepository.findByNickname(memberDto.getNickname())
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("존재하지 않는 사용자입니다: " + memberDto.getNickname()));
+
+            // 작성자가 멤버 목록에 이미 있는지 확인
+            if (archiveMember.getId().equals(member.getId())) {
+                writerAdded = true;
+            }
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(archiveMember)
+                .profileImg(memberDto.getProfileImg() != null ? memberDto.getProfileImg() : archiveMember.getProfileImg())
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
+        
+        // 작성자가 멤버 목록에 없으면 추가
+        if (!writerAdded) {
+            ArchiveMember writerMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(member)
+                .profileImg(member.getProfileImg())
+                .build();
+            
+            archiveMemberRepository.save(writerMember);
+        }
 
         return savedArchive.getId();
     }
 
     @Transactional
     public boolean updateArchiveWithImages(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, 
-                                        String username, List<MultipartFile> newImageFiles) {
+                                        String username, List<MultipartFile> newImageFiles) throws Exception {
         // 사용자 검증
-        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
-        if (memberOpt.isEmpty()) {
-            return false;
-        }
-        
-        MemberEntity member = memberOpt.get();
-
-        // 아카이브 멤버 검증
-        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
-        if (archiveMember == null) {
-            return false;
-        }
+        MemberEntity member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
 
         // 아카이브 존재 여부 확인
-        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
-        if (archiveOpt.isEmpty()) {
-            return false;
-        }
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
         
-        Archive archive = archiveOpt.get();
+        // 작성자 검증 - 작성자만 수정 가능
+        if (!archive.getWriter().getId().equals(member.getId())) {
+            throw new AuthException("아카이브 수정 권한이 없습니다.");
+        }
         
         // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
         
-        // 새로운 이미지 처리 - 기존 이미지에 추가
+        // 새 이미지 업로드 및 처리
         List<String> newImageUrls = new ArrayList<>();
         if (newImageFiles != null && !newImageFiles.isEmpty()) {
             for (MultipartFile imageFile : newImageFiles) {
                 if (!imageFile.isEmpty()) {
-                    try {
-                        String fileName = "archive_" + archive.getId() + "_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-                        String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
-                        newImageUrls.add(imageUrl);
-                    } catch (Exception e) {
-                        throw new BAD_REQUEST_EXCEPTION("이미지 업로드 실패: " + e.getMessage());
-                    }
+                    String fileName = "archive_" + archive.getId() + "_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                    String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                    newImageUrls.add(imageUrl);
                 }
             }
             
@@ -418,4 +435,6 @@ public class ArchiveService {
         
         return true;
     }
+
+   
 } 

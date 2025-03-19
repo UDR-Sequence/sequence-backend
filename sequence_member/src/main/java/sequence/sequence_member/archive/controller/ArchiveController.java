@@ -39,7 +39,7 @@ public class ArchiveController {
     public ResponseEntity<ApiResponseData<Long>> createArchive(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart("archiveData") @Valid ArchiveRegisterInputDTO archiveRegisterInputDTO,
-            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) throws Exception {
             
         if (userDetails == null) {
             throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
@@ -86,7 +86,7 @@ public class ArchiveController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("archiveId") Long archiveId,
             @RequestPart("archiveData") @Valid ArchiveUpdateDTO archiveUpdateDTO,
-            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) throws Exception {
         
         if (userDetails == null) {
             throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
@@ -100,7 +100,7 @@ public class ArchiveController {
         );
         
         if (!isUpdated) {
-            throw new CanNotFindResourceException("수정할 아카이브가 없거나 권한이 없습니다.");
+            throw new CanNotFindResourceException("수정할 아카이브가 없거나 작성자만 수정할 수 있습니다.");
         }
         
         return ResponseEntity.ok(ApiResponseData.success(null, "아카이브 수정 성공"));
@@ -119,7 +119,7 @@ public class ArchiveController {
         boolean isDeleted = archiveService.deleteArchive(archiveId, userDetails.getUsername());
         
         if (!isDeleted) {
-            throw new CanNotFindResourceException("삭제할 아카이브가 없거나 권한이 없습니다.");
+            throw new CanNotFindResourceException("삭제할 아카이브가 없거나 작성자만 삭제할 수 있습니다.");
         }
         
         return ResponseEntity.ok(ApiResponseData.success(null, "아카이브 삭제 성공"));

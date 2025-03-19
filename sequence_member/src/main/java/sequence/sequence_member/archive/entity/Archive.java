@@ -66,6 +66,9 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "img_url", columnDefinition = "TEXT")
     private String imgUrl;
 
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;  // 파일명 저장 필드 추가
+
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArchiveMember> archiveMembers = new ArrayList<>();
@@ -107,6 +110,22 @@ public class Archive extends BaseTimeEntity {
             return;
         }
         this.imgUrl = String.join(",", imageUrlList);
+    }
+
+    // 파일명 관련 메서드 추가
+    public List<String> getFileNamesAsList() {
+        if (this.fileNames == null || this.fileNames.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(this.fileNames.split(","));
+    }
+    
+    public void setFileNamesFromList(List<String> fileNameList) {
+        if (fileNameList == null || fileNameList.isEmpty()) {
+            this.fileNames = "";
+            return;
+        }
+        this.fileNames = String.join(",", fileNameList);
     }
 
     // duration String 대신 날짜 기간을 반환하는 메서드
