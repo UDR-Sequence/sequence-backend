@@ -29,7 +29,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,8 +57,9 @@ public class MyPageService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
-
-        return myPageMapper.toDTO(member, archivePage);
+        MyPageResponseDTO response = myPageMapper.toDTO(member, archivePage);
+        response.setMyActivityResponseDTO(getMyActivity(member));
+        return response;
     }
 
     /**
@@ -107,22 +107,32 @@ public class MyPageService {
 
 
 
-    public MyActivityResponseDTO getMyActivity(String nickname, CustomUserDetails customUserDetails) {
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
-                .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+    private MyActivityResponseDTO getMyActivity(MemberEntity member) {
 
-        if (!member.getNickname().equals(nickname)) {
-            throw new AuthException("본인 프로필에서만 조회할 수 있습니다.");
-        }
-
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
         // archive조회
-        MyArchiveDTO myArchiveDTO = new MyArchiveDTO();
+        List<Archive> archiveWriteList = archiveRepository.findByWriter(member, sort);
+        List<ArchiveBookmark> archiveBookmarkList = archiveBookmarkRepository.findAllByUsername(member.getUsername(),sort);
 
-        List<PostDTO> archiveWrittenPosts;
-        List<PostDTO> archiveBookmarkedPosts;
-        MyProjectDTO myProjectDTO = new MyProjectDTO();
-        List<PostDTO> projectWrittenPosts;
-        List<PostDTO> projectBookmarkedPosts;
+        List<PostDTO> archiveWrittenPosts = archiveWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> archiveBookmarkedPosts = archiveBookmarkList.stream()
+                .map(archiveBookmark -> mapToPostDTO(archiveBookmark.getArchive()))
+                .toList();
+
+        MyArchiveDTO myArchiveDTO = new MyArchiveDTO(archiveWrittenPosts, archiveBookmarkedPosts);
+
+        // project조회
+        List<Project> projectWriteList = projectRepository.findByWriter(member,sort);
+        List<ProjectBookmark> projectBookmarkList = projectBookmarkRepository.findAllByMember(member,sort);
+        List<PostDTO> projectWrittenPosts = projectWriteList.stream()
+                .map(this::mapToPostDTO)
+                .toList();
+        List<PostDTO> projectBookmarkedPosts = projectBookmarkList.stream()
+                .map(projectBookmark -> mapToPostDTO(projectBookmark.getProject()))
+                .toList();
+        MyProjectDTO myProjectDTO = new MyProjectDTO(projectWrittenPosts, projectBookmarkedPosts);
 
         return new MyActivityResponseDTO(myProjectDTO,myArchiveDTO);
     }
@@ -130,7 +140,6 @@ public class MyPageService {
     private PostDTO mapToPostDTO(Archive archive) {
         return new PostDTO(
                 archive.getTitle(),
-                "archive",
                 archive.getId(),
                 Date.from(archive.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
                 archive.getComments().size() // 댓글 수
@@ -140,7 +149,6 @@ public class MyPageService {
     private PostDTO mapToPostDTO(Project project) {
         return new PostDTO(
                 project.getTitle(),
-                "project",
                 project.getId(),
                 Date.from(project.getCreatedDateTime().atZone(ZoneId.systemDefault()).toInstant()), // LocalDateTime → Date 변환
                 project.getComments().size()

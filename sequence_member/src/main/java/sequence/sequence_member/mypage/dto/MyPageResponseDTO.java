@@ -71,6 +71,8 @@ public class MyPageResponseDTO {
 
     private ArchivePageResponseDTO archivePageResponseDTO;
 
+    private MyActivityResponseDTO myActivityResponseDTO;
+
     public MyPageResponseDTO(
             String username, String name, Date birth, Gender gender, String address,
             String phone, String introduction, String nickname,
@@ -150,4 +152,9 @@ public class MyPageResponseDTO {
             this.portfolioUrl = portfolioUrl;
         }
     }
+
+    public void setMyActivityResponseDTO(MyActivityResponseDTO myActivityResponseDTO){
+        this.myActivityResponseDTO = myActivityResponseDTO;
+    }
+
 }

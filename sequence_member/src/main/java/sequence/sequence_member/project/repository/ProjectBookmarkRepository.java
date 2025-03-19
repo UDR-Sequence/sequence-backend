@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,6 @@ public interface ProjectBookmarkRepository extends JpaRepository<ProjectBookmark
 
     // 특정 사용자가 북마크한 Project 게시글을 조회 (member의 id로 조회)
     Page<ProjectBookmark> findByMember_Id(Long memberId, Pageable pageable);
+
+    List<ProjectBookmark> findAllByMember(MemberEntity member, Sort sort);
 }
