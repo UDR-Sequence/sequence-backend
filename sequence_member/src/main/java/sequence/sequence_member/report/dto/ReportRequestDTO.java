@@ -4,12 +4,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.Getter;
+import sequence.sequence_member.report.entity.ReportEntity;
+
+import java.util.List;
 
 @Data
 public class ReportRequestDTO {
 
     private String nickname;
-    private String reportType;
+    private List<ReportEntity.ReportType> reportType;
     private String reporter;
 
     @NotBlank(message = "아이디는 필수 입력 값입니다.")

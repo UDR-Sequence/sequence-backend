@@ -46,6 +46,7 @@ jobs:
       MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
       MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
       MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
+      MINIO_PORTFOLIO_BUCKET_NAME: ${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}}
       MINIO_PW: ${{secrets.MINIO_PW}}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
@@ -156,6 +157,7 @@ jobs:
               -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
               -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
               -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
+              -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
               -e MINIO_PW=${{secrets.MINIO_PW}} \
               -e REDIS_HOST=${{secrets.REDIS_HOST}} \
               -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \

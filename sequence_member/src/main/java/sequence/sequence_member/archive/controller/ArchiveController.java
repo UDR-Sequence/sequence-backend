@@ -86,11 +86,29 @@ public class ArchiveController {
         
         String username = (userDetails != null) ? userDetails.getUsername() : null;
         
-        return ResponseEntity.ok().body(ApiResponseData.of(
-                Code.SUCCESS.getCode(),
-                "아카이브 프로젝트 리스트 조회에 성공했습니다.",
-                archiveService.getAllArchives(page, sortType, username)
-        ));
+        try {
+            ArchivePageResponseDTO response = archiveService.getAllArchives(page, sortType, username);
+            
+            if (response.getArchives().isEmpty()) {
+                return ResponseEntity.ok().body(ApiResponseData.of(
+                        Code.CAN_NOT_FIND_RESOURCE.getCode(),
+                        "아카이브가 없습니다.",
+                        null
+                ));
+            }
+            
+            return ResponseEntity.ok().body(ApiResponseData.of(
+                    Code.SUCCESS.getCode(),
+                    "아카이브 프로젝트 리스트 조회에 성공했습니다.",
+                    response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(ApiResponseData.of(
+                    Code.INTERNAL_SERVER_ERROR.getCode(),
+                    "아카이브 조회 중 오류가 발생했습니다.",
+                    null
+            ));
+        }
     }
 
     // 검색
@@ -104,10 +122,28 @@ public class ArchiveController {
         
         String username = (userDetails != null) ? userDetails.getUsername() : null;
         
-        return ResponseEntity.ok().body(ApiResponseData.of(
-                Code.SUCCESS.getCode(),
-                "검색 결과를 성공적으로 조회했습니다.",
-                archiveService.searchArchives(category, keyword, page, sortType, username)
-        ));
+        try {
+            ArchivePageResponseDTO response = archiveService.searchArchives(category, keyword, page, sortType, username);
+            
+            if (response.getArchives().isEmpty()) {
+                return ResponseEntity.ok().body(ApiResponseData.of(
+                        Code.CAN_NOT_FIND_RESOURCE.getCode(),
+                        "아카이브가 없습니다.",
+                        null
+                ));
+            }
+            
+            return ResponseEntity.ok().body(ApiResponseData.of(
+                    Code.SUCCESS.getCode(),
+                    "검색 결과를 성공적으로 조회했습니다.",
+                    response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(ApiResponseData.of(
+                    Code.INTERNAL_SERVER_ERROR.getCode(),
+                    "아카이브 검색 중 오류가 발생했습니다.",
+                    null
+            ));
+        }
     }
 } 

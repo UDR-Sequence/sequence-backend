@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 public class FileExtensionImpl implements FileExtension{
-    private String[] extensions = {"png", "jpeg", "jpg", "bmp"};
+    private String[] extensions = {"png", "jpeg", "jpg", "bmp", "pdf"};
     private List<String> allowedFileExtensions = new ArrayList<>(Arrays.asList(extensions));
 
     @Override
