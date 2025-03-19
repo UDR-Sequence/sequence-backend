@@ -56,7 +56,11 @@ public class Archive extends BaseTimeEntity {
     @Column(nullable = false)
     private Status status;         
 
-    private String thumbnail;      
+    @Column(name = "thumbnail", columnDefinition = "TEXT")
+    private String thumbnail;
+
+    @Column(name = "thumbnail_file_name")
+    private String thumbnailFileName;  // 썸네일 파일명 저장 필드 추가
 
     private String link;           
 
@@ -156,5 +160,14 @@ public class Archive extends BaseTimeEntity {
     // 조회수 설정 메서드 추가
     public void setView(Integer view) {
         this.view = view;
+    }
+
+    // 썸네일 파일명 설정 메서드 추가
+    public void setThumbnailFileName(String thumbnailFileName) {
+        this.thumbnailFileName = thumbnailFileName;
+    }
+
+    public void setThumbnail(String thumbnailUrl) {
+        this.thumbnail = thumbnailUrl;
     }
 } 
