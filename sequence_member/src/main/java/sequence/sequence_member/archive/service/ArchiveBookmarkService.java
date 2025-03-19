@@ -1,10 +1,8 @@
 package sequence.sequence_member.archive.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +19,20 @@ public class ArchiveBookmarkService {
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveRepository archiveRepository;
 
+    // 아카이브 존재 여부 확인
+    public boolean checkArchiveExists(Long archiveId) {
+        return archiveRepository.existsById(archiveId);
+    }
+
     // 북마크 토글(추가/삭제)
     @Transactional
     public boolean toggleBookmark(Long archiveId, String username) {
-        Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
 
         Optional<ArchiveBookmark> bookmark = bookmarkRepository.findByArchiveAndUsername(archive, username);
         
@@ -52,9 +59,12 @@ public class ArchiveBookmarkService {
 
     // 특정 아카이브의 북마크 여부 확인
     public boolean isBookmarked(Long archiveId, String username) {
-        Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
-            
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
         return bookmarkRepository.existsByArchiveAndUsername(archive, username);
     }
 } 

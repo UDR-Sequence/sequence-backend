@@ -65,7 +65,7 @@ public class Archive extends BaseTimeEntity {
     @Column(name = "skills")
     private String skills;  // "Java,Spring,JPA" 형태로 저장
 
-    @Column(name = "img_url")
+    @Column(name = "img_url", columnDefinition = "TEXT")
     private String imgUrl;
 
     @Builder.Default

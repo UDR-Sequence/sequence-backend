@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
@@ -34,7 +33,13 @@ import java.util.ArrayList;
 import sequence.sequence_member.archive.dto.ArchiveCommentOutputDTO;
 import sequence.sequence_member.archive.entity.ArchiveComment;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.repository.query.Param;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
+import sequence.sequence_member.global.minio.service.MinioService;
+import java.util.Optional;
+import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
+import org.springframework.web.server.ResponseStatusException;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 
 @Service
 @RequiredArgsConstructor
@@ -47,53 +52,22 @@ public class ArchiveService {
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveCommentRepository commentRepository;
     private final ArchiveViewService archiveViewService;
-
-    @Transactional
-    public Long createArchive(ArchiveRegisterInputDTO dto, String username) {
-        // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
-        Archive archive = Archive.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .category(dto.getCategory())
-                .status(Status.평가전)
-                .thumbnail(dto.getThumbnail())
-                .link(dto.getLink())
-                .build();
-
-        archive.setSkillsFromList(dto.getSkills());
-        
-        // 이미지 URL 설정
-        if (dto.getImgUrls() != null && !dto.getImgUrls().isEmpty()) {
-            archive.setImageUrlsFromList(dto.getImgUrls());
-        }
-        
-        Archive savedArchive = archiveRepository.save(archive);
-
-        // 아카이브 멤버 등록 (프로필 이미지 포함)
-        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
-            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
-
-            ArchiveMember newArchiveMember = ArchiveMember.builder()
-                .archive(savedArchive)
-                .member(archiveMember)
-                .profileImg(archiveMember.getProfileImg())  // 멤버의 프로필 이미지 저장
-                .build();
-            
-            archiveMemberRepository.save(newArchiveMember);
-        }
-
-        return savedArchive.getId();  // 아카이브 ID 반환
-    }
+    private final MinioService minioService;
+    private final TeamEvaluationRepository teamEvaluationRepository;
+    
+    @Value("${MINIO_ARCHIVE_IMG}")
+    private String ARCHIVE_IMG_BUCKET;
 
     public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 아카이브가 없습니다."));
+        // Optional로 아카이브 조회
+        Optional<Archive> archiveOptional = archiveRepository.findById(archiveId);
+        
+        // 아카이브가 없으면 null 반환
+        if (archiveOptional.isEmpty()) {
+            return null;
+        }
+        
+        Archive archive = archiveOptional.get();
         
         // Redis에서 조회수 처리
         int viewCount = archiveViewService.getViewsFromRedis(request, archiveId);
@@ -102,19 +76,28 @@ public class ArchiveService {
     }
 
     @Transactional
-    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
+    public boolean updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            return false;
+        }
+        
+        MemberEntity member = memberOpt.get();
 
         // 아카이브 멤버 검증
         ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
         if (archiveMember == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+            return false;
         }
 
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        // 아카이브 존재 여부 확인
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
         
         // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
@@ -123,35 +106,51 @@ public class ArchiveService {
         archiveMemberRepository.deleteByArchiveId(archiveId);
         
         // 새로운 팀원 정보 등록
-        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
-            MemberEntity newMember = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
-
-            ArchiveMember newArchiveMember = ArchiveMember.builder()
-                .archive(archive)
-                .member(newMember)
-                .profileImg(newMember.getProfileImg())  // 프로필 이미지 설정
-                .build();
-            
-            archiveMemberRepository.save(newArchiveMember);
-        }
+        
+        return true;
     }
 
     @Transactional
-    public void deleteArchive(Long archiveId, String username) {
+    public boolean deleteArchive(Long archiveId, String username) {
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            return false;
+        }
+        
+        MemberEntity member = memberOpt.get();
+        
+        // 아카이브 존재 여부 확인
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
+        
         // 아카이브 멤버 검증
         ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
         if (archiveMember == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+            return false;
         }
-
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        // 관련 엔티티를 순서대로 삭제 (참조 무결성 유지)
+        // 1. 팀 평가 삭제
+        teamEvaluationRepository.deleteByArchiveId(archiveId);
+        
+        // 2. 댓글 삭제
+        commentRepository.deleteByArchiveId(archiveId);
+        
+        // 3. 북마크 삭제
+        bookmarkRepository.deleteByArchiveId(archiveId);
+        
+        // 4. 아카이브 멤버 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        // 5. 최종적으로 아카이브 삭제
         archiveRepository.delete(archive);
+        
+        return true;
     }
 
     @Transactional(readOnly = true)
@@ -306,5 +305,129 @@ public class ArchiveService {
                 .archives(archives)
                 .totalPages(archivePage.getTotalPages())
                 .build();
+    }
+
+    @Transactional
+    public Long createArchiveWithImages(ArchiveRegisterInputDTO dto, String username, List<MultipartFile> imageFiles) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+
+        Archive archive = Archive.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .category(dto.getCategory())
+                .status(Status.평가전)
+                .thumbnail(dto.getThumbnail())
+                .link(dto.getLink())
+                .build();
+
+        archive.setSkillsFromList(dto.getSkills());
+        
+        // 이미지 업로드 처리 - 이미지가 있을 때만 진행
+        List<String> imageUrls = new ArrayList<>();
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile imageFile : imageFiles) {
+                // 빈 파일이 아닐 때만 처리
+                if (!imageFile.isEmpty()) {
+                    try {
+                        String fileName = "archive_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                        String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                        imageUrls.add(imageUrl);
+                    } catch (Exception e) {
+                        // 전역 예외 처리기로 예외를 전달
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미지 업로드 실패: " + e.getMessage());
+                    }
+                }
+            }
+            // 이미지 URL이 있을 때만 설정
+            if (!imageUrls.isEmpty()) {
+                archive.setImageUrlsFromList(imageUrls);
+            }
+        }
+        // 이미지가 없을 경우 빈 문자열 설정 (NULL 방지)
+        else {
+            archive.setImageUrlsFromList(new ArrayList<>());
+        }
+        
+        Archive savedArchive = archiveRepository.save(archive);
+
+        // 아카이브 멤버 등록 (프로필 이미지 포함)
+        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(archiveMember)
+                .profileImg(archiveMember.getProfileImg())
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
+
+        return savedArchive.getId();
+    }
+
+    @Transactional
+    public boolean updateArchiveWithImages(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, 
+                                        String username, List<MultipartFile> newImageFiles) {
+        // 사용자 검증
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            return false;
+        }
+        
+        MemberEntity member = memberOpt.get();
+
+        // 아카이브 멤버 검증
+        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
+        if (archiveMember == null) {
+            return false;
+        }
+
+        // 아카이브 존재 여부 확인
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
+        
+        // 아카이브 기본 정보 업데이트
+        archive.updateArchive(archiveUpdateDTO);
+        
+        // 새로운 이미지 처리 - 기존 이미지에 추가
+        List<String> newImageUrls = new ArrayList<>();
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+            for (MultipartFile imageFile : newImageFiles) {
+                if (!imageFile.isEmpty()) {
+                    try {
+                        String fileName = "archive_" + archive.getId() + "_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                        String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                        newImageUrls.add(imageUrl);
+                    } catch (Exception e) {
+                        throw new BAD_REQUEST_EXCEPTION("이미지 업로드 실패: " + e.getMessage());
+                    }
+                }
+            }
+            
+            // 이미지 URL 설정 - DTO에서 받은 이미지 URL과 새로 업로드한 이미지 URL 합치기
+            List<String> allImageUrls = new ArrayList<>();
+            if (archiveUpdateDTO.getImgUrls() != null) {
+                allImageUrls.addAll(archiveUpdateDTO.getImgUrls());
+            }
+            allImageUrls.addAll(newImageUrls);
+            
+            archive.setImageUrlsFromList(allImageUrls);
+        } else if (archiveUpdateDTO.getImgUrls() != null) {
+            archive.setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        } else {
+            archive.setImageUrlsFromList(new ArrayList<>());
+        }
+        
+        return true;
     }
 } 
