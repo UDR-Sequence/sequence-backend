@@ -119,7 +119,26 @@ public class ArchiveService {
 
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
+        
+        // 기존 팀원 정보 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        // 새로운 팀원 정보 등록
+        for (ArchiveUpdateDTO.ArchiveMemberDTO memberDto : archiveUpdateDTO.getArchiveMembers()) {
+            MemberEntity newMember = memberRepository.findByUsername(memberDto.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(archive)
+                .member(newMember)
+                .profileImg(newMember.getProfileImg())  // 프로필 이미지 설정
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
     }
 
     @Transactional
@@ -163,10 +182,7 @@ public class ArchiveService {
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage = archiveRepository.findAll(pageable);
         
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -197,10 +213,7 @@ public class ArchiveService {
             archivePage = archiveRepository.findAll(pageable);
         }
 
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
+        // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
     }
 
@@ -288,10 +301,14 @@ public class ArchiveService {
     }
 
     public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
+        List<ArchiveOutputDTO> archives = archivePage.isEmpty() ? 
+                new ArrayList<>() : 
+                archivePage.getContent().stream()
+                    .map(archive -> convertToDTO(archive, username, archive.getView()))
+                    .toList();
+        
         return ArchivePageResponseDTO.builder()
-                .archives(archivePage.getContent().stream()
-                        .map(archive -> convertToDTO(archive, username, archive.getView()))
-                        .toList())
+                .archives(archives)
                 .totalPages(archivePage.getTotalPages())
                 .build();
     }

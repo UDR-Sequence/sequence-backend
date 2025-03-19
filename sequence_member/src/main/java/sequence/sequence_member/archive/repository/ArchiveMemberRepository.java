@@ -1,6 +1,8 @@
 package sequence.sequence_member.archive.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import sequence.sequence_member.archive.entity.ArchiveMember;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.member.entity.MemberEntity;
@@ -16,4 +18,8 @@ public interface ArchiveMemberRepository extends JpaRepository<ArchiveMember, Lo
     ArchiveMember findByMemberAndArchive_Id(MemberEntity member, Long archiveId);
 
     List<ArchiveMember> findAllByArchiveId(Long archiveId);
+
+    @Modifying
+    @Query("DELETE FROM ArchiveMember am WHERE am.archive.id = :archiveId")
+    void deleteByArchiveId(Long archiveId);
 } 
