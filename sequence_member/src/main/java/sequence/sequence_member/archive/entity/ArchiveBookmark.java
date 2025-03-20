@@ -6,14 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
-
+import sequence.sequence_member.member.entity.MemberEntity;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "archive_bookmark",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"archive_id", "username"})
+        @UniqueConstraint(columnNames = {"archive_id", "user_id"})
     })
 public class ArchiveBookmark extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,12 +23,13 @@ public class ArchiveBookmark extends BaseTimeEntity {
     @JoinColumn(name = "archive_id")
     private Archive archive;
     
-    @Column(nullable = false)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private MemberEntity userId;
 
     @Builder
-    public ArchiveBookmark(Archive archive, String username) {
+    public ArchiveBookmark(Archive archive, MemberEntity userId) {
         this.archive = archive;
-        this.username = username;
+        this.userId = userId;
     }
 }
