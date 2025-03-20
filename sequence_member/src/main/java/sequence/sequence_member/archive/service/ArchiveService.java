@@ -235,12 +235,20 @@ public class ArchiveService {
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
-                .profileImg(archiveMember.getProfileImg())  // 프로필 이미지 추가
+                .profileImg(archiveMember.getProfileImg())
                 .build())
             .collect(Collectors.toList());
 
-        // 북마크 관련 정보 조회
-        boolean isBookmarked = bookmarkRepository.existsByArchiveAndUsername(archive, username);
+        // 북마크 관련 정보 조회 부분 수정
+        boolean isBookmarked = false;
+        if (username != null && !username.isEmpty()) {
+            // username으로 MemberEntity 조회
+            Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+            if (memberOpt.isPresent()) {
+                MemberEntity userId = memberOpt.get();
+                isBookmarked = bookmarkRepository.existsByArchiveAndUserId(archive, userId);
+            }
+        }
         long bookmarkCount = bookmarkRepository.countByArchive(archive);
 
         // 댓글 정보 조회
