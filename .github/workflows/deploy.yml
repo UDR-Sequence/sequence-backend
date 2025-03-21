@@ -51,6 +51,8 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      MINIO_ARCHIVE_THUMBNAIL: ${{secretes.MINIO_ARCHIVE_THUMBNAIL}}
+      MINIO_ARCHIVE_IMG: ${{secretes.sequence-archive-img}}
       
     steps:
     - uses: actions/checkout@v4
@@ -162,6 +164,8 @@ jobs:
               -e REDIS_HOST=${{secrets.REDIS_HOST}} \
               -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
               -e REDIS_PORT=${{secrets.REDIS_PORT}} \
+              -e MINIO_ARCHIVE_THUMBNAIL=${{secretes.MINIO_ARCHIVE_THUMBNAIL}} \ 
+              -e MINIO_ARCHIVE_IMG=${{secretes.sequence-archive-img}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
       

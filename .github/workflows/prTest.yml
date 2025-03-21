@@ -44,6 +44,8 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      MINIO_ARCHIVE_THUMBNAIL: ${{secretes.MINIO_ARCHIVE_THUMBNAIL}}
+      MINIO_ARCHIVE_IMG: ${{secretes.MINIO_ARCHIVE_IMG}}
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
