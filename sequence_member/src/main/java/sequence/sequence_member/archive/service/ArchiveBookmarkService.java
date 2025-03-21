@@ -1,10 +1,8 @@
 package sequence.sequence_member.archive.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +11,10 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveBookmark;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.global.exception.UserNotFindException;
+import sequence.sequence_member.global.exception.CanNotFindResourceException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,14 +22,23 @@ import sequence.sequence_member.archive.repository.ArchiveRepository;
 public class ArchiveBookmarkService {
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveRepository archiveRepository;
+    private final MemberRepository memberRepository;
+
+    // 아카이브 존재 여부 확인
+    public boolean checkArchiveExists(Long archiveId) {
+        return archiveRepository.existsById(archiveId);
+    }
 
     // 북마크 토글(추가/삭제)
     @Transactional
     public boolean toggleBookmark(Long archiveId, String username) {
         Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
+            .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
+        
+        MemberEntity userId = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
 
-        Optional<ArchiveBookmark> bookmark = bookmarkRepository.findByArchiveAndUsername(archive, username);
+        Optional<ArchiveBookmark> bookmark = bookmarkRepository.findByArchiveAndUserId(archive, userId);
         
         if (bookmark.isPresent()) {
             // 북마크 취소
@@ -37,7 +48,7 @@ public class ArchiveBookmarkService {
             // 북마크 추가
             bookmarkRepository.save(ArchiveBookmark.builder()
                 .archive(archive)
-                .username(username)
+                .userId(userId)
                 .build());
             return true;
         }
@@ -45,7 +56,10 @@ public class ArchiveBookmarkService {
 
     // 사용자의 북마크 목록 조회
     public List<Long> getUserBookmarks(String username) {
-        return bookmarkRepository.findAllByUsername(username).stream()
+        MemberEntity userId = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
+        
+        return bookmarkRepository.findAllByUserId(userId).stream()
             .map(bookmark -> bookmark.getArchive().getId())
             .collect(Collectors.toList());
     }
@@ -53,8 +67,11 @@ public class ArchiveBookmarkService {
     // 특정 아카이브의 북마크 여부 확인
     public boolean isBookmarked(Long archiveId, String username) {
         Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
-            
-        return bookmarkRepository.existsByArchiveAndUsername(archive, username);
+            .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
+        
+        MemberEntity userId = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
+        
+        return bookmarkRepository.existsByArchiveAndUserId(archive, userId);
     }
 } 

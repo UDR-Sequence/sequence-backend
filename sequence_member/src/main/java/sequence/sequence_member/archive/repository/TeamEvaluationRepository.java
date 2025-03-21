@@ -1,6 +1,7 @@
 package sequence.sequence_member.archive.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sequence.sequence_member.archive.entity.Archive;
@@ -32,4 +33,8 @@ public interface TeamEvaluationRepository extends JpaRepository<TeamEvaluation, 
     List<ArchiveMember> findDistinctEvaluatorsByArchive(Archive archive);
 
     List<TeamEvaluation> findAllByEvaluatorAndEvaluator_Archive_Id(ArchiveMember evaluator, Long archiveId);
+
+    @Modifying
+    @Query("DELETE FROM TeamEvaluation te WHERE te.evaluator.archive.id = :archiveId OR te.evaluated.archive.id = :archiveId")
+    void deleteByArchiveId(@Param("archiveId") Long archiveId);
 } 

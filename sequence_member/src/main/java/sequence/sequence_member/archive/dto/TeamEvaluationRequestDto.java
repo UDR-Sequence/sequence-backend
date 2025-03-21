@@ -22,8 +22,8 @@ public class TeamEvaluationRequestDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class EvaluationItem {
-        @NotNull(message = "평가 받는 팀원의 username은 필수입니다.")
-        private String evaluatedUserName;
+        @NotNull(message = "평가 받는 팀원의 닉네임은 필수입니다.")
+        private String evaluatedNickname;
         
         @NotNull(message = "피드백 내용은 필수입니다.")
         private String feedback;

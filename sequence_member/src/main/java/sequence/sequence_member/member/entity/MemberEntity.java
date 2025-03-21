@@ -82,6 +82,7 @@ public class MemberEntity extends BaseTimeEntity {
     @JoinColumn(name = "education_id")
     private EducationEntity education;
 
+
     public enum Gender{
         M,F
     }

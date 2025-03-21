@@ -3,7 +3,7 @@ package sequence.sequence_member.archive.dto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
 
@@ -37,14 +37,4 @@ public class ArchiveUpdateDTO {
     private List<String> skills;
 
     private List<String> imgUrls;
-
-    @NotEmpty(message = "팀원 정보를 입력해주세요.")
-    private List<ArchiveMemberDTO> archiveMembers;
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ArchiveMemberDTO {
-        private String username;
-    }
 }

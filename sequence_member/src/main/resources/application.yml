@@ -42,3 +42,5 @@ minio:
   secretKey: ${MINIO_SECRET_KEY}
   bucketName: ${MINIO_BUCKET_NAME}
   portfolio_bucketName : ${MINIO_PORTFOLIO_BUCKET_NAME}
+  archive_img: ${MINIO_ARCHIVE_IMG}       # 이 속성 추가
+  archive_thumbnail: ${MINIO_ARCHIVE_THUMBNAIL}  # 필요하다면 이것도 추가

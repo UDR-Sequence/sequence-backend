@@ -112,7 +112,7 @@ public class MyPageService {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
         // archive조회
         List<Archive> archiveWriteList = archiveRepository.findByWriter(member, sort);
-        List<ArchiveBookmark> archiveBookmarkList = archiveBookmarkRepository.findAllByUsername(member.getUsername(),sort);
+        List<ArchiveBookmark> archiveBookmarkList = archiveBookmarkRepository.findAllByUserId(member, sort);
 
         List<PostDTO> archiveWrittenPosts = archiveWriteList.stream()
                 .map(this::mapToPostDTO)

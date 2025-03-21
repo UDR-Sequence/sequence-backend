@@ -56,15 +56,22 @@ public class Archive extends BaseTimeEntity {
     @Column(nullable = false)
     private Status status;         
 
-    private String thumbnail;      
+    @Column(name = "thumbnail", columnDefinition = "TEXT")
+    private String thumbnail;
+
+    @Column(name = "thumbnail_file_name")
+    private String thumbnailFileName;  // 썸네일 파일명 저장 필드 추가
 
     private String link;           
 
     @Column(name = "skills")
     private String skills;  // "Java,Spring,JPA" 형태로 저장
 
-    @Column(name = "img_url")
+    @Column(name = "img_url", columnDefinition = "TEXT")
     private String imgUrl;
+
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;  // 파일명 저장 필드 추가
 
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -109,6 +116,22 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 
+    // 파일명 관련 메서드 추가
+    public List<String> getFileNamesAsList() {
+        if (this.fileNames == null || this.fileNames.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(this.fileNames.split(","));
+    }
+    
+    public void setFileNamesFromList(List<String> fileNameList) {
+        if (fileNameList == null || fileNameList.isEmpty()) {
+            this.fileNames = "";
+            return;
+        }
+        this.fileNames = String.join(",", fileNameList);
+    }
+
     // duration String 대신 날짜 기간을 반환하는 메서드
     public String getDurationAsString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM");
@@ -137,5 +160,14 @@ public class Archive extends BaseTimeEntity {
     // 조회수 설정 메서드 추가
     public void setView(Integer view) {
         this.view = view;
+    }
+
+    // 썸네일 파일명 설정 메서드 추가
+    public void setThumbnailFileName(String thumbnailFileName) {
+        this.thumbnailFileName = thumbnailFileName;
+    }
+
+    public void setThumbnail(String thumbnailUrl) {
+        this.thumbnail = thumbnailUrl;
     }
 } 
