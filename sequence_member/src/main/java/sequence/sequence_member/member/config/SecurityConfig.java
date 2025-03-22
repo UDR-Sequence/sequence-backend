@@ -57,23 +57,21 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/api/login"); // 엔드포인트를 /api/login으로 변경
 
         http
-                .cors((cors)-> cors
-                        .configurationSource(new CorsConfigurationSource(){
-
+                .cors((cors) -> cors
+                        .configurationSource(new CorsConfigurationSource() {
                             @Override
-                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request){
+                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                                 CorsConfiguration configuration = new CorsConfiguration();
-
-                                configuration.setAllowedOrigins(Collections.singletonList("*"));
+                                configuration.setAllowedOriginPatterns(Collections.singletonList("*")); // 모든 출처 허용
                                 configuration.setAllowedMethods(Collections.singletonList("*"));
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
-                                configuration.setMaxAge(3600L);
-
+                                configuration.setAllowCredentials(false); // 자격 증명 비활성화
                                 configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
+                                configuration.setMaxAge(3600L);
                                 return configuration;
                             }
-
-                        }));
+                        }))
+                .csrf((csrf) -> csrf.disable()); // 필요에 따라 유지
 
         //csrf disable
         http
