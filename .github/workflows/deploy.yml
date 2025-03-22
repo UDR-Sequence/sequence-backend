@@ -164,7 +164,7 @@ jobs:
               -e REDIS_HOST=${{secrets.REDIS_HOST}} \
               -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
               -e REDIS_PORT=${{secrets.REDIS_PORT}} \
-              -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \ 
+              -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \
               -e MINIO_ARCHIVE_IMG=${{secrets.MINIO_ARCHIVE_IMG}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
