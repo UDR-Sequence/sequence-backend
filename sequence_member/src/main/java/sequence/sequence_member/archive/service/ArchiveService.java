@@ -332,7 +332,7 @@ public class ArchiveService {
     public Long createArchiveWithImages(
             ArchiveRegisterInputDTO dto, 
             String username, 
-            MultipartFile thumbnailFile,  // 썸네일 파일 추가
+            MultipartFile thumbnailFile,  // 썸네일 파일
             List<MultipartFile> imageFiles) throws Exception {
         
         // 사용자 검증
@@ -359,7 +359,8 @@ public class ArchiveService {
             archive.setThumbnailFileName(thumbnailFileName);
             archive.setThumbnail(thumbnailUrl);
         } else {
-            archive.setThumbnail(dto.getThumbnail());  // DTO에서 제공한 URL 사용
+            // 썸네일이 없는 경우 기본 이미지 설정 또는 null 처리
+            archive.setThumbnail(null);  // 또는 기본 이미지 URL
         }
         
         // 이미지 업로드 처리 (기존 코드 유지)
