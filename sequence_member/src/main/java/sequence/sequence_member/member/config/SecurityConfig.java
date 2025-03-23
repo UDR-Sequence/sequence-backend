@@ -62,12 +62,11 @@ public class SecurityConfig {
                             @Override
                             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                                 CorsConfiguration configuration = new CorsConfiguration();
-                                configuration.setAllowedOriginPatterns(Collections.singletonList("*")); // 모든 출처 허용
+                                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                                configuration.setAllowedOrigins(Collections.singletonList("https://parkdu7.github.io/sequence"));
                                 configuration.setAllowedMethods(Collections.singletonList("*"));
+                                configuration.setAllowCredentials(true);
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
-                                configuration.setAllowCredentials(false); // 자격 증명 비활성화
-                                configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
-                                configuration.setMaxAge(3600L);
                                 return configuration;
                             }
                         }))
