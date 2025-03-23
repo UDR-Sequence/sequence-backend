@@ -62,11 +62,14 @@ public class SecurityConfig {
                             @Override
                             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                                 CorsConfiguration configuration = new CorsConfiguration();
-                                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                                configuration.setAllowedOrigins(Collections.singletonList("https://parkdu7.github.io/sequence"));
-                                configuration.setAllowedMethods(Collections.singletonList("*"));
+                                configuration.setAllowedOrigins(Arrays.asList(
+                                        "http://localhost:3000",
+                                        "https://parkdu7.github.io/sequence"
+                                ));
+                                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                                 configuration.setAllowCredentials(true);
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
+                                configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
                                 return configuration;
                             }
                         }))
