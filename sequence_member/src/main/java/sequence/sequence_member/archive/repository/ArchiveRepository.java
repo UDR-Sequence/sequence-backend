@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.global.enums.enums.Category;
+import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.util.Optional;
@@ -41,4 +42,20 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 특정 멤버가 작성한 모든 아카이빙 글을 조회
     List<Archive> findByWriter(MemberEntity writer, Sort sort);
 
+    // 상태별 조회 메서드 추가
+    Page<Archive> findByStatus(Status status, Pageable pageable);
+    
+    // 카테고리와 상태로 조회
+    Page<Archive> findByCategoryAndStatus(Category category, Status status, Pageable pageable);
+    
+    // 제목으로 검색하고 상태로 필터링
+    Page<Archive> findByTitleContainingIgnoreCaseAndStatus(String title, Status status, Pageable pageable);
+    
+    // 카테고리와 제목으로 검색하고 상태로 필터링
+    Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndStatus(
+        Category category, String title, Status status, Pageable pageable);
+    
+    // 특정 멤버의 아카이브 중 상태가 평가완료인 것만 조회
+    List<Archive> findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
+        Long memberId, Status status);
 } 

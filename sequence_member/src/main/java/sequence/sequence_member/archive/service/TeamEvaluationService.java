@@ -89,6 +89,15 @@ public class TeamEvaluationService {
 
             teamEvaluationRepository.save(teamEvaluation);
         }
+
+        // 모든 팀원 평가가 완료되었는지 확인
+        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
+        
+        // 모든 평가가 완료되면 아카이브 상태 변경
+        if (isAllCompleted && archive.getStatus() == Status.평가전) {
+            archive.setStatus(Status.평가완료);
+            archiveRepository.save(archive);
+        }
     }
 
     // 아카이브의 모든 평가 완료 여부 확인 메소드 수정
@@ -211,6 +220,24 @@ public class TeamEvaluationService {
                 .roles(evaluatorRoles)  // 역할 정보 추가
                 .build())
             .evaluated(evaluatedList)
+            .startDate(archive.getStartDate())
+            .endDate(archive.getEndDate())
             .build());
+    }
+
+    @Transactional
+    public boolean checkAndUpdateEvaluationStatus(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+            .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
+        
+        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
+        
+        // 모든 평가가 완료되었고, 현재 상태가 평가전이면 평가완료로 변경
+        if (isAllCompleted && archive.getStatus() == Status.평가전) {
+            archive.setStatus(Status.평가완료);
+            archiveRepository.save(archive);
+        }
+        
+        return isAllCompleted;
     }
 } 

@@ -1,5 +1,6 @@
 package sequence.sequence_member.archive.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.TeamEvaluation;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.member.entity.EducationEntity;
@@ -20,6 +22,8 @@ import sequence.sequence_member.member.entity.EducationEntity;
 public class TeamEvaluationResponseDto {
     private EvaluatorInfo evaluator;
     private List<EvaluatedInfo> evaluated;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     @Getter
     @Builder
@@ -52,6 +56,8 @@ public class TeamEvaluationResponseDto {
                                           evaluatedEducation.getDesiredJob() : 
                                           new ArrayList<>();
 
+        Archive archive = evaluation.getEvaluator().getArchive();
+
         return TeamEvaluationResponseDto.builder()
                 .evaluator(EvaluatorInfo.builder()
                     .nickname(evaluation.getEvaluator().getMember().getNickname())
@@ -63,6 +69,8 @@ public class TeamEvaluationResponseDto {
                     .profileImg(evaluation.getEvaluated().getMember().getProfileImg())
                     .roles(evaluatedRoles)
                     .build())
+                .startDate(archive.getStartDate())
+                .endDate(archive.getEndDate())
                 .build();
     }
 } 

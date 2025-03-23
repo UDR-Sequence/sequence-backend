@@ -170,4 +170,9 @@ public class Archive extends BaseTimeEntity {
     public void setThumbnail(String thumbnailUrl) {
         this.thumbnail = thumbnailUrl;
     }
+
+    // 상태 변경 메서드 추가
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 } 
