@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -80,6 +81,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseData<String>> handleExpiredJwtException(ExpiredJwtException e){
         return ResponseEntity.status(Code.EXPIRED_TOKEN.getStatus()).body(ApiResponseData.of(Code.VALIDATION_ERROR.getCode(),
                 e.getMessage(),null));
+    }
+
+    // JWT 일반 오류 처리: 토큰 형식 및 구조, 지원 불가, 토큰 null 등
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ApiResponseData<String>> handleJwtException(JwtException e){
+        return ResponseEntity.status(Code.BAD_REQUEST.getStatus())
+                .body(ApiResponseData.of(Code.BAD_REQUEST.getCode(), "JWT 오류 발생: " +e.getMessage(),null));
+    }
+
+    // 필수 파라미터 누락
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponseData<String>> handleMissingServletRequestParameterException(MissingServletRequestParameterException e){
+        return ResponseEntity.status(Code.VALIDATION_ERROR.getStatus()).body(ApiResponseData.of(Code.BAD_REQUEST.getCode(), "필수 파라미터 누락: " + e.getMessage(),null));
     }
 
 /**
