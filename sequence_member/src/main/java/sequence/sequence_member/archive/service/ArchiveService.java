@@ -42,6 +42,7 @@ import org.springframework.web.server.ResponseStatusException;
 import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.global.exception.AuthException;
+import sequence.sequence_member.archive.dto.ArchiveListDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -175,39 +176,48 @@ public class ArchiveService {
         return userArchiveDTOList;
     }
 
-    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
-        // username이 null이 아닐 때만 사용자 검증
+    public ArchiveListDTO getAllArchives(int page, SortType sortType, String username) {
         if (username != null) {
             memberRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        
-        // 상태가 평가완료인 아카이브만 조회하도록 수정
         Page<Archive> archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         
-        // 비어있는 경우에도 빈 DTO 반환
-        return createArchivePageResponse(archivePage, username);
+        List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
+            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .writerNickname(archive.getWriter().getNickname())
+                .thumbnail(archive.getThumbnail())
+                .commentCount(archive.getComments().size())
+                .createdDateTime(archive.getCreatedDateTime())
+                .build())
+            .toList();
+
+        return ArchiveListDTO.builder()
+            .archives(archives)
+            .totalPages(archivePage.getTotalPages())
+            .totalElements(archivePage.getTotalElements())
+            .build();
     }
 
-    public ArchivePageResponseDTO searchArchives(
+    public ArchiveListDTO searchArchives(
             Category category, 
             String keyword, 
             int page, 
             SortType sortType, 
             String username) {
         
-        // username이 null이 아닐 때만 사용자 검증
         if (username != null) {
             memberRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage;
         
-        // null 체크를 통한 메서드 선택 (상태가 평가완료인 아카이브만 조회하도록 수정)
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
             archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatus(
                 category, keyword.trim(), Status.평가완료, pageable);
@@ -220,8 +230,22 @@ public class ArchiveService {
             archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         }
 
-        // 비어있는 경우에도 빈 DTO 반환
-        return createArchivePageResponse(archivePage, username);
+        List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
+            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .writerNickname(archive.getWriter().getNickname())
+                .thumbnail(archive.getThumbnail())
+                .commentCount(archive.getComments().size())
+                .createdDateTime(archive.getCreatedDateTime())
+                .build())
+            .toList();
+
+        return ArchiveListDTO.builder()
+            .archives(archives)
+            .totalPages(archivePage.getTotalPages())
+            .totalElements(archivePage.getTotalElements())
+            .build();
     }
 
     // 정렬 조건이 포함된 Pageable 객체 생성

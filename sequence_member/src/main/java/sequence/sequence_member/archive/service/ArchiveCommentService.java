@@ -11,6 +11,9 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveComment;
 import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +26,7 @@ public class ArchiveCommentService {
 
     private final ArchiveCommentRepository commentRepository;
     private final ArchiveRepository archiveRepository;
+    private final MemberRepository memberRepository;
 
     // 아카이브 존재 여부 확인
     public boolean checkArchiveExists(Long archiveId) {
@@ -69,7 +73,11 @@ public class ArchiveCommentService {
 
     // 댓글 수정
     @Transactional
-    public boolean updateComment(Long archiveId, Long commentId, String writer, CommentUpdateRequestDTO dto) {
+    public boolean updateComment(Long archiveId, Long commentId, String username, CommentUpdateRequestDTO dto) {
+        // username으로 사용자 정보 조회
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
         if (archiveOpt.isEmpty()) {
             return false;
@@ -77,7 +85,11 @@ public class ArchiveCommentService {
         
         Archive archive = archiveOpt.get();
 
-        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(commentId, archive, writer);
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+            commentId, 
+            archive, 
+            member.getNickname()  // 조회한 사용자의 nickname 사용
+        );
         if (commentOpt.isEmpty()) {
             return false;
         }
@@ -94,7 +106,11 @@ public class ArchiveCommentService {
 
     // 댓글 삭제
     @Transactional
-    public boolean deleteComment(Long archiveId, Long commentId, String writer) {
+    public boolean deleteComment(Long archiveId, Long commentId, String username) {
+        // username으로 사용자 조회하여 nickname 가져오기
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
         if (archiveOpt.isEmpty()) {
             return false;
@@ -102,7 +118,12 @@ public class ArchiveCommentService {
         
         Archive archive = archiveOpt.get();
 
-        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(commentId, archive, writer);
+        // nickname으로 댓글 작성자 검증
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+            commentId, 
+            archive, 
+            member.getNickname()  // 조회한 사용자의 nickname으로 검증
+        );
         if (commentOpt.isEmpty()) {
             return false;
         }

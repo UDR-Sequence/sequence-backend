@@ -10,9 +10,11 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     private final MemberEntity memberEntity;
+    private final String nickname;
 
     public CustomUserDetails(MemberEntity memberEntity){
         this.memberEntity = memberEntity;
+        this.nickname = memberEntity.getNickname();
     }
 
     @Override
@@ -30,7 +32,9 @@ public class CustomUserDetails implements UserDetails {
         return memberEntity.getUsername();
     }
 
-    public String getNickname() { return memberEntity.getNickname(); }
+    public String getNickname() {
+        return this.nickname;
+    }
 
     @Override
     public boolean isAccountNonExpired() {
