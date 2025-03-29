@@ -41,8 +41,8 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request) {
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request)));
+    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request, customUserDetails)));
     }
 
     @PutMapping("/{projectId}")
