@@ -68,6 +68,7 @@ public class SecurityConfig {
                                 ));
                                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                                 configuration.setAllowCredentials(true);
+
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
                                 return configuration;
