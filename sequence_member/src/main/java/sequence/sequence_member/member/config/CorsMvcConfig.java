@@ -1,3 +1,4 @@
+
 //package sequence.sequence_member.member.config;
 //
 //import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -13,3 +14,4 @@
 //                .allowCredentials(true);
 //    }
 //}
+

@@ -158,12 +158,16 @@ public class ArchiveService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails){
+    public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails) {
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
-        List<Archive> latestArchives = archiveRepository.findTop5ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
+        // 평가완료 상태인 아카이브만 조회
+        List<Archive> latestArchives = archiveRepository
+            .findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
+                member.getId(), Status.평가완료);
+        
         List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
         for(Archive archive : latestArchives){
             userArchiveDTOList.add(new UserArchiveDTO(archive));
@@ -179,7 +183,9 @@ public class ArchiveService {
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findAll(pageable);
+        
+        // 상태가 평가완료인 아카이브만 조회하도록 수정
+        Page<Archive> archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         
         // 비어있는 경우에도 빈 DTO 반환
         return createArchivePageResponse(archivePage, username);
@@ -201,15 +207,17 @@ public class ArchiveService {
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage;
         
-        // null 체크를 통한 메서드 선택
+        // null 체크를 통한 메서드 선택 (상태가 평가완료인 아카이브만 조회하도록 수정)
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCase(category, keyword.trim(), pageable);
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatus(
+                category, keyword.trim(), Status.평가완료, pageable);
         } else if (category != null) {
-            archivePage = archiveRepository.findByCategory(category, pageable);
+            archivePage = archiveRepository.findByCategoryAndStatus(category, Status.평가완료, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
+            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatus(
+                keyword.trim(), Status.평가완료, pageable);
         } else {
-            archivePage = archiveRepository.findAll(pageable);
+            archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         }
 
         // 비어있는 경우에도 빈 DTO 반환
@@ -324,7 +332,7 @@ public class ArchiveService {
     public Long createArchiveWithImages(
             ArchiveRegisterInputDTO dto, 
             String username, 
-            MultipartFile thumbnailFile,  // 썸네일 파일 추가
+            MultipartFile thumbnailFile,  // 썸네일 파일
             List<MultipartFile> imageFiles) throws Exception {
         
         // 사용자 검증
@@ -351,7 +359,8 @@ public class ArchiveService {
             archive.setThumbnailFileName(thumbnailFileName);
             archive.setThumbnail(thumbnailUrl);
         } else {
-            archive.setThumbnail(dto.getThumbnail());  // DTO에서 제공한 URL 사용
+            // 썸네일이 없는 경우 기본 이미지 설정 또는 null 처리
+            archive.setThumbnail(null);  // 또는 기본 이미지 URL
         }
         
         // 이미지 업로드 처리 (기존 코드 유지)

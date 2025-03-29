@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -25,6 +26,7 @@ import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
 import sequence.sequence_member.project.mapper.PeriodMapper;
+import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
 import sequence.sequence_member.project.repository.ProjectMemberRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
@@ -38,6 +40,7 @@ public class ProjectService {
     private final ProjectMemberRepository projectMemberRepository;
     private final MemberRepository memberRepository;
     private final ProjectViewService projectViewService;
+    private final ProjectBookmarkRepository projectBookmarkRepository;
 
     /**
      * Project를 생성하는 메인 로직 함수
@@ -61,7 +64,7 @@ public class ProjectService {
      * @return
      */
     @Transactional(readOnly = true)
-    public ProjectOutputDTO getProject(Long projectId, HttpServletRequest request){
+    public ProjectOutputDTO getProject(Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
 
         //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
@@ -134,6 +137,7 @@ public class ProjectService {
                 .members(projectMemberOutputDTOS)
                 .comments(commentOutputDTOS)
                 .views(views)
+                .isBookmark(isBookmarked(projectId, customUserDetails))
                 .build();
     }
 
@@ -179,7 +183,7 @@ public class ProjectService {
 
         saveProjectInvitedMemberEntities(project, invitedMembers);
 
-        return getProject(projectId,request);
+        return getProject(projectId,request, customUserDetails);
     }
 
     public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
@@ -299,6 +303,19 @@ public class ProjectService {
 
         return projectFilterOutputDTOS;
 
+    }
+
+
+    // 프로젝트 북마크 여부 확인 ( 북마크 되어있으면 true, 아니면 false, 로그인 안한 사용자는 false)
+    public boolean isBookmarked(Long projectId, CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) {
+            return false;
+        }
+        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        return projectBookmarkRepository.existsByMemberIdAndProjectId(member.getId(), projectId);
     }
 
 }

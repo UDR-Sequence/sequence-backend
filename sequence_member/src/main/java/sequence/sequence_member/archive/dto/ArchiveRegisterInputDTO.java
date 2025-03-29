@@ -36,7 +36,6 @@ public class ArchiveRegisterInputDTO {
     @NotNull(message = "카테고리를 선택해주세요.")
     private Category category;
 
-    private String thumbnail;
     private String link;
 
     @NotEmpty(message = "관련 기술을 선택해주세요.")
