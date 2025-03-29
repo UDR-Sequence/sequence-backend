@@ -35,7 +35,11 @@ public class ArchiveCommentService {
 
     // 댓글 작성
     @Transactional
-    public Long createComment(Long archiveId, CommentCreateRequestDTO dto) {
+    public Long createComment(Long archiveId, String username, CommentCreateRequestDTO dto) {
+        // username으로 사용자 조회하여 nickname 가져오기
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
         // 아카이브 조회
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
         if (archiveOpt.isEmpty()) {
@@ -62,7 +66,7 @@ public class ArchiveCommentService {
 
         ArchiveComment comment = ArchiveComment.builder()
                 .archive(archive)
-                .writer(dto.getWriter())
+                .writer(member.getNickname())  // 조회한 사용자의 nickname을 writer로 저장
                 .parent(parent)
                 .content(dto.getContent())
                 .isDeleted(false)

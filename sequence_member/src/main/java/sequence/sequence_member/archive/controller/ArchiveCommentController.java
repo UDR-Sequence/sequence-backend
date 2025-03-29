@@ -38,7 +38,11 @@ public class ArchiveCommentController {
             throw new CanNotFindResourceException("아카이브를 찾을 수 없습니다.");
         }
         
-        Long commentId = commentService.createComment(archiveId, requestDto);
+        Long commentId = commentService.createComment(
+            archiveId, 
+            userDetails.getUsername(),  // username 전달
+            requestDto
+        );
 
         return ResponseEntity
             .status(Code.CREATED.getStatus())
