@@ -17,7 +17,7 @@ import sequence.sequence_member.member.repository.CareerRepository;
 import sequence.sequence_member.member.repository.EducationRepository;
 import sequence.sequence_member.member.repository.ExperienceRepository;
 import sequence.sequence_member.member.repository.PortfolioRepository;
-import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
+import sequence.sequence_member.mypage.dto.MyPageRequestDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ public class MyPageUpdateService {
      * @param portfolios  새로운 포트폴리오 파일 목록
      */
     public void updateProfile(
-            MemberEntity member, MyPageRequestDTO myPageDTO,
+            MemberEntity member, MyPageRequestDto myPageDTO,
             MultipartFile authImgFile, List<MultipartFile> portfolios
     ) {
         updateBasicInfo(member, myPageDTO);        // 기본 정보 업데이트
@@ -70,7 +70,7 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 기본 정보
      */
-    private void updateBasicInfo(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateBasicInfo(MemberEntity member, MyPageRequestDto myPageDTO) {
         member.setName(myPageDTO.getName());
         member.setBirth(myPageDTO.getBirth());
         member.setGender(myPageDTO.getGender());
@@ -177,7 +177,7 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 수상 경력 정보
      */
-    private void updateAwards(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateAwards(MemberEntity member, MyPageRequestDto myPageDTO) {
         List<AwardEntity> existingAwards = awardRepository.findByMember(member);
         List<AwardEntity> newAwards = myPageDTO.getAwards().stream()
                 .map(dto -> new AwardEntity(dto.getAwardType(), dto.getOrganizer(), dto.getAwardName(), dto.getAwardDuration(), member))
@@ -194,7 +194,7 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 경력 정보
      */
-    private void updateCareers(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateCareers(MemberEntity member, MyPageRequestDto myPageDTO) {
         List<CareerEntity> existingCareers = careerRepository.findByMember(member);  // 기존 경력 조회
         List<CareerEntity> newCareers = myPageDTO.getCareers().stream()               // 새로운 경력으로 업데이트
                 .map(dto -> new CareerEntity(dto.getCompanyName(), dto.getStartDate(), dto.getEndDate(), dto.getCareerDescription(), member))
@@ -211,7 +211,7 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 경험 정보
      */
-    private void updateExperiences(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateExperiences(MemberEntity member, MyPageRequestDto myPageDTO) {
         List<ExperienceEntity> existingExperiences = experienceRepository.findByMember(member);  // 기존 경험 조회
         List<ExperienceEntity> newExperiences = myPageDTO.getExperiences().stream()               // 새로운 경험으로 업데이트
                 .map(dto -> new ExperienceEntity(dto.getExperienceType(), dto.getExperienceName(), dto.getStartDate(), dto.getEndDate(), dto.getExperienceDescription(), member))
@@ -228,7 +228,7 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 교육 정보
      */
-    private void updateEducation(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateEducation(MemberEntity member, MyPageRequestDto myPageDTO) {
         educationRepository.findByMember(member).ifPresentOrElse(
                 education -> education.updateEducation(
                         myPageDTO.getSchoolName(),
