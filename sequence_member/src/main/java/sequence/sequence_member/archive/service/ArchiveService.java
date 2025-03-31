@@ -158,6 +158,20 @@ public class ArchiveService {
     }
 
     @Transactional(readOnly = true)
+    public List<UserArchiveDTO> getUserArchiveListAtAlarm(CustomUserDetails customUserDetails){
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        List<Archive> latestArchives = archiveRepository.findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
+        List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+        for(Archive archive : latestArchives){
+            userArchiveDTOList.add(new UserArchiveDTO(archive));
+        }
+        return userArchiveDTOList;
+    }
+
+    @Transactional(readOnly = true)
     public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails) {
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
