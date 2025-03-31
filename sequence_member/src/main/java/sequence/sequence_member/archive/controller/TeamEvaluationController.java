@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
+import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDto;
 
 import jakarta.validation.Valid;
 
@@ -51,25 +52,23 @@ public class TeamEvaluationController {
     }
 
     @GetMapping("/{archiveId}/evaluations/status")
-    public ResponseEntity<ApiResponseData<Map<String, Object>>> getEvaluationStatus(
+    public ResponseEntity<ApiResponseData<TeamEvaluationStatusResponseDto>> getEvaluationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long archiveId) {
         
         // 아카이브 상태를 체크하고 필요시 업데이트
-        boolean isAllCompleted = teamEvaluationService.checkAndUpdateEvaluationStatus(archiveId);
+        teamEvaluationService.checkAndUpdateEvaluationStatus(archiveId);
         
-        // 기존 팀원별 평가 상태 조회
-        Map<String, Status> memberEvaluationStatus = teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
-        
-        // 응답 데이터 구성
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("memberStatus", memberEvaluationStatus); // 팀원별 평가 상태
-        responseData.put("isAllCompleted", isAllCompleted); // 전체 평가 완료 여부
+        // 팀원별 평가 상태 조회
+        TeamEvaluationStatusResponseDto statusResponse = 
+            teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
         
         return ResponseEntity.ok(ApiResponseData.of(
             Code.SUCCESS.getCode(),
-            isAllCompleted ? "모든 팀원의 평가가 완료되었습니다." : "팀원 평가 상태를 조회했습니다.",
-            responseData
+            statusResponse.isAllCompleted() ? 
+                "모든 팀원의 평가가 완료되었습니다." : 
+                "팀원 평가 상태를 조회했습니다.",
+            statusResponse
         ));
     }
 
