@@ -27,11 +27,11 @@ public class alarmController {
     private final InviteAccessService inviteAccessService;
     private final ArchiveService archiveService;
 
-    //유저가 초대받은 프로젝트 목록과 최신 아카이빙 프로젝트 최대 5개 조회
+    //유저가 초대받은 프로젝트 목록과 최신 아카이빙 프로젝트 최대 10개 조회
     @GetMapping("/project-archive")
     public ResponseEntity<ApiResponseData<ProjectArchiveAlarmDTO>> getProjectArchiveAlarm(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         List<InviteProjectOutputDTO> invitedProjects = inviteAccessService.getInvitedProjects(customUserDetails);
-        List<UserArchiveDTO> userArchiveList = archiveService.getUserArchiveList(customUserDetails);
+        List<UserArchiveDTO> userArchiveList = archiveService.getUserArchiveListAtAlarm(customUserDetails);
         return ResponseEntity.ok(ApiResponseData.success(new ProjectArchiveAlarmDTO(invitedProjects,userArchiveList)));
     }
 
