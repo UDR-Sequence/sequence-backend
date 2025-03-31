@@ -15,17 +15,17 @@ import java.util.Optional;
 @Repository
 public interface ArchiveCommentRepository extends JpaRepository<ArchiveComment, Long> {
     
-    // 특정 아카이브의 최상위 댓글만 페이징하여 조회 (대댓글 제외)
+    // 특정 아카이브의 최상위 댓글만 페이징하여 조회 (대댓글 제외, 오래된 순)
     @Query("SELECT c FROM ArchiveComment c " +
            "WHERE c.archive.id = :archiveId " +
            "AND c.parent IS NULL " +
-           "ORDER BY c.createdDateTime DESC")
+           "ORDER BY c.createdDateTime ASC")
     Page<ArchiveComment> findParentCommentsByArchiveId(
         @Param("archiveId") Long archiveId, 
         Pageable pageable
     );
 
-    // 특정 댓글의 대댓글 목록 조회
+    // 특정 댓글의 대댓글 목록 조회 (오래된 순)
     @Query("SELECT c FROM ArchiveComment c " +
            "WHERE c.parent.id = :parentId " +
            "ORDER BY c.createdDateTime ASC")
