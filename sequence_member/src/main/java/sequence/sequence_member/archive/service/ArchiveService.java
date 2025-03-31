@@ -285,7 +285,10 @@ public class ArchiveService {
 
         // 댓글 정보 조회
         List<ArchiveCommentOutputDTO> commentDTOs = new ArrayList<>();
-        Page<ArchiveComment> parentComments = commentRepository.findParentCommentsByArchiveId(archive.getId(), Pageable.unpaged());
+        Page<ArchiveComment> parentComments = commentRepository.findParentCommentsByArchiveId(
+            archive.getId(), 
+            PageRequest.of(0, Integer.MAX_VALUE)  // 정렬 조건 제거
+        );
         
         for (ArchiveComment parentComment : parentComments) {
             ArchiveCommentOutputDTO.CommentDTO parentDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
