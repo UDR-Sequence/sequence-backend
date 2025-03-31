@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
 import java.util.ArrayList;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
+import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDto;
 
 @Service
 @RequiredArgsConstructor
@@ -117,7 +118,7 @@ public class TeamEvaluationService {
         return teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
     }
 
-    public Map<String, Status> getEvaluationStatus(Long archiveId, String username) {
+    public TeamEvaluationStatusResponseDto getEvaluationStatus(Long archiveId, String username) {
         // username으로 멤버 찾기
         MemberEntity member = memberRepository.findByUsername(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
@@ -130,7 +131,7 @@ public class TeamEvaluationService {
 
         // 아카이브의 모든 멤버 조회
         List<ArchiveMember> archiveMembers = archiveMemberRepository.findAllByArchiveId(archiveId);
-        Map<String, Status> statusMap = new HashMap<>();
+        Map<String, TeamEvaluationStatusResponseDto.MemberEvaluationStatus> statusMap = new HashMap<>();
 
         // 각 팀원별로 평가 상태 확인
         for (ArchiveMember archiveMember : archiveMembers) {
@@ -143,18 +144,44 @@ public class TeamEvaluationService {
                     continue;  // 자기 자신은 건너뛰기
                 }
 
-                boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluated(archiveMember, targetMember);
+                boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluated(
+                    archiveMember, 
+                    targetMember
+                );
                 if (hasEvaluated) {
                     evaluatedCount++;
                 }
             }
 
             // 해당 팀원이 모든 팀원을 평가했는지 확인
-            Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ? Status.평가완료 : Status.평가전;
-            statusMap.put(archiveMember.getMember().getNickname(), memberStatus);
+            Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ? 
+                Status.평가완료 : Status.평가전;
+
+            // 역할 정보 가져오기
+            List<ProjectRole> roles = new ArrayList<>();
+            if (archiveMember.getMember().getEducation() != null) {
+                roles = archiveMember.getMember().getEducation().getDesiredJob();
+            }
+
+            // MemberEvaluationStatus 생성
+            TeamEvaluationStatusResponseDto.MemberEvaluationStatus status = 
+                TeamEvaluationStatusResponseDto.MemberEvaluationStatus.builder()
+                    .nickname(archiveMember.getMember().getNickname())
+                    .roles(roles)
+                    .status(memberStatus)
+                    .build();
+
+            statusMap.put(archiveMember.getMember().getNickname(), status);
         }
 
-        return statusMap;
+        // 모든 멤버가 평가를 완료했는지 확인
+        boolean isAllCompleted = statusMap.values().stream()
+            .allMatch(status -> status.getStatus() == Status.평가완료);
+
+        return TeamEvaluationStatusResponseDto.builder()
+            .memberStatus(statusMap)
+            .isAllCompleted(isAllCompleted)
+            .build();
     }
 
     public List<String> getEvaluators(Long archiveId) {
