@@ -2,6 +2,7 @@ package sequence.sequence_member.archive.entity;
 
 import jakarta.persistence.*;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
+import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
@@ -212,4 +214,20 @@ public class Archive extends BaseTimeEntity {
     }
 
     public void setLink(String link) { this.link = link; }
+    
+    public Period calculatePeriod() {
+        long monthsBetween = ChronoUnit.MONTHS.between(startDate, endDate);
+
+        if (monthsBetween < 1) {
+            return Period.ONE_MONTH_LESS;
+        } else if (monthsBetween < 3) {
+            return Period.ONE_TO_THREE_MONTH;
+        } else if (monthsBetween < 6) {
+            return Period.THREE_TO_SIX_MONTH;
+        } else if (monthsBetween < 12) {
+            return Period.SIX_TO_ONE_YEAR;
+        } else {
+            return Period.OVER_ONE_YEAR;
+        }
+    }
 } 

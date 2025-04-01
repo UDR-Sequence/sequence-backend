@@ -1,12 +1,18 @@
 package sequence.sequence_member.archive.entity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sequence.sequence_member.archive.dto.FeedbackDetailDTO;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
+
+import java.util.Map;
 
 @Entity
 @Getter
@@ -42,6 +48,22 @@ public class TeamEvaluation extends BaseTimeEntity {
     // 자기 자신을 평가할 수 없도록 검증
     public boolean validateSelfEvaluation() {
         return !evaluator.getId().equals(evaluated.getId());
+    }
+
+    public FeedbackDetailDTO toFeedbackDetailDTO() {
+        return FeedbackDetailDTO.builder()
+                .content(this.feedback)
+                .duration(this.evaluator.getArchive().calculatePeriod())
+                .build();
+    }
+
+    public Map<String, Integer> getKeywordMap() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(this.keyword, new TypeReference<Map<String, Integer>>() {});
+        } catch (JsonProcessingException e) {
+            return Map.of();
+        }
     }
 
 } 

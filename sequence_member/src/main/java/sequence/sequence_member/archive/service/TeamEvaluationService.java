@@ -3,7 +3,6 @@ package sequence.sequence_member.archive.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sequence.sequence_member.archive.dto.TeamEvaluationRequestDTO;
 import sequence.sequence_member.archive.entity.ArchiveMember;
 import sequence.sequence_member.archive.entity.TeamEvaluation;
 import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
@@ -19,10 +18,12 @@ import java.util.Map;
 import java.util.HashMap;
 import sequence.sequence_member.global.exception.ArchiveNotFoundException;
 import java.util.stream.Collectors;
-import sequence.sequence_member.archive.dto.TeamEvaluationResponseDTO;
 import java.util.ArrayList;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDTO;
+import sequence.sequence_member.archive.dto.TeamEvaluationResponseDTO;
+import sequence.sequence_member.archive.dto.TeamEvaluationRequestDTO;
+
 
 @Service
 @RequiredArgsConstructor
@@ -164,7 +165,7 @@ public class TeamEvaluationService {
             }
 
             // MemberEvaluationStatus 생성
-            TeamEvaluationStatusResponseDTO.MemberEvaluationStatus status =
+            TeamEvaluationStatusResponseDTO.MemberEvaluationStatus status = 
                 TeamEvaluationStatusResponseDTO.MemberEvaluationStatus.builder()
                     .nickname(archiveMember.getMember().getNickname())
                     .roles(roles)
