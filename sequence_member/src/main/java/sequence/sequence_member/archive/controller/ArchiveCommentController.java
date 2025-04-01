@@ -12,6 +12,8 @@ import sequence.sequence_member.archive.service.ArchiveCommentService;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,8 +29,18 @@ public class ArchiveCommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody CommentCreateRequestDTO requestDto) {
         
+        if (userDetails == null) {
+            throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
+        }
+        
+        boolean exists = commentService.checkArchiveExists(archiveId);
+        if (!exists) {
+            throw new CanNotFindResourceException("아카이브를 찾을 수 없습니다.");
+        }
+        
         Long commentId = commentService.createComment(
             archiveId, 
+            userDetails.getUsername(),  // username 전달
             requestDto
         );
 
@@ -46,14 +58,23 @@ public class ArchiveCommentController {
     public ResponseEntity<ApiResponseData<Void>> updateComment(
             @PathVariable Long archiveId,
             @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody CommentUpdateRequestDTO requestDto) {
         
-        commentService.updateComment(
+        if (userDetails == null) {
+            throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
+        }
+        
+        boolean success = commentService.updateComment(
             archiveId, 
             commentId, 
-            requestDto.getWriter(),
+            userDetails.getUsername(),
             requestDto
         );
+
+        if (!success) {
+            throw new CanNotFindResourceException("아카이브 또는 댓글을 찾을 수 없거나 이미 삭제된 댓글입니다.");
+        }
 
         return ResponseEntity.ok(ApiResponseData.of(
             Code.SUCCESS.getCode(),
@@ -67,13 +88,21 @@ public class ArchiveCommentController {
     public ResponseEntity<ApiResponseData<Void>> deleteComment(
             @PathVariable Long archiveId,
             @PathVariable Long commentId,
-            @RequestBody CommentUpdateRequestDTO requestDto) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         
-        commentService.deleteComment(
+        if (userDetails == null) {
+            throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
+        }
+        
+        boolean success = commentService.deleteComment(
             archiveId, 
             commentId, 
-            requestDto.getWriter()
+            userDetails.getUsername()
         );
+        
+        if (!success) {
+            throw new CanNotFindResourceException("아카이브 또는 댓글을 찾을 수 없거나 이미 삭제된 댓글입니다.");
+        }
 
         return ResponseEntity.ok(ApiResponseData.of(
             Code.SUCCESS.getCode(),
@@ -88,7 +117,20 @@ public class ArchiveCommentController {
             @PathVariable Long archiveId,
             @RequestParam(defaultValue = "0") int page) {
         
+        boolean exists = commentService.checkArchiveExists(archiveId);
+        if (!exists) {
+            throw new CanNotFindResourceException("아카이브를 찾을 수 없습니다.");
+        }
+        
         CommentPageResponseDTO response = commentService.getComments(archiveId, page);
+        
+        if (response.getComments().isEmpty()) {
+            return ResponseEntity.ok(ApiResponseData.of(
+                Code.CAN_NOT_FIND_RESOURCE.getCode(),
+                "댓글이 없습니다.",
+                response
+            ));
+        }
 
         return ResponseEntity.ok(ApiResponseData.of(
             Code.SUCCESS.getCode(),

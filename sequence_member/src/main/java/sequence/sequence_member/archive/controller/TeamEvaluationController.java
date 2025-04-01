@@ -14,12 +14,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
+import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDto;
 
 import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,11 +52,24 @@ public class TeamEvaluationController {
     }
 
     @GetMapping("/{archiveId}/evaluations/status")
-    public ResponseEntity<ApiResponseData<Map<String, Status>>> getEvaluationStatus(
+    public ResponseEntity<ApiResponseData<TeamEvaluationStatusResponseDto>> getEvaluationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long archiveId) {
-        Map<String, Status> evaluationStatus = teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
-        return ResponseEntity.ok(ApiResponseData.success(evaluationStatus));
+        
+        // 아카이브 상태를 체크하고 필요시 업데이트
+        teamEvaluationService.checkAndUpdateEvaluationStatus(archiveId);
+        
+        // 팀원별 평가 상태 조회
+        TeamEvaluationStatusResponseDto statusResponse = 
+            teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
+        
+        return ResponseEntity.ok(ApiResponseData.of(
+            Code.SUCCESS.getCode(),
+            statusResponse.isAllCompleted() ? 
+                "모든 팀원의 평가가 완료되었습니다." : 
+                "팀원 평가 상태를 조회했습니다.",
+            statusResponse
+        ));
     }
 
     @GetMapping("/{archiveId}/team-members")
@@ -63,5 +78,23 @@ public class TeamEvaluationController {
         // 팀원의 목록을 가져오는 서비스 호출 (teamEvaluationService가 아닌 다른 서비스일 수 있음)
         List<String> evaluators = teamEvaluationService.getEvaluators(archiveId);
         return ResponseEntity.ok(ApiResponseData.success(evaluators));
+    }
+
+    @GetMapping("/{archiveId}/evaluations/complete-check")
+    public ResponseEntity<ApiResponseData<Boolean>> checkAndUpdateEvaluationStatus(
+            @PathVariable Long archiveId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        
+        boolean isCompleted = teamEvaluationService.checkAndUpdateEvaluationStatus(archiveId);
+        
+        String message = isCompleted ? 
+                "모든 팀원의 평가가 완료되었습니다. 아카이브 상태가 '평가완료'로 변경되었습니다." : 
+                "아직 모든 팀원의 평가가 완료되지 않았습니다.";
+        
+        return ResponseEntity.ok(ApiResponseData.of(
+            Code.SUCCESS.getCode(),
+            message,
+            isCompleted
+        ));
     }
 } 

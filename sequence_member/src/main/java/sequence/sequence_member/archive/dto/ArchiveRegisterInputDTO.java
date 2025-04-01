@@ -36,14 +36,13 @@ public class ArchiveRegisterInputDTO {
     @NotNull(message = "카테고리를 선택해주세요.")
     private Category category;
 
-
-    private String thumbnail;
     private String link;
 
     @NotEmpty(message = "관련 기술을 선택해주세요.")
     @Size(max = 20, message = "관련 기술은 20개 이하로 선택해주세요.")
     private List<String> skills;
 
+    @NotEmpty(message = "팀원 정보를 입력해주세요.")
     private List<ArchiveMemberDTO> archiveMembers;
 
 }

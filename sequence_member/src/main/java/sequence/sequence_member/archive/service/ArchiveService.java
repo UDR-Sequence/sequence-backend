@@ -12,10 +12,12 @@ import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.archive.dto.ArchiveMemberDTO;
+import sequence.sequence_member.archive.dto.UserArchiveDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.archive.entity.ArchiveMember;
@@ -30,6 +32,17 @@ import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import java.util.ArrayList;
 import sequence.sequence_member.archive.dto.ArchiveCommentOutputDTO;
 import sequence.sequence_member.archive.entity.ArchiveComment;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
+import sequence.sequence_member.global.minio.service.MinioService;
+import java.util.Optional;
+import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
+import org.springframework.web.server.ResponseStatusException;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
+import sequence.sequence_member.global.exception.CanNotFindResourceException;
+import sequence.sequence_member.global.exception.AuthException;
+import sequence.sequence_member.archive.dto.ArchiveListDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -41,130 +54,212 @@ public class ArchiveService {
     private final ArchiveMemberRepository archiveMemberRepository;
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveCommentRepository commentRepository;
+    private final ArchiveViewService archiveViewService;
+    private final MinioService minioService;
+    private final TeamEvaluationRepository teamEvaluationRepository;
+    
+    @Value("${MINIO_ARCHIVE_IMG}")
+    private String ARCHIVE_IMG_BUCKET;
+    
+    @Value("${MINIO_ARCHIVE_THUMBNAIL}")
+    private String ARCHIVE_THUMBNAIL_BUCKET;  // 썸네일 버킷 추가
 
-    @Transactional
-    public ArchiveOutputDTO createArchive(ArchiveRegisterInputDTO dto, String username) {
-        // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
-        Archive archive = Archive.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .category(dto.getCategory())
-                .status(Status.평가전)
-                .thumbnail(dto.getThumbnail())
-                .link(dto.getLink())
-                .build();
-
-        archive.setSkillsFromList(dto.getSkills());
-        Archive savedArchive = archiveRepository.save(archive);
-
-        // 아카이브 멤버 등록
-        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
-            MemberEntity archiveMember = memberRepository.findByUsername(memberDto.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 사용자입니다: " + memberDto.getUsername()));
-
-            ArchiveMember newArchiveMember = ArchiveMember.builder()
-                .archive(savedArchive)
-                .member(archiveMember)
-                .role(memberDto.getRole())
-                .build();
-
-            archiveMemberRepository.save(newArchiveMember);
-        }
-
-        return convertToDTO(savedArchive, username);
-    }
-
-    public ArchiveOutputDTO getArchiveById(Long archiveId, String username) {
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 아카이브가 없습니다."));
+    public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {
+        // Optional로 아카이브 조회
+        Optional<Archive> archiveOptional = archiveRepository.findById(archiveId);
         
-        return convertToDTO(archive, username);
+        // 아카이브가 없으면 null 반환
+        if (archiveOptional.isEmpty()) {
+            return null;
+        }
+        
+        Archive archive = archiveOptional.get();
+        
+        // Redis에서 조회수 처리
+        int viewCount = archiveViewService.getViewsFromRedis(request, archiveId);
+        
+        return convertToDTO(archive, username, viewCount);
     }
 
     @Transactional
-    public void updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
+    public boolean updateArchive(Long archiveId, ArchiveUpdateDTO archiveUpdateDTO, String username) {
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
-        // 아카이브 멤버 검증
-        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
-        if (archiveMember == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            return false;
         }
+        
+        MemberEntity member = memberOpt.get();
 
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        // 아카이브 존재 여부 확인
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
+        
+        // 작성자 검증 - 작성자만 수정 가능
+        if (!archive.getWriter().getId().equals(member.getId())) {
+            return false;
+        }
+        
+        // 아카이브 기본 정보 업데이트
         archive.updateArchive(archiveUpdateDTO);
+        
+        // 기존 팀원 정보 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        // 새로운 팀원 정보 등록
+        
+        return true;
     }
 
     @Transactional
-    public void deleteArchive(Long archiveId, String username) {
+    public boolean deleteArchive(Long archiveId, String username) {
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
-
-        // 아카이브 멤버 검증
-        ArchiveMember archiveMember = archiveMemberRepository.findByMemberAndArchive_Id(member, archiveId);
-        if (archiveMember == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브의 멤버가 아닙니다.");
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        if (memberOpt.isEmpty()) {
+            return false;
         }
-
-        Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아카이브가 없습니다."));
+        
+        MemberEntity member = memberOpt.get();
+        
+        // 아카이브 존재 여부 확인
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
+        
+        // 작성자 검증 - 작성자만 삭제 가능
+        if (!archive.getWriter().getId().equals(member.getId())) {
+            return false;
+        }
+        
+        // 관련 엔티티를 순서대로 삭제 (참조 무결성 유지)
+        // 1. 팀 평가 삭제
+        teamEvaluationRepository.deleteByArchiveId(archiveId);
+        
+        // 2. 댓글 삭제
+        commentRepository.deleteByArchiveId(archiveId);
+        
+        // 3. 북마크 삭제
+        bookmarkRepository.deleteByArchiveId(archiveId);
+        
+        // 4. 아카이브 멤버 삭제
+        archiveMemberRepository.deleteByArchiveId(archiveId);
+        
+        
+        // 5. 최종적으로 아카이브 삭제
         archiveRepository.delete(archive);
+        
+        return true;
     }
 
-    public ArchivePageResponseDTO getAllArchives(int page, SortType sortType, String username) {
+    @Transactional(readOnly = true)
+    public List<UserArchiveDTO> getUserArchiveListAtAlarm(CustomUserDetails customUserDetails){
         // 사용자 검증
-        memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        List<Archive> latestArchives = archiveRepository.findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
+        List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+        for(Archive archive : latestArchives){
+            userArchiveDTOList.add(new UserArchiveDTO(archive));
+        }
+        return userArchiveDTOList;
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails) {
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+
+        // 평가완료 상태인 아카이브만 조회
+        List<Archive> latestArchives = archiveRepository
+            .findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
+                member.getId(), Status.평가완료);
+        
+        List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+        for(Archive archive : latestArchives){
+            userArchiveDTOList.add(new UserArchiveDTO(archive));
+        }
+        return userArchiveDTOList;
+    }
+
+    public ArchiveListDTO getAllArchives(int page, SortType sortType, String username) {
+        if (username != null) {
+            memberRepository.findByUsername(username)
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findAll(pageable);
+        Page<Archive> archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
-        return createArchivePageResponse(archivePage, username);
+        List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
+            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .writerNickname(archive.getWriter().getNickname())
+                .thumbnail(archive.getThumbnail())
+                .commentCount(archive.getComments().size())
+                .createdDateTime(archive.getCreatedDateTime())
+                .build())
+            .toList();
+
+        return ArchiveListDTO.builder()
+            .archives(archives)
+            .totalPages(archivePage.getTotalPages())
+            .totalElements(archivePage.getTotalElements())
+            .build();
     }
 
-    public ArchivePageResponseDTO searchArchives(
+    public ArchiveListDTO searchArchives(
             Category category, 
             String keyword, 
             int page, 
             SortType sortType, 
             String username) {
         
-        // 사용자 검증
-        memberRepository.findByUsername(username)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+        if (username != null) {
+            memberRepository.findByUsername(username)
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        }
 
         Pageable pageable = createPageableWithSort(page, sortType);
         Page<Archive> archivePage;
         
-        // null 체크를 통한 메서드 선택
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCase(category, keyword.trim(), pageable);
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatus(
+                category, keyword.trim(), Status.평가완료, pageable);
         } else if (category != null) {
-            archivePage = archiveRepository.findByCategory(category, pageable);
+            archivePage = archiveRepository.findByCategoryAndStatus(category, Status.평가완료, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
+            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatus(
+                keyword.trim(), Status.평가완료, pageable);
         } else {
-            archivePage = archiveRepository.findAll(pageable);
+            archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
         }
 
-        if(archivePage.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "조건에 맞는 프로젝트를 찾을 수 없습니다.");
-        }
-        
-        return createArchivePageResponse(archivePage, username);
+        List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
+            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .writerNickname(archive.getWriter().getNickname())
+                .thumbnail(archive.getThumbnail())
+                .commentCount(archive.getComments().size())
+                .createdDateTime(archive.getCreatedDateTime())
+                .build())
+            .toList();
+
+        return ArchiveListDTO.builder()
+            .archives(archives)
+            .totalPages(archivePage.getTotalPages())
+            .totalElements(archivePage.getTotalElements())
+            .build();
     }
 
     // 정렬 조건이 포함된 Pageable 객체 생성
@@ -181,22 +276,33 @@ public class ArchiveService {
     }
 
     // Archive 엔티티를 DTO로 변환
-    private ArchiveOutputDTO convertToDTO(Archive archive, String username) {
+    private ArchiveOutputDTO convertToDTO(Archive archive, String username, int viewCount) {
         List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
-                .role(archiveMember.getRole())
+                .profileImg(archiveMember.getProfileImg())
                 .build())
             .collect(Collectors.toList());
 
-        // 북마크 관련 정보 조회
-        boolean isBookmarked = bookmarkRepository.existsByArchiveAndUsername(archive, username);
+        // 북마크 관련 정보 조회 부분 수정
+        boolean isBookmarked = false;
+        if (username != null && !username.isEmpty()) {
+            // username으로 MemberEntity 조회
+            Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+            if (memberOpt.isPresent()) {
+                MemberEntity userId = memberOpt.get();
+                isBookmarked = bookmarkRepository.existsByArchiveAndUserId(archive, userId);
+            }
+        }
         long bookmarkCount = bookmarkRepository.countByArchive(archive);
 
         // 댓글 정보 조회
         List<ArchiveCommentOutputDTO> commentDTOs = new ArrayList<>();
-        Page<ArchiveComment> parentComments = commentRepository.findParentCommentsByArchiveId(archive.getId(), Pageable.unpaged());
+        Page<ArchiveComment> parentComments = commentRepository.findParentCommentsByArchiveId(
+            archive.getId(), 
+            PageRequest.of(0, Integer.MAX_VALUE)  // 정렬 조건 제거
+        );
         
         for (ArchiveComment parentComment : parentComments) {
             ArchiveCommentOutputDTO.CommentDTO parentDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
@@ -229,6 +335,7 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
+                .writerNickname(archive.getWriter().getNickname())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())
@@ -239,7 +346,7 @@ public class ArchiveService {
                 .link(archive.getLink())
                 .skills(archive.getSkillList())
                 .imgUrls(archive.getImageUrlsAsList())
-                .view(archive.getView())
+                .view(viewCount)
                 .isBookmarked(isBookmarked)
                 .bookmarkCount((int) bookmarkCount)
                 .members(memberDTOs)
@@ -250,11 +357,178 @@ public class ArchiveService {
     }
 
     public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
+        List<ArchiveOutputDTO> archives = archivePage.isEmpty() ? 
+                new ArrayList<>() : 
+                archivePage.getContent().stream()
+                    .map(archive -> convertToDTO(archive, username, archive.getView()))
+                    .toList();
+        
         return ArchivePageResponseDTO.builder()
-                .archives(archivePage.getContent().stream()
-                        .map(archive -> convertToDTO(archive, username))
-                        .toList())
+                .archives(archives)
                 .totalPages(archivePage.getTotalPages())
                 .build();
     }
+
+    @Transactional
+    public Long createArchiveWithImages(
+            ArchiveRegisterInputDTO dto, 
+            String username, 
+            MultipartFile thumbnailFile,  // 썸네일 파일
+            List<MultipartFile> imageFiles) throws Exception {
+        
+        // 사용자 검증
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+
+        Archive archive = Archive.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .category(dto.getCategory())
+                .status(Status.평가전)
+                .link(dto.getLink())
+                .writer(member)
+                .build();
+
+        archive.setSkillsFromList(dto.getSkills());
+        
+        // 썸네일 이미지 업로드 처리
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            String thumbnailFileName = "thumbnail_" + System.currentTimeMillis() + "_" + thumbnailFile.getOriginalFilename();
+            String thumbnailUrl = minioService.uploadFileMinio(ARCHIVE_THUMBNAIL_BUCKET, thumbnailFileName, thumbnailFile);
+            archive.setThumbnailFileName(thumbnailFileName);
+            archive.setThumbnail(thumbnailUrl);
+        } else {
+            // 썸네일이 없는 경우 기본 이미지 설정 또는 null 처리
+            archive.setThumbnail(null);  // 또는 기본 이미지 URL
+        }
+        
+        // 이미지 업로드 처리 (기존 코드 유지)
+        List<String> imageUrls = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile imageFile : imageFiles) {
+                if (!imageFile.isEmpty()) {
+                    String fileName = "archive_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                    String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                    imageUrls.add(imageUrl);
+                    fileNames.add(fileName);
+                }
+            }
+            if (!imageUrls.isEmpty()) {
+                archive.setImageUrlsFromList(imageUrls);
+                archive.setFileNamesFromList(fileNames);
+            }
+        } else {
+            archive.setImageUrlsFromList(new ArrayList<>());
+            archive.setFileNamesFromList(new ArrayList<>());
+        }
+        
+        Archive savedArchive = archiveRepository.save(archive);
+
+        // 아카이브 멤버 등록 (작성자를 포함한 모든 멤버)
+        boolean writerAdded = false;  // 작성자가 이미 멤버 목록에 있는지 확인하는 플래그
+        
+        // 입력된 멤버 목록 처리
+        for (ArchiveMemberDTO memberDto : dto.getArchiveMembers()) {
+            // nickname으로 사용자 찾기
+            MemberEntity archiveMember = memberRepository.findByNickname(memberDto.getNickname())
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("존재하지 않는 사용자입니다: " + memberDto.getNickname()));
+
+            // 작성자가 멤버 목록에 이미 있는지 확인
+            if (archiveMember.getId().equals(member.getId())) {
+                writerAdded = true;
+            }
+
+            ArchiveMember newArchiveMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(archiveMember)
+                .profileImg(memberDto.getProfileImg() != null ? memberDto.getProfileImg() : archiveMember.getProfileImg())
+                .build();
+            
+            archiveMemberRepository.save(newArchiveMember);
+        }
+        
+        // 작성자가 멤버 목록에 없으면 추가
+        if (!writerAdded) {
+            ArchiveMember writerMember = ArchiveMember.builder()
+                .archive(savedArchive)
+                .member(member)
+                .profileImg(member.getProfileImg())
+                .build();
+            
+            archiveMemberRepository.save(writerMember);
+        }
+
+        return savedArchive.getId();
+    }
+
+    @Transactional
+    public boolean updateArchiveWithImages(
+            Long archiveId, 
+            ArchiveUpdateDTO archiveUpdateDTO, 
+            String username,
+            MultipartFile thumbnailFile,
+            List<MultipartFile> newImageFiles) throws Exception {
+            
+        // 사용자 검증 및 아카이브 존재 여부 확인 (기존 코드 유지)
+        MemberEntity member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
+        
+        // 작성자 검증
+        if (!archive.getWriter().getId().equals(member.getId())) {
+            throw new AuthException("아카이브 수정 권한이 없습니다.");
+        }
+        
+        // 썸네일 업데이트 처리
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            // 새 썸네일 업로드
+            String thumbnailFileName = "thumbnail_" + archiveId + "_" + System.currentTimeMillis() + "_" + thumbnailFile.getOriginalFilename();
+            String thumbnailUrl = minioService.uploadFileMinio(ARCHIVE_THUMBNAIL_BUCKET, thumbnailFileName, thumbnailFile);
+            
+            // DTO의 썸네일 URL 업데이트
+            archive.setThumbnailFileName(thumbnailFileName);
+            archive.setThumbnail(thumbnailUrl);
+        } else if (archiveUpdateDTO.getThumbnail() != null) {
+            // DTO에서 제공한 URL만 업데이트 (파일은 변경 없음)
+            archive.setThumbnail(archiveUpdateDTO.getThumbnail());
+        }
+        
+        // 아카이브 기본 정보 업데이트
+        archive.updateArchive(archiveUpdateDTO);
+        
+        // 새 이미지 업로드 및 처리 (기존 코드 유지)
+        List<String> newImageUrls = new ArrayList<>();
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+            for (MultipartFile imageFile : newImageFiles) {
+                if (!imageFile.isEmpty()) {
+                    String fileName = "archive_" + archive.getId() + "_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                    String imageUrl = minioService.uploadFileMinio(ARCHIVE_IMG_BUCKET, fileName, imageFile);
+                    newImageUrls.add(imageUrl);
+                }
+            }
+            
+            // 이미지 URL 설정 - DTO에서 받은 이미지 URL과 새로 업로드한 이미지 URL 합치기
+            List<String> allImageUrls = new ArrayList<>();
+            if (archiveUpdateDTO.getImgUrls() != null) {
+                allImageUrls.addAll(archiveUpdateDTO.getImgUrls());
+            }
+            allImageUrls.addAll(newImageUrls);
+            
+            archive.setImageUrlsFromList(allImageUrls);
+        } else if (archiveUpdateDTO.getImgUrls() != null) {
+            archive.setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        } else {
+            archive.setImageUrlsFromList(new ArrayList<>());
+        }
+        
+        return true;
+    }
+
+   
 } 

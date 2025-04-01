@@ -47,6 +47,7 @@ public class ProjectViewBackupSchedule {
                 //만약 해당 프로젝트가 존재하지 않다면 무시
                 if(project.isEmpty()) {
                     log.error("redis에 존재하지 않는 projectId가 존재합니다 : {}", projectId);
+                    //todo - redis에 해당 projectId 정보 삭제
                     continue;
                 }
                 project.get().setViews(redisViewCount);

@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.global.enums.enums.AwardType;
 import sequence.sequence_member.global.enums.enums.Degree;
@@ -15,7 +14,6 @@ import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.MemberEntity.Gender;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +40,6 @@ public class MyPageResponseDTO {
     private String phone;
 
     private String introduction;
-    private List<String> portfolio; // todo - minio에 저장할 수 있도록 추가해야 함
 
     @NotBlank(message = "닉네임은 필수 입력 값입니다.")
     private String nickname;
@@ -64,6 +61,7 @@ public class MyPageResponseDTO {
     @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
 
+    private List<PortfolioDTO> portfolios;
     private List<Skill> skillCategory;
     private List<ProjectRole> desiredJob;
 
@@ -73,9 +71,11 @@ public class MyPageResponseDTO {
 
     private ArchivePageResponseDTO archivePageResponseDTO;
 
+    private MyActivityResponseDTO myActivityResponseDTO = null;
+
     public MyPageResponseDTO(
             String username, String name, Date birth, Gender gender, String address,
-            String phone, String introduction, List<String> portfolio, String nickname,
+            String phone, String introduction, String nickname,
             String schoolName, String major, String grade, Date entranceDate, Date graduationDate,
             Degree degree, List<Skill> skillCategory, List<ProjectRole> desiredJob) {
         this.username = username;
@@ -85,7 +85,6 @@ public class MyPageResponseDTO {
         this.address = address;
         this.phone = phone;
         this.introduction = introduction;
-        this.portfolio = portfolio;
         this.nickname = nickname;
         this.schoolName = schoolName;
         this.major = major;
@@ -144,4 +143,18 @@ public class MyPageResponseDTO {
             this.experienceDescription = experienceDescription;
         }
     }
+
+    @Data
+    public static class PortfolioDTO {
+        private final String portfolioUrl;
+
+        public PortfolioDTO(String portfolioUrl) {
+            this.portfolioUrl = portfolioUrl;
+        }
+    }
+
+    public void setMyActivityResponseDTO(MyActivityResponseDTO myActivityResponseDTO){
+        this.myActivityResponseDTO = myActivityResponseDTO;
+    }
+
 }

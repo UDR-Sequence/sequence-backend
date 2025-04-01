@@ -30,4 +30,5 @@ public class ProjectOutputDTO {
     private List<ProjectMemberOutputDTO> members; // 초대된 멤버들 nickname, 프로밀이미지, 멤버ID 값을 가지고있음.
     private List<CommentOutputDTO> comments; // 댓글들
     private Integer views; //조회수
+    private Boolean isBookmark; //북마크 여부
 }

@@ -1,19 +1,7 @@
 package sequence.sequence_member.archive.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +14,8 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
+import sequence.sequence_member.member.entity.MemberEntity;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -41,6 +31,11 @@ public class Archive extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 작성자 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id",nullable = false)
+    private MemberEntity writer;
+    
     @Column(nullable = false)
     private String title;          
 
@@ -61,15 +56,22 @@ public class Archive extends BaseTimeEntity {
     @Column(nullable = false)
     private Status status;         
 
-    private String thumbnail;      
+    @Column(name = "thumbnail", columnDefinition = "TEXT")
+    private String thumbnail;
+
+    @Column(name = "thumbnail_file_name")
+    private String thumbnailFileName;  // 썸네일 파일명 저장 필드 추가
 
     private String link;           
 
     @Column(name = "skills")
     private String skills;  // "Java,Spring,JPA" 형태로 저장
 
-    @Column(name = "img_url")
+    @Column(name = "img_url", columnDefinition = "TEXT")
     private String imgUrl;
+
+    @Column(name = "file_names", columnDefinition = "TEXT")
+    private String fileNames;  // 파일명 저장 필드 추가
 
     @Builder.Default
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -78,6 +80,9 @@ public class Archive extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "view", nullable = false, columnDefinition = "int default 0")
     private Integer view = 0;      // 조회수
+
+    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArchiveComment> comments;
 
     // skills를 List<String>으로 변환하는 메서드
     public List<String> getSkillList() {
@@ -111,6 +116,22 @@ public class Archive extends BaseTimeEntity {
         this.imgUrl = String.join(",", imageUrlList);
     }
 
+    // 파일명 관련 메서드 추가
+    public List<String> getFileNamesAsList() {
+        if (this.fileNames == null || this.fileNames.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(this.fileNames.split(","));
+    }
+    
+    public void setFileNamesFromList(List<String> fileNameList) {
+        if (fileNameList == null || fileNameList.isEmpty()) {
+            this.fileNames = "";
+            return;
+        }
+        this.fileNames = String.join(",", fileNameList);
+    }
+
     // duration String 대신 날짜 기간을 반환하는 메서드
     public String getDurationAsString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM");
@@ -127,6 +148,31 @@ public class Archive extends BaseTimeEntity {
         this.thumbnail = archiveUpdateDTO.getThumbnail();
         this.link = archiveUpdateDTO.getLink();
         setSkillsFromList(archiveUpdateDTO.getSkills());
-        setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        
+        // 이미지 URL 설정
+        if (archiveUpdateDTO.getImgUrls() != null && !archiveUpdateDTO.getImgUrls().isEmpty()) {
+            setImageUrlsFromList(archiveUpdateDTO.getImgUrls());
+        } else {
+            this.imgUrl = "";  // imgUrls가 없으면 비움
+        }
+    }
+
+    // 조회수 설정 메서드 추가
+    public void setView(Integer view) {
+        this.view = view;
+    }
+
+    // 썸네일 파일명 설정 메서드 추가
+    public void setThumbnailFileName(String thumbnailFileName) {
+        this.thumbnailFileName = thumbnailFileName;
+    }
+
+    public void setThumbnail(String thumbnailUrl) {
+        this.thumbnail = thumbnailUrl;
+    }
+
+    // 상태 변경 메서드 추가
+    public void setStatus(Status status) {
+        this.status = status;
     }
 } 

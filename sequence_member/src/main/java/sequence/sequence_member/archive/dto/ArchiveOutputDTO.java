@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ArchiveOutputDTO {
     private Long id;
+    private String writerNickname;
     private String title;
     private String description; 
     private LocalDate startDate;
@@ -36,11 +37,9 @@ public class ArchiveOutputDTO {
 
     @Getter
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class ArchiveMemberDTO {
         private String username;
         private String nickname;
-        private String role;
+        private String profileImg;
     }
 } 

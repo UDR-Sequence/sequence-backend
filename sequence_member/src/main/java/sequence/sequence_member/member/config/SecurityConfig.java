@@ -57,24 +57,24 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/api/login"); // 엔드포인트를 /api/login으로 변경
 
         http
-                .cors((cors)-> cors
-                        .configurationSource(new CorsConfigurationSource(){
-
+                .cors((cors) -> cors
+                        .configurationSource(new CorsConfigurationSource() {
                             @Override
-                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request){
+                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                                 CorsConfiguration configuration = new CorsConfiguration();
-
-                                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                                configuration.setAllowedMethods(Collections.singletonList("*"));
+                                configuration.setAllowedOrigins(Arrays.asList(
+                                        "http://localhost:3000",
+                                        "https://parkdu7.github.io"
+                                ));
+                                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                                 configuration.setAllowCredentials(true);
-                                configuration.setAllowedHeaders(Collections.singletonList("*"));
-                                configuration.setMaxAge(3600L);
 
+                                configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setExposedHeaders(Arrays.asList("Authorization", "access"));
                                 return configuration;
                             }
-
-                        }));
+                        }))
+                .csrf((csrf) -> csrf.disable()); // 필요에 따라 유지
 
         //csrf disable
         http
@@ -98,8 +98,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/user/delete", "/api/user/isDeleted", "/api/report/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/archive/projects/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/archive/{archiveId}").permitAll()
                         .requestMatchers("/api/archive/**").authenticated()
-                        .requestMatchers("/error").permitAll() // 예외 처리 로직 없을 때 Tomcat이 포워딩 하는 경로 접근 허용하여 예외 메세지 잘 전달되도록 허용
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated());
 
         http

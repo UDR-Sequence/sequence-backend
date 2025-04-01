@@ -41,8 +41,8 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request) {
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request)));
+    public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request, customUserDetails)));
     }
 
     @PutMapping("/{projectId}")
@@ -72,14 +72,6 @@ public class ProjectController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         return ResponseEntity.ok().body(ApiResponseData.success(null, projectBookmarkService.removeBookmark(customUserDetails, projectId)));
     }
-    // 북마크한 프로젝트 목록 조회
-    @GetMapping("/bookmarks")
-    public ResponseEntity<ApiResponseData<List<ProjectSummaryInfoDTO>>> getBookmarkedProjects(
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiResponseData.success(projectBookmarkService.getBookmarkedProjects(customUserDetails), "북마크한 프로젝트 목록을 조회하였습니다."));
-    }
-
-
 
     @GetMapping("/filter/keyword")
     public ResponseEntity<ApiResponseData<List<ProjectFilterOutputDTO>>> filterKeyword(@RequestParam(name = "category", required = false) Category category,

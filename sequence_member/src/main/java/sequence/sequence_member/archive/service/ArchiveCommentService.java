@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import sequence.sequence_member.archive.dto.*;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveComment;
@@ -15,8 +13,10 @@ import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,29 +26,47 @@ public class ArchiveCommentService {
 
     private final ArchiveCommentRepository commentRepository;
     private final ArchiveRepository archiveRepository;
+    private final MemberRepository memberRepository;
+
+    // 아카이브 존재 여부 확인
+    public boolean checkArchiveExists(Long archiveId) {
+        return archiveRepository.existsById(archiveId);
+    }
 
     // 댓글 작성
     @Transactional
-    public Long createComment(Long archiveId, CommentCreateRequestDTO dto) {
-        // 아카이브 검증
-        Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
+    public Long createComment(Long archiveId, String username, CommentCreateRequestDTO dto) {
+        // username으로 사용자 조회하여 nickname 가져오기
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
+        // 아카이브 조회
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return null;
+        }
+        
+        Archive archive = archiveOpt.get();
 
         // 대댓글인 경우 부모 댓글 검증
         ArchiveComment parent = null;
         if (dto.getParentId() != null) {
-            parent = commentRepository.findById(dto.getParentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "원본 댓글을 찾을 수 없습니다."));
+            Optional<ArchiveComment> parentOpt = commentRepository.findById(dto.getParentId());
+            if (parentOpt.isEmpty()) {
+                return null;
+            }
+            
+            parent = parentOpt.get();
             
             // 대댓글의 대댓글 작성 방지
             if (parent.isReply()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "대댓글에는 댓글을 작성할 수 없습니다.");
+                return null;
             }
         }
 
         ArchiveComment comment = ArchiveComment.builder()
                 .archive(archive)
-                .writer(dto.getWriter())
+                .writer(member.getNickname())  // 조회한 사용자의 nickname을 writer로 저장
                 .parent(parent)
                 .content(dto.getContent())
                 .isDeleted(false)
@@ -59,37 +77,81 @@ public class ArchiveCommentService {
 
     // 댓글 수정
     @Transactional
-    public void updateComment(Long archiveId, Long commentId, String writer, CommentUpdateRequestDTO dto) {
-        Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
+    public boolean updateComment(Long archiveId, Long commentId, String username, CommentUpdateRequestDTO dto) {
+        // username으로 사용자 정보 조회
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
 
-        ArchiveComment comment = commentRepository.findByIdAndArchiveAndWriter(commentId, archive, writer)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+            commentId, 
+            archive, 
+            member.getNickname()  // 조회한 사용자의 nickname 사용
+        );
+        if (commentOpt.isEmpty()) {
+            return false;
+        }
+        
+        ArchiveComment comment = commentOpt.get();
 
         if (comment.isDeleted()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제된 댓글은 수정할 수 없습니다.");
+            return false;
         }
 
         comment.updateContent(dto.getContent());
+        return true;
     }
 
     // 댓글 삭제
     @Transactional
-    public void deleteComment(Long archiveId, Long commentId, String writer) {
-        Archive archive = archiveRepository.findById(archiveId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다."));
+    public boolean deleteComment(Long archiveId, Long commentId, String username) {
+        // username으로 사용자 조회하여 nickname 가져오기
+        MemberEntity member = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
+        
+        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        if (archiveOpt.isEmpty()) {
+            return false;
+        }
+        
+        Archive archive = archiveOpt.get();
 
-        ArchiveComment comment = commentRepository.findByIdAndArchiveAndWriter(commentId, archive, writer)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."));
+        // nickname으로 댓글 작성자 검증
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+            commentId, 
+            archive, 
+            member.getNickname()  // 조회한 사용자의 nickname으로 검증
+        );
+        if (commentOpt.isEmpty()) {
+            return false;
+        }
+        
+        ArchiveComment comment = commentOpt.get();
+
+        // 이미 삭제된 댓글인지 확인
+        if (comment.isDeleted()) {
+            return false;
+        }
 
         comment.delete();
+        return true;
     }
 
     // 댓글 목록 조회 (페이징)
     public CommentPageResponseDTO getComments(Long archiveId, int page) {
         // 아카이브 존재 확인
         if (!archiveRepository.existsById(archiveId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "아카이브를 찾을 수 없습니다.");
+            return CommentPageResponseDTO.builder()
+                    .comments(List.of())
+                    .totalPages(0)
+                    .totalElements(0L)
+                    .build();
         }
 
         Pageable pageable = PageRequest.of(page, 10);  // 한 페이지당 10개 댓글

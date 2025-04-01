@@ -6,18 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.Code;
-import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
 import sequence.sequence_member.member.dto.CustomUserDetails;
-import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
-import sequence.sequence_member.member.service.InviteAccessService;
 import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
 
@@ -30,20 +26,19 @@ import java.util.Map;
 public class MemberController {
 
     private final MemberService memberService;
-    private final InviteAccessService inviteAccessService;
     private final MemberSearchService memberSearchService;
 
     @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> join(@RequestPart("memberDTO") @Valid MemberDTO memberDTO, Errors errors,
-                                                        @RequestPart(name="authImgFile" ,required = false) MultipartFile authImgFile){
+                                                        @RequestPart(name="authImgFile" ,required = false) MultipartFile authImgFile,
+                                                        @RequestPart(name="portfolios",required=false) List<MultipartFile> portfolios){
         //회원가입 유효성 검사 실패 시
         if(errors.hasErrors()){
             Map<String, String> validatorResult = memberService.validateHandling(errors);
-
             return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), validatorResult.values().toString()));
         }
 
-        memberService.save(memberDTO,authImgFile);
+        memberService.save(memberDTO,authImgFile,portfolios);
         return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
 
@@ -89,36 +84,12 @@ public class MemberController {
         return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
     }
 
-    //유저가 초대받은 프로젝트 목록을 조회하는 컨트롤러
-    @GetMapping("/invited-projects")
-    public ResponseEntity<ApiResponseData<List<InviteProjectOutputDTO>>> getInvitedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok(ApiResponseData.success(inviteAccessService.getInvitedProjects(customUserDetails)));
-    }
 
-    //유저가 초대받은 프로젝트에 승인하는 컨트롤러
-    @PostMapping("/invited-projects/{projectInvitedMemberId}")
-    public ResponseEntity<ApiResponseData<String>> acceptInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
-        inviteAccessService.acceptInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success(null));
-    }
-
-    //유저가 초대받은 프로젝트에 거절하는 컨트롤러
-    @DeleteMapping("/invited-projects/{projectInvitedMemberId}")
-    public ResponseEntity<ApiResponseData<String>> rejectInvite(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long projectInvitedMemberId){
-        inviteAccessService.rejectInvite(customUserDetails, projectInvitedMemberId);
-        return ResponseEntity.ok(ApiResponseData.success(null));
-    }
-
-    //유저가 승인한(참여하는) 프로젝트 목록을 조회하는 컨트롤러
-    @GetMapping("/accepted-projects")
-    public ResponseEntity<ApiResponseData<List<AcceptProjectOutputDTO>>> getAcceptedProjects(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        return ResponseEntity.ok(ApiResponseData.success(inviteAccessService.getAcceptedProjects(customUserDetails)));
-    }
 
     //닉네임으로 유저들 검색하는 컨트롤러
     @GetMapping("/search")
-    public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname){
-        return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(nickname)));
+    public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname, @AuthenticationPrincipal CustomUserDetails customUserDetails){
+        return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(customUserDetails,nickname)));
     }
 
 }

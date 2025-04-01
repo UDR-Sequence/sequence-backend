@@ -23,6 +23,7 @@ import sequence.sequence_member.global.annotation.MethodDescription;
 import sequence.sequence_member.global.exception.MinioException;
 import sequence.sequence_member.global.utils.FileExtension;
 import sequence.sequence_member.global.utils.MultipartUtil;
+import lombok.Getter;
 
 
 @Service
@@ -36,7 +37,7 @@ public class MinioService {
     @MethodDescription(description = "minio 서버에 파일 업로드")
     public String uploadFileMinio(String bucketName, String fileName, MultipartFile file) throws Exception {
 
-        // 업로드 진행 전 파일 확장자 확인
+        // 업로드 진행 전 파일 확장자 한번 더 확인
         uploadFileCheck(file);
 
         //해당 버킷이 존재하지 않는 경우 버킷을 새로 생성
@@ -93,8 +94,12 @@ public class MinioService {
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
 
-    @MethodDescription(description = "파일 이름과 버킷 이름을 통해 파일을 삭제합나디.")
-    public String deleteFile(String bucketName, String fileName) throws Exception {
+    @MethodDescription(description = "파일 이름과 버킷 이름을 통해 파일을 삭제합니다.")
+    public void deleteFile(String bucketName, String fileName) {
+        if (bucketName == null || fileName == null || bucketName.isEmpty() || fileName.isEmpty()) {
+            return;
+        }
+        
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
@@ -102,10 +107,31 @@ public class MinioService {
                             .object(fileName)
                             .build()
             );
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new MinioException("파일 삭제를 실패하였습니다.");
+        } catch (Exception e) {
+            log.error("파일 삭제 실패: {}/{} - {}", bucketName, fileName, e.getMessage());
         }
-        return "파일 삭제가 정상적으로 진행되었습니다.";
+    }
+
+    @MethodDescription(description = "URL을 통해 파일을 삭제합니다.")
+    public void deleteFileByUrl(String fileUrl) {
+        String baseUrl = fileUrl.split("\\?")[0];
+        java.net.URL parsedUrl;
+        
+        try {
+            parsedUrl = new java.net.URL(baseUrl);
+            String path = parsedUrl.getPath();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            
+            int slashIndex = path.indexOf('/');
+            if (slashIndex != -1) {
+                String bucketName = path.substring(0, slashIndex);
+                String fileName = path.substring(slashIndex + 1);
+                deleteFile(bucketName, fileName);
+            }
+        } catch (Exception ignored) {
+            // 예외 무시하고 진행
+        }
     }
 }

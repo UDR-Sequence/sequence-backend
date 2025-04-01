@@ -34,9 +34,6 @@ public class TeamEvaluation extends BaseTimeEntity {
     @Column(columnDefinition = "json", nullable = true)
     private String keyword;             // 키워드 (JSON 형태로 저장)
 
-    @Column(nullable = true)
-    private String lineFeedback;    // 한줄 피드백 필드 추가
-
     // 같은 Archive 내의 멤버끼리만 평가할 수 있도록 검증
     public boolean validateSameArchive() {
         return evaluator.getArchive().getId().equals(evaluated.getArchive().getId());
@@ -47,7 +44,4 @@ public class TeamEvaluation extends BaseTimeEntity {
         return !evaluator.getId().equals(evaluated.getId());
     }
 
-    public String getLineFeedback() {
-        return this.lineFeedback;
-    }
 } 

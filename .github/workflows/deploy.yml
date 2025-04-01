@@ -46,10 +46,13 @@ jobs:
       MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
       MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
       MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
+      MINIO_PORTFOLIO_BUCKET_NAME: ${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}}
       MINIO_PW: ${{secrets.MINIO_PW}}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
+      MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
       
     steps:
     - uses: actions/checkout@v4
@@ -156,10 +159,13 @@ jobs:
               -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
               -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
               -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
+              -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
               -e MINIO_PW=${{secrets.MINIO_PW}} \
               -e REDIS_HOST=${{secrets.REDIS_HOST}} \
               -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
               -e REDIS_PORT=${{secrets.REDIS_PORT}} \
+              -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \
+              -e MINIO_ARCHIVE_IMG=${{secrets.MINIO_ARCHIVE_IMG}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
       

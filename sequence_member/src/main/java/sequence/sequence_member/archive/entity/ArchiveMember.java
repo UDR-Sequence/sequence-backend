@@ -19,6 +19,10 @@ import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,7 +42,15 @@ public class ArchiveMember extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "archive_id")
     private Archive archive;
+    
+    @Column(name = "profile_img")
+    private String profileImg;  // 멤버의 프로필 이미지 URL
 
-    @Column(nullable = false)
-    private String role;    // 아카이브에서의 역할
+    @Builder
+    public ArchiveMember(Archive archive, MemberEntity member, String profileImg) {
+        this.archive = archive;
+        this.member = member;
+        this.profileImg = profileImg;
+    }
+
 } 
