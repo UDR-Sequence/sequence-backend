@@ -102,6 +102,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/archive/{archiveId}").permitAll()
                         .requestMatchers("/api/archive/**").authenticated()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated());
 
         http
