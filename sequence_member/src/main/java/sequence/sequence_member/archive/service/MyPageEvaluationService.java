@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class MyPageService {
+public class MyPageEvaluationService {
     private final TeamEvaluationRepository teamEvaluationRepository;
     private final MemberRepository memberRepository;
 
