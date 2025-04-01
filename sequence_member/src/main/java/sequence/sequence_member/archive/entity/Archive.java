@@ -2,15 +2,21 @@ package sequence.sequence_member.archive.entity;
 
 import jakarta.persistence.*;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
+import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
@@ -174,5 +180,54 @@ public class Archive extends BaseTimeEntity {
     // 상태 변경 메서드 추가
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    // 썸네일과 이미지를 제외한 기본 정보만 업데이트
+    public void updateBasicInfo(ArchiveUpdateDTO archiveUpdateDTO) {
+        this.title = archiveUpdateDTO.getTitle();
+        this.description = archiveUpdateDTO.getDescription();
+        this.startDate = archiveUpdateDTO.getStartDate();
+        this.endDate = archiveUpdateDTO.getEndDate();
+        this.category = archiveUpdateDTO.getCategory();
+        this.link = archiveUpdateDTO.getLink();
+        setSkillsFromList(archiveUpdateDTO.getSkills());
+    }
+
+    public void setTitle(@NotEmpty(message = "제목을 입력해주세요.") @Length(min = 1, max = 40, message = "제목은 40자 이하로 입력해주세요.") String title) {
+        this.title = title;
+    }
+
+    public void setDescription(@NotEmpty(message = "설명을 입력해주세요.") @Length(min = 1, max = 450, message = "설명은 450자 이하로 입력해주세요.") String description) {
+        this.description = description;
+    }
+
+    public void setStartDate(@NotNull(message = "시작일을 입력해주세요.") LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(@NotNull(message = "종료일을 입력해주세요.") LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setCategory(@NotNull(message = "카테고리를 선택해주세요.") Category category) {
+        this.category = category;
+    }
+
+    public void setLink(String link) { this.link = link; }
+    
+    public Period calculatePeriod() {
+        long monthsBetween = ChronoUnit.MONTHS.between(startDate, endDate);
+
+        if (monthsBetween < 1) {
+            return Period.ONE_MONTH_LESS;
+        } else if (monthsBetween < 3) {
+            return Period.ONE_TO_THREE_MONTH;
+        } else if (monthsBetween < 6) {
+            return Period.THREE_TO_SIX_MONTH;
+        } else if (monthsBetween < 12) {
+            return Period.SIX_TO_ONE_YEAR;
+        } else {
+            return Period.OVER_ONE_YEAR;
+        }
     }
 } 

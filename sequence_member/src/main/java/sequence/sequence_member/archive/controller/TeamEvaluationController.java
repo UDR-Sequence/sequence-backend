@@ -1,27 +1,20 @@
 package sequence.sequence_member.archive.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sequence.sequence_member.archive.dto.TeamEvaluationRequestDto;
-import sequence.sequence_member.archive.entity.TeamEvaluation;
+import sequence.sequence_member.archive.dto.TeamEvaluationRequestDTO;
 import sequence.sequence_member.archive.service.TeamEvaluationService;
 import sequence.sequence_member.global.response.ApiResponseData;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import sequence.sequence_member.member.dto.CustomUserDetails;
-import org.springframework.security.core.context.SecurityContextHolder;
 import sequence.sequence_member.global.response.Code;
-import sequence.sequence_member.global.enums.enums.Status;
-import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
-import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDto;
+import sequence.sequence_member.archive.dto.TeamEvaluationResponseDTO;
+import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDTO;
 
 import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +27,7 @@ public class TeamEvaluationController {
     public ResponseEntity<ApiResponseData<Void>> createTeamEvaluation(
             @PathVariable Long archiveId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody TeamEvaluationRequestDto requestDto) {
+            @Valid @RequestBody TeamEvaluationRequestDTO requestDto) {
             
         teamEvaluationService.createTeamEvaluation(archiveId, userDetails.getUsername(), requestDto);
         return ResponseEntity
@@ -43,16 +36,16 @@ public class TeamEvaluationController {
     }
 
     @GetMapping("/{archiveId}/evaluations")
-    public ResponseEntity<ApiResponseData<List<TeamEvaluationResponseDto>>> getTeamEvaluations(
+    public ResponseEntity<ApiResponseData<List<TeamEvaluationResponseDTO>>> getTeamEvaluations(
             @PathVariable Long archiveId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
     
-        List<TeamEvaluationResponseDto> evaluations = teamEvaluationService.getTeamEvaluations(archiveId, userDetails.getUsername());
+        List<TeamEvaluationResponseDTO> evaluations = teamEvaluationService.getTeamEvaluations(archiveId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponseData.success(evaluations));
     }
 
     @GetMapping("/{archiveId}/evaluations/status")
-    public ResponseEntity<ApiResponseData<TeamEvaluationStatusResponseDto>> getEvaluationStatus(
+    public ResponseEntity<ApiResponseData<TeamEvaluationStatusResponseDTO>> getEvaluationStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long archiveId) {
         
@@ -60,7 +53,7 @@ public class TeamEvaluationController {
         teamEvaluationService.checkAndUpdateEvaluationStatus(archiveId);
         
         // 팀원별 평가 상태 조회
-        TeamEvaluationStatusResponseDto statusResponse = 
+        TeamEvaluationStatusResponseDTO statusResponse =
             teamEvaluationService.getEvaluationStatus(archiveId, userDetails.getUsername());
         
         return ResponseEntity.ok(ApiResponseData.of(

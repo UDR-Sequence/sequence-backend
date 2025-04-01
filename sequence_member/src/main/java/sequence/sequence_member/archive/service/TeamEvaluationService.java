@@ -3,7 +3,6 @@ package sequence.sequence_member.archive.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sequence.sequence_member.archive.dto.TeamEvaluationRequestDto;
 import sequence.sequence_member.archive.entity.ArchiveMember;
 import sequence.sequence_member.archive.entity.TeamEvaluation;
 import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
@@ -19,10 +18,12 @@ import java.util.Map;
 import java.util.HashMap;
 import sequence.sequence_member.global.exception.ArchiveNotFoundException;
 import java.util.stream.Collectors;
-import sequence.sequence_member.archive.dto.TeamEvaluationResponseDto;
 import java.util.ArrayList;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
-import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDto;
+import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDTO;
+import sequence.sequence_member.archive.dto.TeamEvaluationResponseDTO;
+import sequence.sequence_member.archive.dto.TeamEvaluationRequestDTO;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class TeamEvaluationService {
     public void createTeamEvaluation(
             Long archiveId,
             String username,
-            TeamEvaluationRequestDto requestDto) {
+            TeamEvaluationRequestDTO requestDto) {
             
         // archive 존재 여부 먼저 확인
         Archive archive = archiveRepository.findById(archiveId)
@@ -54,7 +55,7 @@ public class TeamEvaluationService {
             throw new BAD_REQUEST_EXCEPTION("해당 아카이브의 멤버가 아닙니다.");
         }
 
-        for (TeamEvaluationRequestDto.EvaluationItem evaluation : requestDto.getEvaluations()) {
+        for (TeamEvaluationRequestDTO.EvaluationItem evaluation : requestDto.getEvaluations()) {
             // 피평가자 찾기 - nickname으로 변경
             MemberEntity evaluatedMember = memberRepository.findByNickname(evaluation.getEvaluatedNickname())
                 .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("피평가자를 찾을 수 없습니다: " + evaluation.getEvaluatedNickname()));
@@ -118,7 +119,7 @@ public class TeamEvaluationService {
         return teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
     }
 
-    public TeamEvaluationStatusResponseDto getEvaluationStatus(Long archiveId, String username) {
+    public TeamEvaluationStatusResponseDTO getEvaluationStatus(Long archiveId, String username) {
         // username으로 멤버 찾기
         MemberEntity member = memberRepository.findByUsername(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
@@ -131,7 +132,7 @@ public class TeamEvaluationService {
 
         // 아카이브의 모든 멤버 조회
         List<ArchiveMember> archiveMembers = archiveMemberRepository.findAllByArchiveId(archiveId);
-        Map<String, TeamEvaluationStatusResponseDto.MemberEvaluationStatus> statusMap = new HashMap<>();
+        Map<String, TeamEvaluationStatusResponseDTO.MemberEvaluationStatus> statusMap = new HashMap<>();
 
         // 각 팀원별로 평가 상태 확인
         for (ArchiveMember archiveMember : archiveMembers) {
@@ -164,8 +165,8 @@ public class TeamEvaluationService {
             }
 
             // MemberEvaluationStatus 생성
-            TeamEvaluationStatusResponseDto.MemberEvaluationStatus status = 
-                TeamEvaluationStatusResponseDto.MemberEvaluationStatus.builder()
+            TeamEvaluationStatusResponseDTO.MemberEvaluationStatus status = 
+                TeamEvaluationStatusResponseDTO.MemberEvaluationStatus.builder()
                     .nickname(archiveMember.getMember().getNickname())
                     .roles(roles)
                     .status(memberStatus)
@@ -178,7 +179,7 @@ public class TeamEvaluationService {
         boolean isAllCompleted = statusMap.values().stream()
             .allMatch(status -> status.getStatus() == Status.평가완료);
 
-        return TeamEvaluationStatusResponseDto.builder()
+        return TeamEvaluationStatusResponseDTO.builder()
             .memberStatus(statusMap)
             .isAllCompleted(isAllCompleted)
             .build();
@@ -197,7 +198,7 @@ public class TeamEvaluationService {
                 .toList();
     }
 
-    public List<TeamEvaluationResponseDto> getTeamEvaluations(Long archiveId, String username) {
+    public List<TeamEvaluationResponseDTO> getTeamEvaluations(Long archiveId, String username) {
         // archive 존재 여부 확인
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
@@ -222,7 +223,7 @@ public class TeamEvaluationService {
         List<ArchiveMember> allMembers = archiveMemberRepository.findAllByArchiveId(archiveId);
         
         // 평가 대상 목록 생성 (자신 제외)
-        List<TeamEvaluationResponseDto.EvaluatedInfo> evaluatedList = allMembers.stream()
+        List<TeamEvaluationResponseDTO.EvaluatedInfo> evaluatedList = allMembers.stream()
             .filter(archiveMember -> !archiveMember.getId().equals(evaluator.getId()))
             .map(evaluated -> {
                 // 각 멤버의 역할 정보 가져오기
@@ -232,7 +233,7 @@ public class TeamEvaluationService {
                     roles = evaluatedMember.getEducation().getDesiredJob();
                 }
                 
-                return TeamEvaluationResponseDto.EvaluatedInfo.builder()
+                return TeamEvaluationResponseDTO.EvaluatedInfo.builder()
                     .nickname(evaluatedMember.getNickname())
                     .profileImg(evaluatedMember.getProfileImg())
                     .roles(roles)  // 역할 정보 추가
@@ -240,8 +241,8 @@ public class TeamEvaluationService {
             })
             .collect(Collectors.toList());
 
-        return List.of(TeamEvaluationResponseDto.builder()
-            .evaluator(TeamEvaluationResponseDto.EvaluatorInfo.builder()
+        return List.of(TeamEvaluationResponseDTO.builder()
+            .evaluator(TeamEvaluationResponseDTO.EvaluatorInfo.builder()
                 .nickname(member.getNickname())
                 .profileImg(member.getProfileImg())
                 .roles(evaluatorRoles)  // 역할 정보 추가
