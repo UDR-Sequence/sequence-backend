@@ -35,30 +35,13 @@ public class ReportController {
         return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "신고내역 조회가 성공했습니다.",reportService.searchReport(nickname)));
     }
 
-    // 신고 대상 정보 조회
-    @GetMapping("/target/user/{nickname}")
-    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportTarget(@PathVariable("nickname") String nickname) {
-        return ResponseEntity.ok().body(ApiResponseData.success(reportService.getReportTarget(nickname, null, null), "신고 대상 정보 조회 성공"));
+    @GetMapping("/target/{targetType}/{targetId}")
+    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportTarget(
+            @PathVariable("targetType") String targetType,
+            @PathVariable("targetId") Long targetId
+    ) {
+        ReportTargetDTO targetDTO = reportService.getDynamicReportTarget(targetType.toUpperCase(), targetId);
+        return ResponseEntity.ok().body(ApiResponseData.success(targetDTO, "신고 대상 정보 조회 성공"));
     }
 
-    // 신고 대상 댓글 조회
-    @GetMapping("/target/comment/{commentId}")
-    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportCommentTarget(@PathVariable("commentId") Long commentId) {
-
-        return ResponseEntity.ok().body(ApiResponseData.success(reportService.getReportCommentTarget(commentId), "신고 대상 정보 조회 성공"));
-    }
-
-    // 신고 대상 프로젝트 조회
-    @GetMapping("/target/project/{projectId}")
-    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportProjectTarget(@PathVariable("projectId") Long projectId) {
-
-        return ResponseEntity.ok().body(ApiResponseData.success(reportService.getReportProjectTarget(projectId), "신고 대상 정보 조회 성공"));
-    }
-
-    // 신고 대상 프로젝트 조회
-    @GetMapping("/target/archive/{archiveId}")
-    public ResponseEntity<ApiResponseData<ReportTargetDTO>> getReportArchiveTarget(@PathVariable("archiveId") Long archiveId) {
-
-        return ResponseEntity.ok().body(ApiResponseData.success(reportService.getReportArchiveTarget(archiveId), "신고 대상 정보 조회 성공"));
-    }
 }

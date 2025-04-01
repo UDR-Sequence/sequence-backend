@@ -27,11 +27,9 @@ public class ReportEntity extends BaseTimeEntity {
     @Column(name = "report_type")
     private List<ReportType> reportTypes;
 
-    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "report_targets", joinColumns = @JoinColumn(name = "report_id"))
     @Column(name = "report_target")
-    private List<ReportType> reportTarget;
+    private ReportTarget reportTarget;
 
     private Long postId;
 
@@ -74,11 +72,18 @@ public class ReportEntity extends BaseTimeEntity {
             this.description = description;
         }
 
-        public static ReportType fromDescription(String description) {
-            return Arrays.stream(ReportType.values())
-                    .filter(type -> type.getDescription().equals(description))
+        public static ReportTarget from(String name) {
+            return Arrays.stream(values())
+                    .filter(t -> t.name().equalsIgnoreCase(name))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("잘못된 신고 대상입니다: " + description));
+                    .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 대상: " + name));
+        }
+
+        public static ReportTarget fromDescription(String desc) {
+            return Arrays.stream(values())
+                    .filter(t -> t.description.equals(desc))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("잘못된 설명: " + desc));
         }
     }
 

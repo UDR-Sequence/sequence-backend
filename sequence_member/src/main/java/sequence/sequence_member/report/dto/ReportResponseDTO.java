@@ -16,7 +16,8 @@ public class ReportResponseDTO {
     private String nickname;
     private String reporter;
     private List<String> reportTypes;
-    private List<String> reportTarget;
+    private ReportEntity.ReportTarget reportTarget;
     private Long postId;
     private String reportContent;
 }
+

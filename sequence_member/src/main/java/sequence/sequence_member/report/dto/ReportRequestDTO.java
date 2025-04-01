@@ -10,12 +10,11 @@ import java.util.List;
 
 @Data
 public class ReportRequestDTO {
-
     private String nickname;
     private String reporter;
     private List<ReportEntity.ReportType> reportType;
-    private List<ReportEntity.ReportTarget> reportTarget;
-    private Long postId;
+    private ReportEntity.ReportTarget reportTarget;
     private String reportContent;
-
+    private Long postId;
 }
+
