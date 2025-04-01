@@ -5,11 +5,15 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
@@ -175,4 +179,37 @@ public class Archive extends BaseTimeEntity {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    // 썸네일과 이미지를 제외한 기본 정보만 업데이트
+    public void updateBasicInfo(ArchiveUpdateDTO archiveUpdateDTO) {
+        this.title = archiveUpdateDTO.getTitle();
+        this.description = archiveUpdateDTO.getDescription();
+        this.startDate = archiveUpdateDTO.getStartDate();
+        this.endDate = archiveUpdateDTO.getEndDate();
+        this.category = archiveUpdateDTO.getCategory();
+        this.link = archiveUpdateDTO.getLink();
+        setSkillsFromList(archiveUpdateDTO.getSkills());
+    }
+
+    public void setTitle(@NotEmpty(message = "제목을 입력해주세요.") @Length(min = 1, max = 40, message = "제목은 40자 이하로 입력해주세요.") String title) {
+        this.title = title;
+    }
+
+    public void setDescription(@NotEmpty(message = "설명을 입력해주세요.") @Length(min = 1, max = 450, message = "설명은 450자 이하로 입력해주세요.") String description) {
+        this.description = description;
+    }
+
+    public void setStartDate(@NotNull(message = "시작일을 입력해주세요.") LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(@NotNull(message = "종료일을 입력해주세요.") LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setCategory(@NotNull(message = "카테고리를 선택해주세요.") Category category) {
+        this.category = category;
+    }
+
+    public void setLink(String link) { this.link = link; }
 } 

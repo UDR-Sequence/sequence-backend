@@ -14,7 +14,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamEvaluationStatusResponseDto {
+public class TeamEvaluationStatusResponseDTO {
     private Map<String, MemberEvaluationStatus> memberStatus;
     private boolean isAllCompleted;
 
