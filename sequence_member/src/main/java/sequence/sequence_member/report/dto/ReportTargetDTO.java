@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import sequence.sequence_member.global.enums.enums.Degree;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public class ReportTargetDTO {
@@ -12,4 +14,6 @@ public class ReportTargetDTO {
     private String major;
     private String grade;
     private Degree degree;
+    private List<String> reportTarget;
+    private Long postId;
 }

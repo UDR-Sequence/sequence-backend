@@ -27,6 +27,13 @@ public class ReportEntity extends BaseTimeEntity {
     @Column(name = "report_type")
     private List<ReportType> reportTypes;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "report_targets", joinColumns = @JoinColumn(name = "report_id"))
+    @Column(name = "report_target")
+    private List<ReportType> reportTarget;
+
+    private Long postId;
 
     @Column(columnDefinition = "TEXT", length = 500)
     private String reportContent;
@@ -54,5 +61,25 @@ public class ReportEntity extends BaseTimeEntity {
         }
     }
 
+    @Getter
+    public enum ReportTarget {
+        USER("유저"),
+        COMMENT("댓글"),
+        PROJECT("프로젝트"),
+        ARCHIVE("아카이브");
+
+        private final String description;
+
+        ReportTarget(String description) {
+            this.description = description;
+        }
+
+        public static ReportType fromDescription(String description) {
+            return Arrays.stream(ReportType.values())
+                    .filter(type -> type.getDescription().equals(description))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("잘못된 신고 대상입니다: " + description));
+        }
+    }
 
 }

@@ -15,6 +15,8 @@ public class ReportResponseDTO {
     private Long id;
     private String nickname;
     private String reporter;
-    private List<String> reportTypes;  // 한글 설명 리스트
+    private List<String> reportTypes;
+    private List<String> reportTarget;
+    private Long postId;
     private String reportContent;
 }

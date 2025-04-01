@@ -6,11 +6,17 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import sequence.sequence_member.archive.entity.Archive;
+import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.member.entity.EducationEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.project.entity.Comment;
+import sequence.sequence_member.project.entity.Project;
+import sequence.sequence_member.project.repository.CommentRepository;
+import sequence.sequence_member.project.repository.ProjectRepository;
 import sequence.sequence_member.report.dto.ReportRequestDTO;
 import sequence.sequence_member.report.dto.ReportResponseDTO;
 import sequence.sequence_member.report.dto.ReportTargetDTO;
@@ -28,6 +34,9 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final CommentRepository commentRepository;
+    private final ProjectRepository projectRepository;
+    private final ArchiveRepository archiveRepository;
     private final JWTUtil jwtUtil;
 
     //신고내용을 db에 저장
@@ -59,8 +68,8 @@ public class ReportService {
 
         List<ReportResponseDTO> reportResponseDTOS = searchReport(reportRequestDTO.getNickname());
         for (ReportResponseDTO reportResponseDTO : reportResponseDTOS) {
-            if(reportResponseDTO.getReporter().equals(reportRequestDTO.getReporter())){
-                throw new CanNotFindResourceException("이미 신고된 유저 입니다.");
+            if(reportResponseDTO.getReporter().equals(reportRequestDTO.getReporter()) && reportResponseDTO.getReportTarget().equals(reportRequestDTO.getReportTarget())){
+                throw new CanNotFindResourceException("이미 신고되었습니다.");
             }
         }
 
@@ -94,9 +103,14 @@ public class ReportService {
         return reportResponseDTOS;
     }
 
-    public ReportTargetDTO getReportTarget(String nickname) {
+    public ReportTargetDTO getReportTarget(String nickname, Long postId, String targetType) {
         MemberEntity member = memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 유저가 존재하지 않습니다."));
+
+        Long targetId = postId;
+        if(postId == null){
+            targetId = member.getId();
+        };
 
         EducationEntity education = member.getEducation();
         if (education == null) {
@@ -108,8 +122,31 @@ public class ReportService {
                 education.getSchoolName(),
                 education.getMajor(),
                 education.getGrade(),
-                education.getDegree()
+                education.getDegree(),
+                List.of(targetType == null ? "USER" : targetType),
+                targetId
         );
+    }
+
+    public ReportTargetDTO getReportCommentTarget(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CanNotFindResourceException("해당 댓글이 존재하지 않습니다."));
+
+        return getReportTarget(String.valueOf(comment.getWriter()), commentId, "COMMENT");
+    }
+
+    public ReportTargetDTO getReportProjectTarget(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+
+        return getReportTarget(String.valueOf(project.getWriter()), projectId, "PROJECT");
+    }
+
+    public ReportTargetDTO getReportArchiveTarget(Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+
+        return getReportTarget(String.valueOf(archive.getArchiveMembers().get(0)), archiveId, "ARCHIVE");
     }
 
 }

@@ -12,11 +12,10 @@ import java.util.List;
 public class ReportRequestDTO {
 
     private String nickname;
-    private List<ReportEntity.ReportType> reportType;
     private String reporter;
-
-    @NotBlank(message = "아이디는 필수 입력 값입니다.")
-    @Size(min= 4, max= 10, message = "아이디는 최소 4자 이상 최대 10자 이하입니다.")
+    private List<ReportEntity.ReportType> reportType;
+    private List<ReportEntity.ReportTarget> reportTarget;
+    private Long postId;
     private String reportContent;
 
 }
