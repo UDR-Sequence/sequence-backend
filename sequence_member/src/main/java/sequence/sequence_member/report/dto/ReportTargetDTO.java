@@ -5,8 +5,6 @@ import lombok.Getter;
 import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.report.entity.ReportEntity;
 
-import java.util.List;
-
 @Getter
 @AllArgsConstructor
 public class ReportTargetDTO {
@@ -16,5 +14,5 @@ public class ReportTargetDTO {
     private String grade;
     private Degree degree;
     private ReportEntity.ReportTarget reportTarget;
-    private Long postId;
+    private Long targetId;
 }

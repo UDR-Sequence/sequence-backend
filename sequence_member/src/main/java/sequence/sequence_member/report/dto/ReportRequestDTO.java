@@ -1,9 +1,6 @@
 package sequence.sequence_member.report.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
 import sequence.sequence_member.report.entity.ReportEntity;
 
 import java.util.List;
@@ -15,6 +12,6 @@ public class ReportRequestDTO {
     private List<ReportEntity.ReportType> reportType;
     private ReportEntity.ReportTarget reportTarget;
     private String reportContent;
-    private Long postId;
+    private Long targetId;
 }
 

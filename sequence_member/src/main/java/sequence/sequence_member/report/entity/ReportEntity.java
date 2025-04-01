@@ -31,7 +31,7 @@ public class ReportEntity extends BaseTimeEntity {
     @Column(name = "report_target")
     private ReportTarget reportTarget;
 
-    private Long postId;
+    private Long ta rgetId;
 
     @Column(columnDefinition = "TEXT", length = 500)
     private String reportContent;

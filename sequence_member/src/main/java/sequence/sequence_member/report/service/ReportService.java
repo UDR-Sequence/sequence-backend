@@ -82,7 +82,7 @@ public class ReportService {
                 .reportTypes(reportRequestDTO.getReportType())
                 .reportTarget(reportRequestDTO.getReportTarget())
                 .reportContent(reportRequestDTO.getReportContent())
-                .postId(reportRequestDTO.getPostId())
+                .targetId(reportRequestDTO.getTargetId())
                 .build();
 
         reportRepository.save(reportEntity);
@@ -103,7 +103,7 @@ public class ReportService {
                     .reportContent(reportEntity.getReportContent())
                     .reporter(reportEntity.getReporter())
                     .reportTarget(reportEntity.getReportTarget())
-                    .postId(reportEntity.getPostId())
+                    .targetId(reportEntity.getTargetId())
                     .build());
         }
 
@@ -111,12 +111,11 @@ public class ReportService {
     }
 
 
-    public ReportTargetDTO getReportTarget(Long userId, Long postId, String targetType) {
+    public ReportTargetDTO getReportTarget(Long userId, Long targetId, String targetType) {
         MemberEntity member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 유저가 존재하지 않습니다."));
 
-        Long targetId = postId;
-        if(postId == null){
+        if(targetId == null){
             targetId = member.getId();
         };
 
