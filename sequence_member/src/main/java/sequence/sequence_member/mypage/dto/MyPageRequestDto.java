@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class MyPageRequestDTO {
+public class MyPageRequestDto {
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
     @Size(min= 4, max= 10, message = "아이디는 최소 4자 이상 최대 10자 이하입니다.")
     private String username;
