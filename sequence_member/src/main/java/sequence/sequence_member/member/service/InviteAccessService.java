@@ -85,6 +85,7 @@ public class InviteAccessService {
             acceptProjectOutputDTOList.add(AcceptProjectOutputDTO.builder()
                     .projectId(detail.getProject().getId())
                     .title(detail.getProject().getTitle())
+                    .createdDate(detail.getCreatedDateTime().toLocalDate())
                     .writer(detail.getProject().getWriter().getNickname())
                     .build());
         }
