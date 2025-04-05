@@ -124,6 +124,8 @@ public class ProjectService {
                 .writer(project.getWriter().getNickname())
                 .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
                 .projectName(project.getProjectName())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
                 .period(project.getPeriod())
                 .category(project.getCategory())
                 .personnel(project.getPersonnel())
