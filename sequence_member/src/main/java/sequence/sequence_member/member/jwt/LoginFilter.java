@@ -124,11 +124,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write(objectMapper.writeValueAsString(responseBody.getBody()));
     }
 
-    private Cookie createCookie(String key, String value) {
+    public static Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);
-//        cookie.setSecure(true); // https일 경우 설정
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true); // 쿠키에 접근할 수 없도록 설정
+        cookie.setAttribute("SameSite", "None"); // SameSite 속성 설정
+        cookie.setSecure(true); // https일 경우 설정
 //        cookie.setPath("/"); // 쿠키의 적용 범위 설정
 
         //js로 쿠키에 접근 못하게 함
