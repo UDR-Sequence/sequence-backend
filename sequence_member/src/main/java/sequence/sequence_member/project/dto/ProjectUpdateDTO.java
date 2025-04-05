@@ -1,9 +1,11 @@
 package sequence.sequence_member.project.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
@@ -23,8 +25,13 @@ public class ProjectUpdateDTO {
     @Length(min=1, max=40,message = "프로젝트 제목은 30자 이하로 입력해주세요.")
     private String projectName; //프로젝트 이름
 
-    @NotNull(message = "기간을 선택해주세요.")
-    private Period period;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @NotNull(message = "시작 기간을 입력해주세요.")
+    private LocalDate startDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @NotNull(message = "종료 기간을 입력해주세요.")
+    private LocalDate endDate;
 
     @NotNull(message = "카테고리를 선택해주세요.")
     private Category category;
