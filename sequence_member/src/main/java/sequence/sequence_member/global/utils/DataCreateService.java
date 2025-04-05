@@ -3,6 +3,7 @@ package sequence.sequence_member.global.utils;
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -147,22 +148,27 @@ public class DataCreateService {
 
             MemberEntity writer = availableMembers.get(faker.number().numberBetween(0, availableMembers.size())); // 랜덤 writer
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
             // 1. 시작일: 오늘 기준 -300일 ~ 오늘 사이
-            LocalDate startDate = LocalDate.now().minusDays(faker.number().numberBetween(0, 301));
+                        LocalDate startDate = LocalDate.now().minusDays(faker.number().numberBetween(0, 301));
 
             // 2. 종료일: 시작일 기준 +0일 ~ +210일 사이
-            LocalDate endDate = startDate.plusDays(faker.number().numberBetween(0, 211));
+                        LocalDate endDate = startDate.plusDays(faker.number().numberBetween(0, 211));
 
+            // 3. 문자열로 변환 (yyyy-MM)
+                        String startDateStr = startDate.format(formatter);
+                        String endDateStr = endDate.format(formatter);
 
             // 3. 기간 계산
-            Period period = Period.calculatePeriod(startDate, endDate);
+            Period period = Period.calculatePeriod(startDateStr, endDateStr);
 
 
             Project project = Project.builder()
                     .title(faker.book().title())
                     .projectName(faker.company().name())
-                    .startDate(startDate)
-                    .endDate(endDate)
+                    .startDate(startDateStr)
+                    .endDate(endDateStr)
                     .period(period)
                     .category(faker.options().option(Category.class))
                     .personnel(faker.number().numberBetween(1, 6)) // 1~5명
