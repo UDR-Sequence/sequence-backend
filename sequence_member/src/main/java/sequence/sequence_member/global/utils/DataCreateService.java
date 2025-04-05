@@ -31,7 +31,6 @@ public class DataCreateService {
     private final BCryptPasswordEncoder passwordEncoder;
     private static final Faker faker = new Faker();
 
-    @Async
     @Transactional
     public CompletableFuture<Void> generateUserBatch(int batchNumber, int batchSize) {
         List<MemberEntity> members = new ArrayList<>();
@@ -145,11 +144,26 @@ public class DataCreateService {
         List<Project> projects = new ArrayList<>();
 
         for(int i=0;i<batchSize;i++) {
+
             MemberEntity writer = availableMembers.get(faker.number().numberBetween(0, availableMembers.size())); // 랜덤 writer
+
+            // 1. 시작일: 오늘 기준 -300일 ~ 오늘 사이
+            LocalDate startDate = LocalDate.now().minusDays(faker.number().numberBetween(0, 301));
+
+            // 2. 종료일: 시작일 기준 +0일 ~ +210일 사이
+            LocalDate endDate = startDate.plusDays(faker.number().numberBetween(0, 211));
+
+
+            // 3. 기간 계산
+            Period period = Period.calculatePeriod(startDate, endDate);
+
+
             Project project = Project.builder()
                     .title(faker.book().title())
                     .projectName(faker.company().name())
-                    .period(faker.options().option(Period.class))
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .period(period)
                     .category(faker.options().option(Category.class))
                     .personnel(faker.number().numberBetween(1, 6)) // 1~5명
                     .roles(DataConvertor.listToString(List.of(faker.job().title(), faker.job().title())))
