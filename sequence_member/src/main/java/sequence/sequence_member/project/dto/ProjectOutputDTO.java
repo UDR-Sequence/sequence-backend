@@ -18,6 +18,8 @@ public class ProjectOutputDTO {
     private Date createdDate; // 프로젝트 작성일
     private String projectName; // 프로젝트 이름
     private Period period; // 프로젝트 기간
+    private String startDate;
+    private String endDate;
     private Category category; // 카테고리
     private Integer personnel; // 모집 인원
     private List<String> roles; // 역할
