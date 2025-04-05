@@ -51,10 +51,10 @@ public class Project extends BaseTimeEntity {
     private String projectName;
 
     @Column(nullable = false)
-    private LocalDate startDate;
+    private String startDate;
 
     @Column(nullable = false)
-    private LocalDate endDate;
+    private String endDate;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

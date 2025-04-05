@@ -25,13 +25,13 @@ public class ProjectUpdateDTO {
     @Length(min=1, max=40,message = "프로젝트 제목은 30자 이하로 입력해주세요.")
     private String projectName; //프로젝트 이름
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM")
     @NotNull(message = "시작 기간을 입력해주세요.")
-    private LocalDate startDate;
+    private String startDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM")
     @NotNull(message = "종료 기간을 입력해주세요.")
-    private LocalDate endDate;
+    private String endDate;
 
     @NotNull(message = "카테고리를 선택해주세요.")
     private Category category;
