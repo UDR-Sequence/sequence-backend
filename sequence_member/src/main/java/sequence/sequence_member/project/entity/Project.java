@@ -110,7 +110,9 @@ public class Project extends BaseTimeEntity {
     public void updateProject(ProjectUpdateDTO projectUpdateDTO){
         this.title = projectUpdateDTO.getTitle();
         this.projectName = projectUpdateDTO.getProjectName();
-        this.period = projectUpdateDTO.getPeriod();
+        this.startDate = projectUpdateDTO.getStartDate();
+        this.endDate = projectUpdateDTO.getEndDate();
+        this.period = Period.calculatePeriod(startDate, endDate);
         this.category = projectUpdateDTO.getCategory();
         this.personnel = projectUpdateDTO.getPersonnel();
         this.roles = DataConvertor.listToString(projectUpdateDTO.getRoles());
