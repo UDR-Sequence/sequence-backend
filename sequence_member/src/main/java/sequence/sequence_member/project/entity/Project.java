@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -47,6 +49,12 @@ public class Project extends BaseTimeEntity {
 
     @Column(nullable = false)
     private String projectName;
+
+    @Column(nullable = false)
+    private LocalDate startDate;
+
+    @Column(nullable = false)
+    private LocalDate endDate;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -102,7 +110,9 @@ public class Project extends BaseTimeEntity {
     public void updateProject(ProjectUpdateDTO projectUpdateDTO){
         this.title = projectUpdateDTO.getTitle();
         this.projectName = projectUpdateDTO.getProjectName();
-        this.period = projectUpdateDTO.getPeriod();
+        this.startDate = projectUpdateDTO.getStartDate();
+        this.endDate = projectUpdateDTO.getEndDate();
+        this.period = Period.calculatePeriod(startDate, endDate);
         this.category = projectUpdateDTO.getCategory();
         this.personnel = projectUpdateDTO.getPersonnel();
         this.roles = DataConvertor.listToString(projectUpdateDTO.getRoles());
