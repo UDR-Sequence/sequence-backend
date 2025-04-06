@@ -42,20 +42,28 @@ public class ProjectService {
     private final ProjectViewService projectViewService;
     private final ProjectBookmarkRepository projectBookmarkRepository;
 
-    /**
-     * Project를 생성하는 메인 로직 함수
-     * @param projectInputDTO
-     * @param customUserDetails
-     */
     @Transactional
-    public void createProject(ProjectInputDTO projectInputDTO, CustomUserDetails customUserDetails){
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-        Project project = saveProjectEntity(projectInputDTO,writer);
-        // 만약 초대목록 멤버에 존재한다면 본인은 제거
-        projectInputDTO.getInvitedMembersNicknames().remove(writer.getNickname());
+    public void createProject(ProjectInputDTO projectInputDTO, String username){
+        MemberEntity writer = memberRepository.findByUsername(username).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        Project project = projectRepository.save(Project.fromProjectInput(projectInputDTO,writer));
+
+        saveProjectInvitedMember(projectInputDTO, writer, project);
+        saveProjectMember(project, writer);
+    }
+
+    private void saveProjectInvitedMember(ProjectInputDTO projectInputDTO, MemberEntity writer, Project project) {
+        if(projectInputDTO.getInvitedMembersNicknames()==null || projectInputDTO.getInvitedMembersNicknames().isEmpty()){
+            return;
+        }
+        projectInputDTO.getInvitedMembersNicknames().remove(writer.getNickname()); // 본인은 제거
         List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectInputDTO.getInvitedMembersNicknames());
         saveProjectInvitedMemberEntities(project, invitedMembers);
-        savePrjectMemberEntity(project, writer);
+    }
+
+    // 초대 완료까지된 멤버를 저장하는 함수. 프로젝트 생성 시점에는 writer만 저장
+    private void saveProjectMember(Project project, MemberEntity writer) {
+        ProjectMember entity = ProjectMember.fromProjectAndMember(project,writer);
+        projectMemberRepository.save(entity);
     }
 
     /**
@@ -74,7 +82,6 @@ public class ProjectService {
             projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
                     .nickname(projectMember.getMember().getNickname())
                     .profileImgUrl(projectMember.getMember().getProfileImg())
-//                    .memberId(projectMember.getMember().getId()) // memberId는 필요없는 정보이므로 제거. todo- 추후 필요시 추가
                     .build());
         }
 
@@ -202,47 +209,16 @@ public class ProjectService {
         projectRepository.delete(project);
     }
 
-    // Project를 저장 및 반환하는 함수
-    private Project saveProjectEntity(ProjectInputDTO projectInputDTO, MemberEntity memberEntity){
-        return projectRepository.save(Project.builder()
-                .title(projectInputDTO.getTitle())
-                .projectName(projectInputDTO.getProjectName())
-                .projectName(projectInputDTO.getProjectName())
-                .startDate(projectInputDTO.getStartDate())
-                .endDate(projectInputDTO.getEndDate())
-                .period(Period.calculatePeriod(projectInputDTO.getStartDate(), projectInputDTO.getEndDate()))
-                .category(projectInputDTO.getCategory())
-                .personnel(projectInputDTO.getPersonnel())
-                .roles(DataConvertor.listToString(projectInputDTO.getRoles()))
-                .skills(DataConvertor.listToString(projectInputDTO.getSkills()))
-                .meetingOption(projectInputDTO.getMeetingOption())
-                .step(projectInputDTO.getStep())
-                .introduce(projectInputDTO.getIntroduce())
-                .article(projectInputDTO.getArticle())
-                .link(projectInputDTO.getLink())
-                .writer(memberEntity)
-                .build());
-    }
 
     // 초대된 멤버들을 저장하는 함수
     private void saveProjectInvitedMemberEntities(Project project, List<MemberEntity> invitedMembers){
         for(MemberEntity member : invitedMembers){
-            ProjectInvitedMember entity = ProjectInvitedMember.builder()
-                    .member(member)
-                    .project(project)
-                    .build();
+            ProjectInvitedMember entity = ProjectInvitedMember.fromProjectAndMember(project,member);
             projectInvitedMemberRepository.save(entity);
         }
     }
 
-    // 초대 완료까지된 멤버를 저장하는 함수. 프로젝트 생성 시점에는 writer만 저장
-    private void savePrjectMemberEntity(Project project, MemberEntity writer) {
-        ProjectMember entity = ProjectMember.builder()
-                .member(writer)
-                .project(project)
-                .build();
-        projectMemberRepository.save(entity);
-    }
+
 
     //키워드에 해당하는 프로젝트들을 필터링
     public List<ProjectFilterOutputDTO> getProjectsByKeywords(Category category,

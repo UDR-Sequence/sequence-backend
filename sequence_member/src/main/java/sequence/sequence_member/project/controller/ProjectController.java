@@ -3,7 +3,6 @@ package sequence.sequence_member.project.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +15,7 @@ import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.project.dto.ProjectFilterOutputDTO;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
-import sequence.sequence_member.project.dto.ProjectSummaryInfoDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
-import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.service.ProjectBookmarkService;
 import sequence.sequence_member.project.service.ProjectService;
 
@@ -36,7 +33,7 @@ public class ProjectController {
     @PostMapping()
     public ResponseEntity<ApiResponseData<String>> registerProject(@Valid @RequestBody ProjectInputDTO projectInputDTO, @AuthenticationPrincipal
                                                                    CustomUserDetails customUserDetails) {
-        projectService.createProject(projectInputDTO, customUserDetails);
+        projectService.createProject(projectInputDTO, customUserDetails.getUsername());
         return ResponseEntity.ok(ApiResponseData.success(null, "프로젝트 등록 성공"));
     }
 
