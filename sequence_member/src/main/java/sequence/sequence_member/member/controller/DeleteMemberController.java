@@ -51,10 +51,7 @@ public class DeleteMemberController {
             throw new CanNotFindResourceException("비밀번호가 일치하지 않습니다.");
         }
 
-        //리프레시 토큰 제거
-        //멤버 정보 제거
-        //삭제한 멤버 받아오기
-        //삭제한 user 정보 deleteMember 테이블에 저장
+        //탈퇴 진행
         deleteService.deleteRefreshAndMember(refresh);
 
         //성공 응답 반환
@@ -62,7 +59,7 @@ public class DeleteMemberController {
     }
 
     // 사용자 탈퇴 확인 API
-    @GetMapping("/api/user/isDeleted")
+    @GetMapping("/api/user/is_deleted")
     public ResponseEntity<ApiResponseData<Boolean>> isDeletedProcess(@RequestParam(name = "username") String username) {
         // 파라미터 유효성 검사
         if (username == null || username.trim().isEmpty()) {
@@ -82,8 +79,6 @@ public class DeleteMemberController {
         }else{
             return ResponseEntity.ok().body(ApiResponseData.success(true, "탈퇴된 사용자 입니다."));
         }
-
     }
-
 }
 
