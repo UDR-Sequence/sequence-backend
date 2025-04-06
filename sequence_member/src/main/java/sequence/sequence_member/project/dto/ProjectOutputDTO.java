@@ -8,6 +8,8 @@ import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
+import sequence.sequence_member.global.utils.DataConvertor;
+import sequence.sequence_member.project.entity.Project;
 
 @Getter @Builder
 public class ProjectOutputDTO {
@@ -33,4 +35,30 @@ public class ProjectOutputDTO {
     private List<CommentOutputDTO> comments; // 댓글들
     private Integer views; //조회수
     private Boolean isBookmark; //북마크 여부
+
+    public static ProjectOutputDTO from(Project project, List<ProjectMemberOutputDTO> members, List<CommentOutputDTO> comments, int views, boolean isBookmark) {
+        return ProjectOutputDTO.builder()
+                .id(project.getId())
+                .title(project.getTitle())
+                .writer(project.getWriter().getNickname())
+                .createdDate(java.sql.Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                .projectName(project.getProjectName())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .period(project.getPeriod())
+                .category(project.getCategory())
+                .personnel(project.getPersonnel())
+                .roles(DataConvertor.stringToList(project.getRoles()))
+                .skills(DataConvertor.stringToList(project.getSkills()))
+                .meetingOption(project.getMeetingOption())
+                .step(project.getStep())
+                .introduce(project.getIntroduce())
+                .article(project.getArticle())
+                .link(project.getLink())
+                .members(members)
+                .comments(comments)
+                .views(views)
+                .isBookmark(isBookmark)
+                .build();
+    }
 }

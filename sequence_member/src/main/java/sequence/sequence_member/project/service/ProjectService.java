@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,16 +76,28 @@ public class ProjectService {
     public ProjectOutputDTO getProject(Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
 
-        //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
-        List<ProjectMember> projectMembers = project.getMembers();
-        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
-        for (ProjectMember projectMember : projectMembers) {
-            projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
-                    .nickname(projectMember.getMember().getNickname())
-                    .profileImgUrl(projectMember.getMember().getProfileImg())
-                    .build());
-        }
+        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = getProjectMemberOutputDTOS(project);
 
+        List<CommentOutputDTO> commentOutputDTOS = getCommentOutputDTOS(project);
+
+        int views = getViews(projectId, request, project);
+        boolean bookmarked = isBookmarked(projectId, customUserDetails);
+        return ProjectOutputDTO.from(project,projectMemberOutputDTOS, commentOutputDTOS, views, bookmarked);
+    }
+
+    private int getViews(Long projectId, HttpServletRequest request, Project project) {
+        //views 조회
+        int views = 0;
+        try {
+            views = projectViewService.getViewsFromRedis(request, projectId);
+        }catch (Exception e){
+            views = project.getViews()+1;
+        }
+        return views;
+    }
+
+    @NotNull
+    private static List<CommentOutputDTO> getCommentOutputDTOS(Project project) {
         // 댓글들을 조회하여 응답데이터에 포함함
         List<Comment> comments = project.getComments();
         List<CommentOutputDTO> commentOutputDTOS = new ArrayList<>(); // Comments를 정리하여 CommentOutputDTO로 변환
@@ -116,38 +129,21 @@ public class ProjectService {
             }
             commentOutputDTOS.add(commentOutputDTO);
         }
+        return commentOutputDTOS;
+    }
 
-        //views 조회
-        int views = 0;
-        try {
-            views = projectViewService.getViewsFromRedis(request, projectId);
-        }catch (Exception e){
-            views = project.getViews()+1;
+    @NotNull
+    private static List<ProjectMemberOutputDTO> getProjectMemberOutputDTOS(Project project) {
+        //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
+        List<ProjectMember> projectMembers = project.getMembers();
+        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
+        for (ProjectMember projectMember : projectMembers) {
+            projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
+                    .nickname(projectMember.getMember().getNickname())
+                    .profileImgUrl(projectMember.getMember().getProfileImg())
+                    .build());
         }
-
-        return ProjectOutputDTO.builder()
-                .id(project.getId())
-                .title(project.getTitle())
-                .writer(project.getWriter().getNickname())
-                .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
-                .projectName(project.getProjectName())
-                .startDate(project.getStartDate())
-                .endDate(project.getEndDate())
-                .period(project.getPeriod())
-                .category(project.getCategory())
-                .personnel(project.getPersonnel())
-                .roles(DataConvertor.stringToList(project.getRoles()))
-                .skills(DataConvertor.stringToList(project.getSkills()))
-                .meetingOption(project.getMeetingOption())
-                .step(project.getStep())
-                .introduce(project.getIntroduce())
-                .article(project.getArticle())
-                .link(project.getLink())
-                .members(projectMemberOutputDTOS)
-                .comments(commentOutputDTOS)
-                .views(views)
-                .isBookmark(isBookmarked(projectId, customUserDetails))
-                .build();
+        return projectMemberOutputDTOS;
     }
 
     /**
