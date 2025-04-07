@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
-import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.dto.MemberDTO;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -31,7 +30,7 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Column(name = "birth", nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date birth;
+    private LocalDate birth;
 
     @Column(name="gender", nullable = false, columnDefinition = "ENUM('M','F')")
     @Enumerated(EnumType.STRING)

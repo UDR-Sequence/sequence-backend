@@ -1,10 +1,11 @@
 package sequence.sequence_member.mypage.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -13,13 +14,15 @@ import java.util.List;
  * 마이페이지 화면에서 '내 활동'에 해당하는 객체
  */
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class MyActivitiesDto {
+@AllArgsConstructor
+@Builder
+public class MyActivitiesDTO {
     private MyProjectDTO myProject;
     private MyArchiveDTO myArchive;
 
     @Getter
+    @Builder
     @AllArgsConstructor
     public static class MyProjectDTO {
         private List<PostDTO> writtenPosts;
@@ -27,6 +30,7 @@ public class MyActivitiesDto {
     }
 
     @Getter
+    @Builder
     @AllArgsConstructor
     public static class MyArchiveDTO {
         private List<PostDTO> writtenPosts;
@@ -34,11 +38,12 @@ public class MyActivitiesDto {
     }
 
     @Getter
+    @Builder
     @AllArgsConstructor
     public static class PostDTO {
         private String title;
         private Long articleId;
-        private Date createdDate;
+        private LocalDateTime createdDate;
         private int numberOfComments;
     }
 }

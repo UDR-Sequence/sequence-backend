@@ -3,36 +3,39 @@ package sequence.sequence_member.mypage.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
-import sequence.sequence_member.mypage.dto.MyPageRequestDto;
-import sequence.sequence_member.mypage.dto.MyPageResponseDto;
+import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
+import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class MyPageController {
     private final MyPageService myPageService;
 
     @GetMapping("/api/mypage")
-    public ResponseEntity<ApiResponseData> getMyProfile(
+    public ResponseEntity<ApiResponseData<MyPageResponseDTO>> getMyProfile(
             @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
-            @RequestParam(defaultValue = "10") int size  // 사이즈 기본값 10
+            @RequestParam(defaultValue = "10") int size,  // 사이즈 기본값 10
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = customUserDetails.getUsername();
 
         try {
-            MyPageResponseDto myPageDTO = myPageService.getMyProfile(username, page, size);
+            MyPageResponseDTO myPageDTO = myPageService.getMyProfile(username, page, size, customUserDetails);
             // 성공 응답 생성
             return ResponseEntity.ok(ApiResponseData.success(myPageDTO, "사용자 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
@@ -47,11 +50,10 @@ public class MyPageController {
 
     @PutMapping(value = "/api/mypage", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> updateMyProfile(
-            @RequestPart(name = "myPageDTO") MyPageRequestDto myPageDTO,
+            @RequestPart(name = "myPageDTO") MyPageRequestDTO myPageDTO,
             @RequestPart(name = "authImgFile", required = false) MultipartFile authImgFile,
             @RequestPart(name = "portfolios", required = false) List<MultipartFile> portfolios
     ) {
-
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
@@ -64,13 +66,14 @@ public class MyPageController {
     }
 
     @GetMapping("/api/mypage/{nickname}")
-    public ResponseEntity<ApiResponseData> getUserProfile(
+    public ResponseEntity<ApiResponseData<MyPageResponseDTO>> getUserProfile(
             @PathVariable String nickname,
             @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
-            @RequestParam(defaultValue = "10") int size  // 사이즈 기본값 10
+            @RequestParam(defaultValue = "10") int size,   // 사이즈 기본값 10
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         try {
-            MyPageResponseDto userProfile = myPageService.getUserProfile(nickname, page, size);
+            MyPageResponseDTO userProfile = myPageService.getUserProfile(nickname, page, size, customUserDetails);
             return ResponseEntity.ok(ApiResponseData.success(userProfile, nickname + "님의 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
             ApiResponseData errorResponse = ApiResponseData.failure(

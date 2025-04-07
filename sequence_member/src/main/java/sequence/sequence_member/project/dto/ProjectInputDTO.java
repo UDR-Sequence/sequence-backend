@@ -6,14 +6,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
-import java.util.Date;
+
 import java.util.List;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
-import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
 
 @Getter

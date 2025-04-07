@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.mypage.dto.*;
@@ -22,7 +23,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
-
     private final MyPageUpdateService myPageUpdateService;
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
@@ -34,17 +34,18 @@ public class MyPageService {
      * @param username 조회할 사용자의 이름
      * @param page archive 페이지네이션 파라미터
      * @param size archive 페이지네이션 파라미터
+     * @param customUserDetails 포트폴리오 객체에서 사용하는 파라미터
      *
      * @return 사용자의 마이페이지 정보를 담은 DTO
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDto getMyProfile(String username, int page, int size) {
+    public MyPageResponseDTO getMyProfile(String username, int page, int size, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
-        return myPageMapper.toMyPageResponseDto(member, archivePage);
+        return myPageMapper.toMyPageResponseDto(member, archivePage, customUserDetails);
     }
 
     /**
@@ -57,7 +58,7 @@ public class MyPageService {
      */
     @Transactional
     public void updateMyProfile(
-            MyPageRequestDto myPageDTO, String username,
+            MyPageRequestDTO myPageDTO, String username,
             MultipartFile authImgFile, List<MultipartFile> portfolios
     ) {
         MemberEntity member = memberRepository.findByUsername(username)
@@ -80,13 +81,13 @@ public class MyPageService {
      * @return 사용자의 마이페이지 정보를 담은 DTO
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDto getUserProfile(String nickname, int page, int size) {
+    public MyPageResponseDTO getUserProfile(String nickname, int page, int size, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
         Page<Archive> archivePage = archiveRepository.findByArchiveMembers_Member_Id(member.getId(), pageable);
 
-        return myPageMapper.toMyPageResponseDto(member, archivePage);
+        return myPageMapper.toMyPageResponseDto(member, archivePage, customUserDetails);
     }
 }

@@ -1,6 +1,6 @@
 package sequence.sequence_member.member.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,10 +8,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class InviteProjectOutputDTO {
-
     private final Long projectInvitedMemberId; // 초대된 초대장 id
     private final String writer; // 작성자_닉네임
     private final String title; // 제목
-    private final Date inviteDate; // 초대일
-
+    private final LocalDate inviteDate; // 초대일
 }

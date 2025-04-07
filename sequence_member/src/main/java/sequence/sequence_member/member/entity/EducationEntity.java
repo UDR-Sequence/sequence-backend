@@ -13,7 +13,7 @@ import sequence.sequence_member.member.converter.SkillCategoryConverter;
 
 import sequence.sequence_member.member.dto.MemberDTO;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -23,7 +23,7 @@ import java.util.List;
 public class EducationEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long    id ;
+    private Long id ;
 
     @OneToOne
     @JoinColumn
@@ -40,11 +40,11 @@ public class EducationEntity extends BaseTimeEntity {
 
     @Column(name = "entrance_date")
     @Temporal(TemporalType.DATE)
-    private Date entranceDate;
+    private LocalDate entranceDate;
 
     @Column(name = "graduation_date")
     @Temporal(TemporalType.DATE)
-    private Date graduationDate;
+    private LocalDate graduationDate;
 
     @Column(name = "degree", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -64,8 +64,8 @@ public class EducationEntity extends BaseTimeEntity {
 
     public EducationEntity(
             String schoolName, String major,
-            String grade, Date entranceDate,
-            Date graduationDate, Degree degree,
+            String grade, LocalDate entranceDate,
+            LocalDate graduationDate, Degree degree,
             List<Skill> skillCategory, List<ProjectRole> desiredJob,
             MemberEntity member
     ) {
@@ -98,8 +98,8 @@ public class EducationEntity extends BaseTimeEntity {
 
     public void updateEducation(
             String schoolName, String major,
-            String grade, Date entranceDate,
-            Date graduationDate, Degree degree,
+            String grade, LocalDate entranceDate,
+            LocalDate graduationDate, Degree degree,
             List<Skill> skillCategory, List<ProjectRole> desiredJob
     ) {
         this.schoolName = schoolName;

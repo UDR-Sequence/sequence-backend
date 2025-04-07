@@ -8,7 +8,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class AcceptProjectOutputDTO {
-
     private final Long projectId;
     private final String writer; // 작성자_닉네임
     private final String title; // 제목
