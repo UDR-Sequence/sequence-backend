@@ -54,7 +54,6 @@ public class ArchiveService {
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveCommentRepository commentRepository;
     private final ArchiveViewService archiveViewService;
-    private final MinioService minioService;
     private final TeamEvaluationRepository teamEvaluationRepository;
     private final ArchiveFileService archiveFileService;
     
@@ -206,6 +205,8 @@ public class ArchiveService {
                 .writerNickname(archive.getWriter().getNickname())
                 .thumbnail(archive.getThumbnail())
                 .commentCount(archive.getComments().size())
+                .view(archive.getView())
+                .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
                 .createdDateTime(archive.getCreatedDateTime())
                 .build())
             .toList();
@@ -251,6 +252,8 @@ public class ArchiveService {
                 .writerNickname(archive.getWriter().getNickname())
                 .thumbnail(archive.getThumbnail())
                 .commentCount(archive.getComments().size())
+                .view(archive.getView())
+                .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
                 .createdDateTime(archive.getCreatedDateTime())
                 .build())
             .toList();
