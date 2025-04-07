@@ -62,7 +62,8 @@ public class ReportEntity extends BaseTimeEntity {
     @Getter
     public enum ReportTarget {
         USER("유저"),
-        COMMENT("댓글"),
+        PROJECT_COMMENT("프로젝트 댓글"),
+        ARCHIVE_COMMENT("아카이브 댓글"),
         PROJECT("프로젝트"),
         ARCHIVE("아카이브");
 
