@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
-import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
 import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PortfolioDto {
-    private ArchivePageResponseDTO archive;
-    private List<InviteProjectOutputDTO> project;
+public class PortfolioDTO {
+    private ArchivePageResponseDTO archivePage;
+    private List<InviteProjectOutputDTO> invitedProjects;
 }

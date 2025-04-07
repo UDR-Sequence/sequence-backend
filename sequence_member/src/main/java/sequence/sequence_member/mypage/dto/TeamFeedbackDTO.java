@@ -10,6 +10,6 @@ import sequence.sequence_member.archive.dto.MyPageEvaluationDTO;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TeamFeedbackDto {
-    MyPageEvaluationDTO myPageEvaluation;
+public class TeamFeedbackDTO {
+    private MyPageEvaluationDTO myPageEvaluation;
 }

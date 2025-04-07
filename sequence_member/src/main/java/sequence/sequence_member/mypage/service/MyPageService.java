@@ -23,7 +23,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
-
     private final MyPageUpdateService myPageUpdateService;
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
@@ -40,7 +39,7 @@ public class MyPageService {
      * @return 사용자의 마이페이지 정보를 담은 DTO
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDto getMyProfile(String username, int page, int size, CustomUserDetails customUserDetails) {
+    public MyPageResponseDTO getMyProfile(String username, int page, int size, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
@@ -59,7 +58,7 @@ public class MyPageService {
      */
     @Transactional
     public void updateMyProfile(
-            MyPageRequestDto myPageDTO, String username,
+            MyPageRequestDTO myPageDTO, String username,
             MultipartFile authImgFile, List<MultipartFile> portfolios
     ) {
         MemberEntity member = memberRepository.findByUsername(username)
@@ -82,7 +81,7 @@ public class MyPageService {
      * @return 사용자의 마이페이지 정보를 담은 DTO
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDto getUserProfile(String nickname, int page, int size, CustomUserDetails customUserDetails) {
+    public MyPageResponseDTO getUserProfile(String nickname, int page, int size, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 

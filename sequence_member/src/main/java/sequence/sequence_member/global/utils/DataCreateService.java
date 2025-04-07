@@ -44,7 +44,7 @@ public class DataCreateService {
                 member.setUsername(batchNumber + "_" + i + "_username");
                 member.setPassword(password);
                 member.setName(batchNumber + "_" + i + "_" + faker.name().name());
-                member.setBirth(Date.from(faker.date().birthday(18, 50).toInstant().atZone(ZoneId.systemDefault()).toInstant()));
+                member.setBirth(faker.date().birthday(18, 50).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 member.setGender(faker.bool().bool() ? MemberEntity.Gender.M : MemberEntity.Gender.F);
                 member.setAddress(faker.address().fullAddress());
                 member.setPhone(faker.numerify("010-####-####"));  // 한국식 번호
@@ -60,8 +60,8 @@ public class DataCreateService {
                         faker.educator().university(),
                         faker.educator().course(),
                         faker.number().numberBetween(1, 6) + "학년",
-                        Date.from(faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
-                        Date.from(faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
+                        faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                         faker.options().option(Degree.class),
                         List.of(faker.options().option(Skill.class)),
                         List.of(faker.options().option(ProjectRole.class)),
@@ -75,7 +75,7 @@ public class DataCreateService {
                                 faker.options().option(AwardType.class),
                                 faker.company().name(),
                                 faker.book().title(),
-                                Date.from(faker.date().past(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
+                                faker.date().past(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                                 member
                         )
                 ));

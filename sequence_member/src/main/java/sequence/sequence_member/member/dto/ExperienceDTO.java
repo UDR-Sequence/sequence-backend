@@ -4,13 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.util.Date;
 import lombok.Getter;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
 
 @Getter
 public class ExperienceDTO {
-
     @NotNull(message = "구분을 선택해주세요.")
     private ExperienceType experienceType;
 

@@ -13,8 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
-import java.util.Date;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -22,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
@@ -30,7 +28,6 @@ import sequence.sequence_member.global.enums.enums.Step;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.entity.MemberEntity;
-import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 
 @Entity
