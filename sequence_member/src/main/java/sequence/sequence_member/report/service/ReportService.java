@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sequence.sequence_member.archive.entity.Archive;
+import sequence.sequence_member.archive.entity.ArchiveComment;
+import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.member.entity.EducationEntity;
@@ -24,6 +26,7 @@ import sequence.sequence_member.report.repository.ReportRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +39,7 @@ public class ReportService {
     private final ProjectRepository projectRepository;
     private final ArchiveRepository archiveRepository;
     private final JWTUtil jwtUtil;
+    private final ArchiveCommentRepository archiveCommentRepository;
 
     // 신고내용을 db에 저장
     public void submitReport(ReportRequestDTO reportRequestDTO, HttpServletRequest request) {
@@ -55,9 +59,8 @@ public class ReportService {
 
         // Refresh Token과 username이 일치하는지 확인
         String tokenUsername = jwtUtil.getUsername(refresh);
-        if (!Objects.equals(tokenUsername, reportRequestDTO.getReporter())) {
-            throw new CanNotFindResourceException("요청한 사용자와 로그인된 사용자가 다릅니다.");
-        }
+        Optional<MemberEntity> member = memberRepository.findByUsername(tokenUsername);
+        String tokenNickname = member.get().getNickname();
 
         boolean exist = memberRepository.existsByNickname(reportRequestDTO.getNickname());
         if (!exist) {
@@ -66,7 +69,7 @@ public class ReportService {
 
         List<ReportResponseDTO> reportResponseDTOS = searchReport(reportRequestDTO.getNickname());
         for (ReportResponseDTO reportResponseDTO : reportResponseDTOS) {
-            if (reportResponseDTO.getReporter().equals(reportRequestDTO.getReporter()) &&
+            if (reportResponseDTO.getReporter().equals(tokenNickname) &&
                     reportResponseDTO.getReportTarget().equals(reportRequestDTO.getReportTarget())) {
                 throw new CanNotFindResourceException("이미 신고되었습니다.");
             }
@@ -78,7 +81,7 @@ public class ReportService {
 
         ReportEntity reportEntity = ReportEntity.builder()
                 .nickname(reportRequestDTO.getNickname())
-                .reporter(reportRequestDTO.getReporter())
+                .reporter(tokenNickname)
                 .reportTypes(reportRequestDTO.getReportType())
                 .reportTarget(reportRequestDTO.getReportTarget())
                 .reportContent(reportRequestDTO.getReportContent())
@@ -142,10 +145,15 @@ public class ReportService {
                         .orElseThrow(() -> new CanNotFindResourceException("해당 유저가 존재하지 않습니다."));
                 return getReportTarget(user.getId(), null, "USER");
 
-            case "COMMENT":
-                Comment comment = commentRepository.findById(targetId)
-                        .orElseThrow(() -> new CanNotFindResourceException("해당 댓글이 존재하지 않습니다."));
-                return getReportTarget(comment.getWriter().getId(), comment.getId(), "COMMENT");
+            case "PROJECT_COMMENT":
+                Comment project_comment = commentRepository.findById(targetId)
+                        .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트 댓글이 존재하지 않습니다."));
+                return getReportTarget(project_comment.getWriter().getId(), project_comment.getId(), "PROJECT_COMMENT");
+
+            case "ARCHIVE_COMMENT":
+                ArchiveComment archive_comment = archiveCommentRepository.findById(targetId)
+                        .orElseThrow(() -> new CanNotFindResourceException("해당 아카이브 댓글이 존재하지 않습니다."));
+                return getReportTarget(memberRepository.findByNickname(archive_comment.getWriter()).get().getId(), archive_comment.getId(), "ARCHIVE_COMMENT");
 
             case "PROJECT":
                 Project project = projectRepository.findById(targetId)
@@ -155,7 +163,7 @@ public class ReportService {
             case "ARCHIVE":
                 Archive archive = archiveRepository.findById(targetId)
                         .orElseThrow(() -> new CanNotFindResourceException("해당 아카이브가 존재하지 않습니다."));
-                return getReportTarget(archive.getArchiveMembers().get(0).getId(), archive.getId(), "ARCHIVE");
+                return getReportTarget(archive.getWriter().getId(), archive.getId(), "ARCHIVE");
 
             default:
                 throw new IllegalArgumentException("지원하지 않는 신고 대상입니다: " + targetType);

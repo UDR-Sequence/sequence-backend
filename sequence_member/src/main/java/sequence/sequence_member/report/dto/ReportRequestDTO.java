@@ -8,7 +8,6 @@ import java.util.List;
 @Data
 public class ReportRequestDTO {
     private String nickname;
-    private String reporter;
     private List<ReportEntity.ReportType> reportType;
     private ReportEntity.ReportTarget reportTarget;
     private String reportContent;
