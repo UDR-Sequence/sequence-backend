@@ -38,7 +38,11 @@ public class ArchiveCommentController {
             throw new CanNotFindResourceException("아카이브를 찾을 수 없습니다.");
         }
         
-        Long commentId = commentService.createComment(archiveId, requestDto);
+        Long commentId = commentService.createComment(
+            archiveId, 
+            userDetails.getUsername(),  // username 전달
+            requestDto
+        );
 
         return ResponseEntity
             .status(Code.CREATED.getStatus())
@@ -61,8 +65,13 @@ public class ArchiveCommentController {
             throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
         }
         
-        boolean success = commentService.updateComment(archiveId, commentId, requestDto.getWriter(), requestDto);
-        
+        boolean success = commentService.updateComment(
+            archiveId, 
+            commentId, 
+            userDetails.getUsername(),
+            requestDto
+        );
+
         if (!success) {
             throw new CanNotFindResourceException("아카이브 또는 댓글을 찾을 수 없거나 이미 삭제된 댓글입니다.");
         }
@@ -79,14 +88,17 @@ public class ArchiveCommentController {
     public ResponseEntity<ApiResponseData<Void>> deleteComment(
             @PathVariable Long archiveId,
             @PathVariable Long commentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody CommentUpdateRequestDTO requestDto) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         if (userDetails == null) {
             throw new BAD_REQUEST_EXCEPTION("로그인이 필요합니다.");
         }
         
-        boolean success = commentService.deleteComment(archiveId, commentId, requestDto.getWriter());
+        boolean success = commentService.deleteComment(
+            archiveId, 
+            commentId, 
+            userDetails.getUsername()
+        );
         
         if (!success) {
             throw new CanNotFindResourceException("아카이브 또는 댓글을 찾을 수 없거나 이미 삭제된 댓글입니다.");

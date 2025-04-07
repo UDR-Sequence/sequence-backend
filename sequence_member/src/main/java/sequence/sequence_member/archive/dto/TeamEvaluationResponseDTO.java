@@ -1,10 +1,8 @@
 package sequence.sequence_member.archive.dto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +17,7 @@ import sequence.sequence_member.member.entity.EducationEntity;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamEvaluationResponseDto {
+public class TeamEvaluationResponseDTO {
     private EvaluatorInfo evaluator;
     private List<EvaluatedInfo> evaluated;
     private LocalDate startDate;
@@ -45,7 +43,7 @@ public class TeamEvaluationResponseDto {
         private List<ProjectRole> roles;
     }
 
-    public static TeamEvaluationResponseDto from(TeamEvaluation evaluation) {
+    public static TeamEvaluationResponseDTO from(TeamEvaluation evaluation) {
         EducationEntity evaluatorEducation = evaluation.getEvaluator().getMember().getEducation();
         List<ProjectRole> evaluatorRoles = evaluatorEducation != null ? 
                                           evaluatorEducation.getDesiredJob() : 
@@ -58,7 +56,7 @@ public class TeamEvaluationResponseDto {
 
         Archive archive = evaluation.getEvaluator().getArchive();
 
-        return TeamEvaluationResponseDto.builder()
+        return TeamEvaluationResponseDTO.builder()
                 .evaluator(EvaluatorInfo.builder()
                     .nickname(evaluation.getEvaluator().getMember().getNickname())
                     .profileImg(evaluation.getEvaluator().getMember().getProfileImg())
