@@ -20,6 +20,8 @@ public class ArchiveListDTO {
         private String writerNickname;
         private String thumbnail;
         private int commentCount;
+        private int view;  // 조회수 추가
+        private int bookmarkCount;  // 북마크 수 추가
         private LocalDateTime createdDateTime;
     }
 } 
