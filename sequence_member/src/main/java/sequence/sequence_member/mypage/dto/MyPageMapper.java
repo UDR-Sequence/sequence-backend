@@ -4,12 +4,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import sequence.sequence_member.archive.dto.MyPageEvaluationDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.entity.ArchiveBookmark;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.archive.service.ArchiveService;
+import sequence.sequence_member.archive.service.MyPageEvaluationService;
+import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.service.InviteAccessService;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectBookmark;
 import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
@@ -28,13 +33,25 @@ public class MyPageMapper {
     private final ProjectRepository projectRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
     private final ArchiveBookmarkRepository archiveBookmarkRepository;
+    private final InviteAccessService inviteAccessService;
+    private final MyPageEvaluationService myPageEvaluationService;
 
-    public MyPageMapper(ArchiveService archiveService, ArchiveRepository archiveRepository, ProjectRepository projectRepository, ProjectBookmarkRepository projectBookmarkRepository, ArchiveBookmarkRepository archiveBookmarkRepository) {
+    public MyPageMapper(
+            ArchiveService archiveService,
+            ArchiveRepository archiveRepository,
+            ProjectRepository projectRepository,
+            ProjectBookmarkRepository projectBookmarkRepository,
+            ArchiveBookmarkRepository archiveBookmarkRepository,
+            InviteAccessService inviteAccessService,
+            MyPageEvaluationService myPageEvaluationService
+    ) {
         this.archiveService = archiveService;
         this.archiveRepository = archiveRepository;
         this.projectRepository = projectRepository;
         this.projectBookmarkRepository = projectBookmarkRepository;
         this.archiveBookmarkRepository = archiveBookmarkRepository;
+        this.inviteAccessService = inviteAccessService;
+        this.myPageEvaluationService = myPageEvaluationService;
     }
 
     /**
@@ -44,15 +61,13 @@ public class MyPageMapper {
      * @param archivePage ResponseDTO로 매핑할 archive 페이지네이션 객체
      * @return 사용자의 마이페이지 정보를 담은 MyPageResponseDTO
      */
-    public MyPageResponseDto toMyPageResponseDto(MemberEntity member, Page<Archive> archivePage) {
-        // ArchivePageResponseDTO 생성 후 portfolio 설정
-        ArchivePageResponseDTO archivePageResponseDTO = archiveService.createArchivePageResponse(archivePage, member.getUsername());
-        PortfolioDto portfolioDto = new PortfolioDto(archivePageResponseDTO);
+    public MyPageResponseDto toMyPageResponseDto(MemberEntity member, Page<Archive> archivePage, CustomUserDetails customUserDetails) {
 
         MyPageResponseDto dto = new MyPageResponseDto(
                 toBasicInfoDto(member),
                 toCareerHistoryDto(member),
-                portfolioDto,
+                toPortfolioDto(member, archivePage, customUserDetails),
+                toTeamFeedbackDto(member),
                 getMyActivity(member)
         );
 
@@ -142,6 +157,40 @@ public class MyPageMapper {
                         portfolio.getPortfolioUrl()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 아카이브 리스트와 초대된 프로젝트와 PortfolioDto 형식으로 변환합니다.
+     *
+     * @param member      ResponseDTO로 변환할 멤버 객체
+     * @param archivePage
+     * @param customUserDetails inviteAccessService에서 사용하기 위한 객체
+     * @return PortfolioDto 객체
+     */
+    private PortfolioDto toPortfolioDto(MemberEntity member, Page<Archive> archivePage, CustomUserDetails customUserDetails) {
+        // ArchivePageResponseDTO 생성
+        ArchivePageResponseDTO archivePageResponseDTO = archiveService.createArchivePageResponse(archivePage, member.getUsername());
+
+        List<InviteProjectOutputDTO> acceptProjectOutputDTOList = inviteAccessService.getInvitedProjects(customUserDetails);
+
+        // CareerHistoryDto 반환, 포트폴리오는 별도로 설정
+        return new PortfolioDto(
+                archivePageResponseDTO,
+                acceptProjectOutputDTOList
+        );
+    }
+
+    /**
+     * 멤버의 활동 정보를 TeamFeedbackDto 형식으로 변환합니다.
+     *
+     * @param member ResponseDTO로 변환할 멤버 객체
+     * @return TeamFeedbackDto 객체
+     */
+    public TeamFeedbackDto toTeamFeedbackDto(MemberEntity member) {
+        MyPageEvaluationDTO myPageEvaluationDTO = myPageEvaluationService.getMyEvaluation(member.getNickname());
+        return new TeamFeedbackDto(
+                myPageEvaluationDTO
+        );
     }
 
     /**

@@ -21,5 +21,6 @@ public class MyPageResponseDto {
     private BasicInfoDto basicInfo;         // 기본적인 정보
     private CareerHistoryDto careerHistory; // 경력 및 활동 이력
     private PortfolioDto portfolio;         // 포트폴리오
+    private TeamFeedbackDto teamFeedback;   // 팀원들의 평가
     private MyActivitiesDto myActivities;   // 내 활동
 }

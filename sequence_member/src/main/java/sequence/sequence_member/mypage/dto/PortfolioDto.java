@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import sequence.sequence_member.member.dto.AcceptProjectOutputDTO;
+import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
+
+import java.util.List;
 
 /**
  * 사용자가 참여한 아카이브 이력 DTO
@@ -14,5 +18,6 @@ import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PortfolioDto {
-    private ArchivePageResponseDTO archivePageResponseDTO;
+    private ArchivePageResponseDTO archive;
+    private List<InviteProjectOutputDTO> project;
 }
