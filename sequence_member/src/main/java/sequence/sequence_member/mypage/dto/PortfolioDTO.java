@@ -3,8 +3,7 @@ package sequence.sequence_member.mypage.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
-import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -17,6 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PortfolioDTO {
-    private ArchivePageResponseDTO archivePage;
-    private List<InviteProjectOutputDTO> invitedProjects;
+    private Page<ArchiveSummaryDTO> archivePage;
+    private List<InvitedProjectWithCommentDTO> invitedProjects;
 }
