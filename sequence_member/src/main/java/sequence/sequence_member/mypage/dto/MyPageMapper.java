@@ -4,17 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.MyPageEvaluationDTO;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
-import sequence.sequence_member.archive.service.ArchiveService;
 import sequence.sequence_member.archive.service.MyPageEvaluationService;
-import sequence.sequence_member.member.dto.CustomUserDetails;
-import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
-import sequence.sequence_member.member.service.InviteAccessService;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
@@ -25,12 +20,10 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class MyPageMapper {
-    private final ArchiveService archiveService;
     private final ArchiveRepository archiveRepository;
     private final ProjectRepository projectRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
     private final ArchiveBookmarkRepository archiveBookmarkRepository;
-    private final InviteAccessService inviteAccessService;
     private final MyPageEvaluationService myPageEvaluationService;
 
     /**
@@ -40,11 +33,15 @@ public class MyPageMapper {
      * @param archivePage ResponseDTO로 매핑할 archive 페이지네이션 객체
      * @return 사용자의 마이페이지 정보를 담은 MyPageResponseDTO
      */
-    public MyPageResponseDTO toMyPageResponseDto(MemberEntity member, Page<Archive> archivePage, CustomUserDetails customUserDetails) {
+    public MyPageResponseDTO toMyPageResponseDto(
+            MemberEntity member,
+            Page<Archive> archivePage,
+            List<InvitedProjectWithCommentDTO> invitedProjects
+    ) {
         return new MyPageResponseDTO(
                 toBasicInfoDto(member),
                 toCareerHistoryDto(member),
-                toPortfolioDto(member, archivePage, customUserDetails),
+                toPortfolioDto(archivePage, invitedProjects),
                 toTeamFeedbackDto(member),
                 getMyActivity(member)
         );
@@ -119,16 +116,20 @@ public class MyPageMapper {
     }
 
     /**
-     * 아카이브 리스트와 초대된 프로젝트와 PortfolioDto 형식으로 변환합니다.
+     * 내가 작성한 아카이브와 초대받은 프로젝트 리스트를 PortfolioDTO로 변환합니다.
      *
-     * @param member      ResponseDTO로 변환할 멤버 객체
      * @param archivePage
-     * @param customUserDetails inviteAccessService에서 사용하기 위한 객체
      * @return PortfolioDto 객체
      */
-    private PortfolioDTO toPortfolioDto(MemberEntity member, Page<Archive> archivePage, CustomUserDetails customUserDetails) {
-        ArchivePageResponseDTO archiveDTO = archiveService.createArchivePageResponse(archivePage, member.getUsername());
-         List<InviteProjectOutputDTO> invitedProjects = inviteAccessService.getInvitedProjects(customUserDetails);
+    private PortfolioDTO toPortfolioDto(Page<Archive> archivePage, List<InvitedProjectWithCommentDTO> invitedProjects) {
+        Page<ArchiveSummaryDTO> archiveDTO = archivePage.map(archive -> ArchiveSummaryDTO.builder()
+                .id(archive.getId())
+                .title(archive.getTitle())
+                .thumbnail(archive.getThumbnail())
+                .startDate(archive.getStartDate())
+                .endDate(archive.getEndDate())
+                .build());
+
         return new PortfolioDTO(archiveDTO, invitedProjects);
     }
 
