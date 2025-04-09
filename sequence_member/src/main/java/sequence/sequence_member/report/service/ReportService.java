@@ -75,18 +75,15 @@ public class ReportService {
             }
         }
 
-        // reportTarget은 하나만 있어야 하므로, 리스트 첫 번째 값만 사용
-        String targetType = String.valueOf(reportRequestDTO.getReportTarget());
-        ReportEntity.ReportTarget reportTarget = ReportEntity.ReportTarget.valueOf(targetType);
-
         ReportEntity reportEntity = ReportEntity.builder()
                 .nickname(reportRequestDTO.getNickname())
                 .reporter(tokenNickname)
-                .reportTypes(reportRequestDTO.getReportType())
+                .reportType(reportRequestDTO.getReportType())
                 .reportTarget(reportRequestDTO.getReportTarget())
                 .reportContent(reportRequestDTO.getReportContent())
                 .targetId(reportRequestDTO.getTargetId())
                 .build();
+
 
         reportRepository.save(reportEntity);
     }
@@ -100,9 +97,7 @@ public class ReportService {
             reportResponseDTOS.add(ReportResponseDTO.builder()
                     .id(reportEntity.getId())
                     .nickname(reportEntity.getNickname())
-                    .reportTypes(reportEntity.getReportTypes().stream()
-                            .map(ReportEntity.ReportType::getDescription)
-                            .collect(Collectors.toList()))
+                    .reportType(reportEntity.getReportType().name())
                     .reportContent(reportEntity.getReportContent())
                     .reporter(reportEntity.getReporter())
                     .reportTarget(reportEntity.getReportTarget())
