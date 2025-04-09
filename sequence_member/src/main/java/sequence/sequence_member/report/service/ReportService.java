@@ -97,7 +97,7 @@ public class ReportService {
             reportResponseDTOS.add(ReportResponseDTO.builder()
                     .id(reportEntity.getId())
                     .nickname(reportEntity.getNickname())
-                    .reportType(reportEntity.getReportType().name())
+                    .reportType(reportEntity.getReportType().getDescription())
                     .reportContent(reportEntity.getReportContent())
                     .reporter(reportEntity.getReporter())
                     .reportTarget(reportEntity.getReportTarget())
