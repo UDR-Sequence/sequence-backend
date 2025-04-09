@@ -8,7 +8,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.dto.ArchiveOutputDTO;
-import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 import sequence.sequence_member.archive.dto.ArchiveRegisterInputDTO;
 import sequence.sequence_member.archive.dto.ArchiveUpdateDTO;
 import sequence.sequence_member.archive.dto.ArchiveMemberDTO;
@@ -35,7 +34,7 @@ import sequence.sequence_member.archive.entity.ArchiveComment;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
-import sequence.sequence_member.global.minio.service.MinioService;
+
 import java.util.Optional;
 import sequence.sequence_member.archive.repository.TeamEvaluationRepository;
 import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
@@ -356,19 +355,6 @@ public class ArchiveService {
                 .createdDateTime(archive.getCreatedDateTime())
                 .modifiedDateTime(archive.getModifiedDateTime())
                 .comments(commentDTOs)
-                .build();
-    }
-
-    public ArchivePageResponseDTO createArchivePageResponse(Page<Archive> archivePage, String username) {
-        List<ArchiveOutputDTO> archives = archivePage.isEmpty() ? 
-                new ArrayList<>() : 
-                archivePage.getContent().stream()
-                    .map(archive -> convertToDTO(archive, username, archive.getView()))
-                    .toList();
-        
-        return ArchivePageResponseDTO.builder()
-                .archives(archives)
-                .totalPages(archivePage.getTotalPages())
                 .build();
     }
 

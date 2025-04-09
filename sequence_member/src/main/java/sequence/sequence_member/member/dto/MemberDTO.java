@@ -17,7 +17,7 @@ import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.MemberEntity.Gender;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -26,7 +26,6 @@ import java.util.List;
 @ToString
 @Builder
 public class MemberDTO {
-
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
     @Size(min= 4, max= 10, message = "아이디는 최소 4자 이상 최대 10자 이하입니다.")
     private String username;
@@ -39,7 +38,7 @@ public class MemberDTO {
     private String name;
 
     @NotNull(message = "생년월일은 필수 입력 값입니다.")
-    private Date birth;
+    private LocalDate birth;
 
     @NotNull(message = "성별은 필수 입력 값입니다.")
     private Gender gender;
@@ -70,9 +69,9 @@ public class MemberDTO {
     @Pattern(regexp = "^[1-6]학년$", message = "학년은 1학년부터 6학년까지 입력 가능합니다.")
     private String grade;
 
-    private Date entranceDate;
+    private LocalDate entranceDate;
 
-    private Date graduationDate;
+    private LocalDate graduationDate;
 
     @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
@@ -82,5 +81,4 @@ public class MemberDTO {
     private List<ExperienceDTO> experiences;
     private List<CareerInputDTO> careers;
     private List<AwardInputDTO> awards;
-
 }
