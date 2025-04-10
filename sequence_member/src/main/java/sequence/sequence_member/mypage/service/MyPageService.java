@@ -12,14 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
-import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.member.service.InviteAccessService;
 import sequence.sequence_member.mypage.dto.*;
-import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.repository.CommentRepository;
-import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +31,8 @@ public class MyPageService {
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
     private final MyPageMapper myPageMapper;
-    private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
     private final CommentRepository commentRepository;
+    private final InviteAccessService inviteAccessService;
 
     /**
      * 주어진 사용자명(username)에 해당하는 마이페이지 정보를 조회합니다.
@@ -109,22 +108,19 @@ public class MyPageService {
      */
     @Transactional
     public List<InvitedProjectWithCommentDTO> getInvitedProjects(CustomUserDetails customUserDetails) {
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
-                .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-
-        List<ProjectInvitedMember> inviteList = projectInvitedMemberRepository.findByMemberId(member.getId());
+        List<InviteProjectOutputDTO> inviteList = inviteAccessService.getInvitedProjects(customUserDetails);
 
         List<InvitedProjectWithCommentDTO> result = new ArrayList<>();
 
-        for (ProjectInvitedMember detail : inviteList) {
-            Long projectId = detail.getProject().getId();
+        for (InviteProjectOutputDTO detail : inviteList) {
+            Long projectId = detail.getProjectInvitedMemberId();
             int commentCount = commentRepository.countByProjectId(projectId);   // 댓글수 가져오기
 
             result.add(InvitedProjectWithCommentDTO.builder()
-                    .projectInvitedMemberId(detail.getProject().getId())
-                    .title(detail.getProject().getTitle())
-                    .writer(detail.getProject().getWriter().getNickname())
-                    .inviteDate(detail.getCreatedDateTime().toLocalDate())
+                    .projectInvitedMemberId(detail.getProjectInvitedMemberId())
+                    .title(detail.getTitle())
+                    .writer(detail.getWriter())
+                    .inviteDate(detail.getInviteDate())
                     .commentCount(commentCount)
                     .build());
         }
