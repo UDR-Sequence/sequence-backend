@@ -13,6 +13,8 @@ import sequence.sequence_member.archive.dto.FeedbackDetailDTO;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 
 @Entity
 @Getter
@@ -58,11 +60,18 @@ public class TeamEvaluation extends BaseTimeEntity {
     }
 
     public Map<String, Integer> getKeywordMap() {
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(this.keyword, new TypeReference<Map<String, Integer>>() {});
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return new HashMap<>();
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            // JSON 배열을 List로 먼저 읽은 후 Map으로 변환
+            List<String> keywords = mapper.readValue(keyword, new TypeReference<List<String>>() {});
+            Map<String, Integer> map = new HashMap<>();
+            keywords.forEach(keyword -> map.put(keyword, 1));
+            return map;
         } catch (JsonProcessingException e) {
-            return Map.of();
+            return new HashMap<>();
         }
     }
 

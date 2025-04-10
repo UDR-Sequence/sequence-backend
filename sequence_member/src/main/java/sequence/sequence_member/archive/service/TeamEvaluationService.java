@@ -23,6 +23,8 @@ import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.archive.dto.TeamEvaluationStatusResponseDTO;
 import sequence.sequence_member.archive.dto.TeamEvaluationResponseDTO;
 import sequence.sequence_member.archive.dto.TeamEvaluationRequestDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 @Service
@@ -70,8 +72,20 @@ public class TeamEvaluationService {
                 throw new BAD_REQUEST_EXCEPTION("이미 평가를 완료했습니다: " + evaluation.getEvaluatedNickname());
             }
 
-            // 키워드 리스트를 JSON 배열 형식으로 변환
-            String keywordJson = "[\"" + String.join("\",\"", evaluation.getKeyword()) + "\"]";
+            // 키워드 리스트를 Map으로 변환 (각 키워드의 개수를 1로 설정)
+            Map<String, Integer> keywordMap = new HashMap<>();
+            for (String keyword : evaluation.getKeyword()) {
+                keywordMap.merge(keyword, 1, Integer::sum);
+            }
+            
+            // Map을 JSON 문자열로 변환
+            ObjectMapper mapper = new ObjectMapper();
+            String keywordJson;
+            try {
+                keywordJson = mapper.writeValueAsString(keywordMap);
+            } catch (JsonProcessingException e) {
+                throw new BAD_REQUEST_EXCEPTION("키워드 변환 중 오류가 발생했습니다.");
+            }
 
             // 팀 평가 엔티티 생성 및 검증
             TeamEvaluation teamEvaluation = TeamEvaluation.builder()
