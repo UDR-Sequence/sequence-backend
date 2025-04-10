@@ -33,8 +33,10 @@ public class MyPageEvaluationService {
         Map<String, Integer> keywordStats = new HashMap<>();
         evaluations.stream()
                 .map(TeamEvaluation::getKeywordMap)
-                .forEach(map -> map.forEach((key, value) -> 
-                    keywordStats.merge(key, value, Integer::sum)));
+                .forEach(map -> {
+                    map.forEach((key, value) -> 
+                        keywordStats.merge(key, value, Integer::sum));
+                });
         
         // 키워드를 count 내림차순으로 정렬
         List<KeywordStatDTO> keywordStatDTOs = keywordStats.entrySet().stream()
