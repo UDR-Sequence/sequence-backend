@@ -14,12 +14,15 @@ import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class MyPageMapper {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     private final ArchiveRepository archiveRepository;
     private final ProjectRepository projectRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
@@ -181,7 +184,7 @@ public class MyPageMapper {
         return MyActivitiesDTO.PostDTO.builder()
                 .title(archive.getTitle())
                 .articleId(archive.getId())
-                .createdDate(archive.getCreatedDateTime())
+                .createdDate(archive.getCreatedDateTime().format(FORMATTER))
                 .numberOfComments(archive.getComments().size())
                 .build();
     }
@@ -191,7 +194,7 @@ public class MyPageMapper {
         return MyActivitiesDTO.PostDTO.builder()
                 .title(project.getTitle())
                 .articleId(project.getId())
-                .createdDate(project.getCreatedDateTime())
+                .createdDate(project.getCreatedDateTime().format(FORMATTER))
                 .numberOfComments(project.getComments().size())
                 .build();
     }
