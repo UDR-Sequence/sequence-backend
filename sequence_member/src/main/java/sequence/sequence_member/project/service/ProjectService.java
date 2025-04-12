@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -219,32 +223,35 @@ public class ProjectService {
 
 
     //키워드에 해당하는 프로젝트들을 필터링
-    public List<ProjectFilterOutputDTO> getProjectsByKeywords(Category category,
+    public Page<ProjectFilterOutputDTO> getProjectsByKeywords(Category category,
                                                               String periodKey,
                                                               String roles,
                                                               String skills,
                                                               MeetingOption meetingOption,
-                                                              Step step){
+                                                              Step step,
+                                                              String sortBy,
+                                                              int page,
+                                                              int size){
+
+        // 페이지 크기 제한
+        int pageSize = switch (size) {
+            case 30 -> 30;
+            case 50 -> 50;
+            default -> 10;
+        };
+
+        // 정렬 조건 설정
+        Sort sort = Sort.by(
+            "createdDateTime".equals(sortBy) ? "createdDateTime" : "modifiedDateTime"
+        ).descending();
+
+        //pageable 객체 만들기
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
 
         Period period = PeriodMapper.PeriodCheck(periodKey);
-        List<Project> projects = projectRepository.findProjectsByFilteredKeywords(category,period,roles,skills,meetingOption,step);
-        List<ProjectFilterOutputDTO> projectFilterOutputDTOS = new ArrayList<>();
+        Page<Project> projects = projectRepository.findProjectsByFilteredKeywords(category,period,roles,skills,meetingOption,step,pageable);
 
-        for(int i=0;i<projects.size();i++){
-            ProjectFilterOutputDTO projectFilterOutputDTO = ProjectFilterOutputDTO.builder()
-                    .id(projects.get(i).getId())
-                    .title(projects.get(i).getTitle())
-                    .writer(projects.get(i).getWriter().getNickname())
-                    .createdDate(projects.get(i).getCreatedDateTime().toLocalDate())
-                    .roles(DataConvertor.stringToList(projects.get(i).getRoles()))
-                    .build();
-
-
-            projectFilterOutputDTOS.add(projectFilterOutputDTO);
-        }
-
-        return projectFilterOutputDTOS;
-
+        return projects.map(ProjectFilterOutputDTO::toProjectFilterOutputDTO);
     }
 
     public List<ProjectFilterOutputDTO> getProjectsBySearch(String title){
