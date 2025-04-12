@@ -13,9 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,12 +26,13 @@ import sequence.sequence_member.global.enums.enums.Step;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.global.utils.DataConvertor;
 import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "project")
 public class Project extends BaseTimeEntity {
@@ -90,6 +89,9 @@ public class Project extends BaseTimeEntity {
     @Column(columnDefinition = "INT DEFAULT 0")
     private Integer views;
 
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private Integer bookmarkCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
     private MemberEntity writer;
@@ -121,21 +123,31 @@ public class Project extends BaseTimeEntity {
         this.link = projectUpdateDTO.getLink();
     }
 
-    // List<ProjectMemberEntity> 에서 username만을 가지고 있는 List<String> 반환
-    public List<String> getMemberUsernames() {
-        return this.getMembers() // List<ProjectMemberEntity> 반환
-                .stream() // Stream<ProjectMemberEntity>
-                .map(projectMemberentity-> projectMemberentity.getMember().getUsername()) // 각 객체의 username 필드 추출
-                .collect(Collectors.toList()); // List<String>으로 변환
+    public static Project fromProjectInput(ProjectInputDTO projectInputDTO, MemberEntity memberEntity){
+        return Project.builder()
+                .title(projectInputDTO.getTitle())
+                .projectName(projectInputDTO.getProjectName())
+                .projectName(projectInputDTO.getProjectName())
+                .startDate(projectInputDTO.getStartDate())
+                .endDate(projectInputDTO.getEndDate())
+                .period(Period.calculatePeriod(projectInputDTO.getStartDate(), projectInputDTO.getEndDate()))
+                .category(projectInputDTO.getCategory())
+                .personnel(projectInputDTO.getPersonnel())
+                .roles(DataConvertor.listToString(projectInputDTO.getRoles()))
+                .skills(DataConvertor.listToString(projectInputDTO.getSkills()))
+                .meetingOption(projectInputDTO.getMeetingOption())
+                .step(projectInputDTO.getStep())
+                .introduce(projectInputDTO.getIntroduce())
+                .article(projectInputDTO.getArticle())
+                .link(projectInputDTO.getLink())
+                .writer(memberEntity)
+                .build();
     }
-
-    // List<ProjectMemberEntity> 에서 nickn
-    // nickname만을 가지고 있는 List<String> 반환
-    public List<String> getMemberNicknames() {
-        return this.getMembers() // List<ProjectMemberEntity> 반환
-                .stream() // Stream<ProjectMemberEntity>
-                .map(projectMemberentity-> projectMemberentity.getMember().getNickname()) // 각 객체의 username 필드 추출
-                .collect(Collectors.toList()); // List<String>으로 변환
+    public void addBookmarkCount(){
+        this.bookmarkCount++;
+    }
+    public void removeBookmarkCount(){
+        this.bookmarkCount--;
     }
 
     public void setMembers(List<ProjectMember> projectMembers){

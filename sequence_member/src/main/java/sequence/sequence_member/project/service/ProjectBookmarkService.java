@@ -49,8 +49,9 @@ public class ProjectBookmarkService {
                 .member(member)
                 .project(project)
                 .build();
-
         bookmarkRepository.save(bookmark);
+        project.addBookmarkCount();
+        projectRepository.save(project);
         return "북마크 등록 성공";
     }
 
@@ -79,6 +80,8 @@ public class ProjectBookmarkService {
 
         // 북마크 삭제
         bookmarkRepository.deleteByMemberIdAndProjectId(member.getId(), projectId);
+        project.removeBookmarkCount();
+        projectRepository.save(project);
         return "북마크 삭제 성공";
     }
 

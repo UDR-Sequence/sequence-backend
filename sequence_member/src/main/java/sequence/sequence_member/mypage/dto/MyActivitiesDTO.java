@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -43,7 +42,7 @@ public class MyActivitiesDTO {
     public static class PostDTO {
         private String title;
         private Long articleId;
-        private LocalDateTime createdDate;
+        private String createdDate;
         private int numberOfComments;
     }
 }
