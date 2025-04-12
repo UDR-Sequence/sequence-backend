@@ -33,7 +33,7 @@ public class CommentService {
      */
     @Transactional
     public void writeComment(CustomUserDetails customUserDetails, Long projectId, CommentInputDTO commentInputDTO){
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
         commentRepository.save(createComment(commentInputDTO, writer, project));
     }
@@ -49,7 +49,7 @@ public class CommentService {
     public void updateComment(CustomUserDetails customUserDetails, Long projectId, Long commentId, CommentUpdateDTO commentUpdateDTO){
 
         //각 리소스가 존재하는지 확인
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 댓글이 존재하지 않습니다."));
@@ -78,7 +78,7 @@ public class CommentService {
     @Transactional
     public void deleteComment(CustomUserDetails customUserDetails, Long projectId, Long commentId){
         //각 리소스가 존재하는지 확인
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 댓글이 존재하지 않습니다."));

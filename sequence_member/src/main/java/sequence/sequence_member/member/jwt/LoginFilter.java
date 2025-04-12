@@ -87,7 +87,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException{
         //유저 이름 찾기
         String username = authentication.getName();
-        MemberEntity memberEntity = memberRepository.findByUsername(username).orElseThrow(()->new BaseException("해당 유저가 존재하지 않습니다."));
+        MemberEntity memberEntity = memberRepository.findByUsernameAndIsDeletedFalse(username).orElseThrow(()->new BaseException("해당 유저가 존재하지 않습니다."));
         
         String access = jwtUtil.createJwt("access",username,  600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
         String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
