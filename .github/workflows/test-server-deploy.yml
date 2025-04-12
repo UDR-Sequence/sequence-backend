@@ -147,7 +147,7 @@ jobs:
             docker stop sequence-spring-container || true
             docker rm sequence-spring-container || true
             # 새로운 컨테이너 실행 (포트 및 필요한 환경 변수 지정 가능)
-            docker run -d --name test-sequence-spring-container --network test-sequence -p 20101:8080 \
+            docker run -d --name test-sequence-spring-container --network test_sequence -p 20101:8080 \
               -e JWT_SECRET=${{secrets.TEST_JWT_SECRET}} \
               -e MAX_FILE_SIZE=${{secrets.MAX_FILE_SIZE}} \
               -e MAX_REQUEST_SIZE=${{secrets.MAX_REQUEST_SIZE}} \
