@@ -58,4 +58,6 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 특정 멤버의 아카이브 중 상태가 평가완료인 것만 조회
     List<Archive> findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
         Long memberId, Status status);
+
+    Page<Archive> findByWriter(MemberEntity writer, Pageable pageable);
 } 

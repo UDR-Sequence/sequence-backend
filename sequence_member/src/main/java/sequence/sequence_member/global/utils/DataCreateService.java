@@ -3,6 +3,7 @@ package sequence.sequence_member.global.utils;
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -31,7 +32,6 @@ public class DataCreateService {
     private final BCryptPasswordEncoder passwordEncoder;
     private static final Faker faker = new Faker();
 
-    @Async
     @Transactional
     public CompletableFuture<Void> generateUserBatch(int batchNumber, int batchSize) {
         List<MemberEntity> members = new ArrayList<>();
@@ -44,7 +44,7 @@ public class DataCreateService {
                 member.setUsername(batchNumber + "_" + i + "_username");
                 member.setPassword(password);
                 member.setName(batchNumber + "_" + i + "_" + faker.name().name());
-                member.setBirth(Date.from(faker.date().birthday(18, 50).toInstant().atZone(ZoneId.systemDefault()).toInstant()));
+                member.setBirth(faker.date().birthday(18, 50).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 member.setGender(faker.bool().bool() ? MemberEntity.Gender.M : MemberEntity.Gender.F);
                 member.setAddress(faker.address().fullAddress());
                 member.setPhone(faker.numerify("010-####-####"));  // 한국식 번호
@@ -60,8 +60,8 @@ public class DataCreateService {
                         faker.educator().university(),
                         faker.educator().course(),
                         faker.number().numberBetween(1, 6) + "학년",
-                        Date.from(faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
-                        Date.from(faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
+                        faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                         faker.options().option(Degree.class),
                         List.of(faker.options().option(Skill.class)),
                         List.of(faker.options().option(ProjectRole.class)),
@@ -75,7 +75,7 @@ public class DataCreateService {
                                 faker.options().option(AwardType.class),
                                 faker.company().name(),
                                 faker.book().title(),
-                                Date.from(faker.date().past(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toInstant()),
+                                faker.date().past(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                                 member
                         )
                 ));
@@ -145,11 +145,31 @@ public class DataCreateService {
         List<Project> projects = new ArrayList<>();
 
         for(int i=0;i<batchSize;i++) {
+
             MemberEntity writer = availableMembers.get(faker.number().numberBetween(0, availableMembers.size())); // 랜덤 writer
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+            // 1. 시작일: 오늘 기준 -300일 ~ 오늘 사이
+                        LocalDate startDate = LocalDate.now().minusDays(faker.number().numberBetween(0, 301));
+
+            // 2. 종료일: 시작일 기준 +0일 ~ +210일 사이
+                        LocalDate endDate = startDate.plusDays(faker.number().numberBetween(0, 211));
+
+            // 3. 문자열로 변환 (yyyy-MM)
+                        String startDateStr = startDate.format(formatter);
+                        String endDateStr = endDate.format(formatter);
+
+            // 3. 기간 계산
+            Period period = Period.calculatePeriod(startDateStr, endDateStr);
+
+
             Project project = Project.builder()
                     .title(faker.book().title())
                     .projectName(faker.company().name())
-                    .period(faker.options().option(Period.class))
+                    .startDate(startDateStr)
+                    .endDate(endDateStr)
+                    .period(period)
                     .category(faker.options().option(Category.class))
                     .personnel(faker.number().numberBetween(1, 6)) // 1~5명
                     .roles(DataConvertor.listToString(List.of(faker.job().title(), faker.job().title())))

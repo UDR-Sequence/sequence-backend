@@ -35,7 +35,7 @@ public class ArchiveBookmarkService {
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
         
-        MemberEntity userId = memberRepository.findByUsername(username)
+        MemberEntity userId = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
 
         Optional<ArchiveBookmark> bookmark = bookmarkRepository.findByArchiveAndUserId(archive, userId);
@@ -56,7 +56,7 @@ public class ArchiveBookmarkService {
 
     // 사용자의 북마크 목록 조회
     public List<Long> getUserBookmarks(String username) {
-        MemberEntity userId = memberRepository.findByUsername(username)
+        MemberEntity userId = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
         
         return bookmarkRepository.findAllByUserId(userId).stream()
@@ -69,7 +69,7 @@ public class ArchiveBookmarkService {
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
         
-        MemberEntity userId = memberRepository.findByUsername(username)
+        MemberEntity userId = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new UserNotFindException("회원을 찾을 수 없습니다."));
         
         return bookmarkRepository.existsByArchiveAndUserId(archive, userId);

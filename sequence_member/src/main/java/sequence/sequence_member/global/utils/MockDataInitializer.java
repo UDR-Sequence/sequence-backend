@@ -19,8 +19,8 @@ public class MockDataInitializer implements ApplicationRunner {
 
     private final MemberRepository memberRepository;
     private final DataCreateService dataCreateService;
-    private static final int TOTAL_USERS = 100000;
-    private static final int USER_BATCH_SIZE = 10000;
+    private static final int TOTAL_USERS = 10000;
+    private static final int USER_BATCH_SIZE = 1000;
     private static final int THREAD_POOL_SIZE = 10;  // 병렬 실행할 스레드 개수
     private static final int PROJECT_TOTAL = 10000;
     private static final int PROJECT_BATCH_SIZE = 1000;
@@ -28,7 +28,7 @@ public class MockDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
 
         // 이미 목데이터 생성되었는지를 판단함.
-        if(memberRepository.findByUsername("1_0_username").isPresent()){
+        if (memberRepository.findByUsernameAndIsDeletedFalse("1_0_username").isPresent()) {
             return;
         }
 
@@ -55,6 +55,7 @@ public class MockDataInitializer implements ApplicationRunner {
 
         futures.clear();
 
+
         log.info("프로젝트 데이터 생성 시작");
         long startProjectTime = System.currentTimeMillis();
         for (int batchNumber = 0; batchNumber < PROJECT_TOTAL / PROJECT_BATCH_SIZE; batchNumber++) {
@@ -78,5 +79,7 @@ public class MockDataInitializer implements ApplicationRunner {
         log.info("전체 목 데이터 소요 시간 : " + totalTime + "ms");
 
         executorService.shutdown();
-        }
+
+    }
+
 }

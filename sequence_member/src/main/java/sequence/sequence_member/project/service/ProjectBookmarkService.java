@@ -26,7 +26,7 @@ public class ProjectBookmarkService {
     public String addBookmark(CustomUserDetails customUserDetails, Long projectId) {
         StringBuilder errMessgage=new StringBuilder(); //만약 null이 아닐경우 오류가 발생한것
         // 유저와 프로젝트 존재 여부 확인
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         Project project = projectRepository.findById(projectId).orElse(null);
 
         if(member == null){
@@ -49,8 +49,9 @@ public class ProjectBookmarkService {
                 .member(member)
                 .project(project)
                 .build();
-
         bookmarkRepository.save(bookmark);
+        project.addBookmarkCount();
+        projectRepository.save(project);
         return "북마크 등록 성공";
     }
 
@@ -59,7 +60,7 @@ public class ProjectBookmarkService {
         //todo- 코드 반복됨. 리팩토링 고민
         StringBuilder errMessgage=new StringBuilder(); //만약 null이 아닐경우 오류가 발생한것
         // 유저와 프로젝트 존재 여부 확인
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         Project project = projectRepository.findById(projectId).orElse(null);
 
         if(member == null){
@@ -79,6 +80,8 @@ public class ProjectBookmarkService {
 
         // 북마크 삭제
         bookmarkRepository.deleteByMemberIdAndProjectId(member.getId(), projectId);
+        project.removeBookmarkCount();
+        projectRepository.save(project);
         return "북마크 삭제 성공";
     }
 

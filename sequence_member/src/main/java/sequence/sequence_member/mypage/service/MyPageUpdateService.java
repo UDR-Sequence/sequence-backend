@@ -56,12 +56,12 @@ public class MyPageUpdateService {
             MemberEntity member, MyPageRequestDTO myPageDTO,
             MultipartFile authImgFile, List<MultipartFile> portfolios
     ) {
-        updateBasicInfo(member, myPageDTO);        // 기본 정보 업데이트
-        updatePortfolios(member, authImgFile, portfolios);       // 포트폴리오 업데이트
-        updateAwards(member, myPageDTO);           // 수상 경력 업데이트
-        updateCareers(member, myPageDTO);          // 경력 업데이트
-        updateExperiences(member, myPageDTO);      // 경험 업데이트
-        updateEducation(member, myPageDTO);        // 교육 정보 업데이트
+        updateBasicInfo(member, myPageDTO);
+        updatePortfolios(member, authImgFile, portfolios);
+        updateAwards(member, myPageDTO);
+        updateCareers(member, myPageDTO);
+        updateExperiences(member, myPageDTO);
+        updateEducation(member, myPageDTO);
     }
 
     /**
@@ -161,7 +161,6 @@ public class MyPageUpdateService {
                     throw new RuntimeException(errorMessage);  // 예외 던져서 외부로 전달
                 }
             }
-
         } catch (Exception e) {
             // 전체 로직에서 발생한 예외 처리
             String errorMessage = "포트폴리오 업데이트 중 오류가 발생했습니다: " + e.getMessage();

@@ -33,7 +33,7 @@ public class InviteAccessService {
      */
     @Transactional(readOnly = true)
     public List<InviteProjectOutputDTO> getInvitedProjects(CustomUserDetails customUserDetails){
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         List<ProjectInvitedMember> inviteList = projectInvitedMemberRepository.findByMemberId(member.getId());
         List<InviteProjectOutputDTO> inviteProjectOutputDTOList = new ArrayList<>();
         for(ProjectInvitedMember detail : inviteList ){
@@ -41,7 +41,7 @@ public class InviteAccessService {
                     .projectInvitedMemberId(detail.getId())
                     .title(detail.getProject().getTitle())
                     .writer(detail.getProject().getWriter().getNickname())
-                    .inviteDate(Date.valueOf(detail.getCreatedDateTime().toLocalDate()))
+                    .inviteDate(detail.getCreatedDateTime().toLocalDate())
                     .build());
         }
         return inviteProjectOutputDTOList;
@@ -54,7 +54,7 @@ public class InviteAccessService {
      */
     @Transactional
     public void acceptInvite(CustomUserDetails customUserDetails, Long projectInvitedMemberId){
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BAD_REQUEST_EXCEPTION("해당 프로젝트 초대가 유효하지 않습니다."));
 
         projectMemberRepository.save(ProjectMember.builder()
@@ -67,7 +67,7 @@ public class InviteAccessService {
 
     @Transactional
     public void rejectInvite(CustomUserDetails customUserDetails, Long projectInvitedMemberId){
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         ProjectInvitedMember projectInvitedMember = projectInvitedMemberRepository.findByIdAndMemberId(projectInvitedMemberId,member.getId()).orElseThrow(() -> new BAD_REQUEST_EXCEPTION("해당 프로젝트 초대가 유효하지 않습니다."));
         projectInvitedMemberRepository.delete(projectInvitedMember);
     }
@@ -78,13 +78,14 @@ public class InviteAccessService {
      * @return
      */
     public List<AcceptProjectOutputDTO> getAcceptedProjects(CustomUserDetails customUserDetails){
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         List<ProjectMember> projectMembers = projectMemberRepository.findByMemberId(member.getId());
         List<AcceptProjectOutputDTO> acceptProjectOutputDTOList = new ArrayList<>();
         for(ProjectMember detail : projectMembers ){
             acceptProjectOutputDTOList.add(AcceptProjectOutputDTO.builder()
                     .projectId(detail.getProject().getId())
                     .title(detail.getProject().getTitle())
+                    .createdDate(detail.getCreatedDateTime().toLocalDate())
                     .writer(detail.getProject().getWriter().getNickname())
                     .build());
         }

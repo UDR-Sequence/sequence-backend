@@ -21,6 +21,7 @@ import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Value;  
+import sequence.sequence_member.archive.dto.ArchiveListDTO;
 
 import java.util.List;
 
@@ -134,14 +135,14 @@ public class ArchiveController {
 
     // 전체 리스트 조회
     @GetMapping("/projects")
-    public ResponseEntity<ApiResponseData<ArchivePageResponseDTO>> getArchiveList(
+    public ResponseEntity<ApiResponseData<ArchiveListDTO>> getArchiveList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "LATEST") SortType sortType) {
         
         String username = (userDetails != null) ? userDetails.getUsername() : null;
         
-        ArchivePageResponseDTO response = archiveService.getAllArchives(page, sortType, username);
+        ArchiveListDTO response = archiveService.getAllArchives(page, sortType, username);
         
         if (response.getArchives().isEmpty()) {
             throw new CanNotFindResourceException("아카이브가 없습니다.");
@@ -156,7 +157,7 @@ public class ArchiveController {
 
     // 검색
     @GetMapping("/projects/search")
-    public ResponseEntity<ApiResponseData<ArchivePageResponseDTO>> searchArchives(
+    public ResponseEntity<ApiResponseData<ArchiveListDTO>> searchArchives(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) Category category,
@@ -165,7 +166,7 @@ public class ArchiveController {
         
         String username = (userDetails != null) ? userDetails.getUsername() : null;
         
-        ArchivePageResponseDTO response = archiveService.searchArchives(category, keyword, page, sortType, username);
+        ArchiveListDTO response = archiveService.searchArchives(category, keyword, page, sortType, username);
         
         if (response.getArchives().isEmpty()) {
             throw new CanNotFindResourceException("아카이브가 없습니다.");

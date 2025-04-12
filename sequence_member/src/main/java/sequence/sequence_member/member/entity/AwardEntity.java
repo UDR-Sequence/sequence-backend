@@ -9,8 +9,8 @@ import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -39,11 +39,11 @@ public class AwardEntity extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date awardDuration;
+    private LocalDate awardDuration;
 
     public AwardEntity(
             AwardType awardType, String organizer,
-            String awardName, Date awardDuration,
+            String awardName, LocalDate awardDuration,
             MemberEntity member
     ) {
         this.awardType = awardType;

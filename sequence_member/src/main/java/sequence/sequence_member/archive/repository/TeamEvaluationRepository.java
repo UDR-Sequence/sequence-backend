@@ -37,4 +37,7 @@ public interface TeamEvaluationRepository extends JpaRepository<TeamEvaluation, 
     @Modifying
     @Query("DELETE FROM TeamEvaluation te WHERE te.evaluator.archive.id = :archiveId OR te.evaluated.archive.id = :archiveId")
     void deleteByArchiveId(@Param("archiveId") Long archiveId);
+
+    @Query("SELECT te FROM TeamEvaluation te WHERE te.evaluated.member.id = :memberId")
+    List<TeamEvaluation> findByEvaluatedId(@Param("memberId") Long memberId);
 } 

@@ -10,10 +10,9 @@ import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.global.enums.enums.ExperienceType;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
 import sequence.sequence_member.global.enums.enums.Skill;
-import sequence.sequence_member.member.entity.MemberEntity.Gender;
+import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -26,10 +25,10 @@ public class MyPageRequestDTO {
     private String name;
 
     @NotNull(message = "생년월일은 필수 입력 값입니다.")
-    private Date birth;
+    private LocalDate birth;
 
     @NotNull(message = "성별은 필수 입력 값입니다.")
-    private Gender gender;
+    private MemberEntity.Gender gender;
 
     @NotBlank(message = "주소지는 필수 입력 값입니다.")
     private String address;
@@ -53,9 +52,9 @@ public class MyPageRequestDTO {
     @Pattern(regexp = "^[1-6]학년$", message = "학년은 1학년부터 6학년까지 입력 가능합니다.")
     private String grade;
 
-    private Date entranceDate;
+    private LocalDate entranceDate;
 
-    private Date graduationDate;
+    private LocalDate graduationDate;
 
     @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
@@ -72,7 +71,7 @@ public class MyPageRequestDTO {
         private AwardType awardType;
         private String organizer;
         private String awardName;
-        private Date awardDuration;
+        private LocalDate awardDuration;
     }
 
     @Data

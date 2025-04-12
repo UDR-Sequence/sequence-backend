@@ -1,15 +1,17 @@
 package sequence.sequence_member.project.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
 import java.util.List;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
-import sequence.sequence_member.global.enums.enums.Period;
 import sequence.sequence_member.global.enums.enums.Step;
 
 @Getter
@@ -23,8 +25,14 @@ public class ProjectInputDTO {
     @Length(min=1, max=40,message = "프로젝트 제목은 30자 이하로 입력해주세요.")
     private String projectName; //프로젝트 이름
 
-    @NotNull(message = "기간을 선택해주세요.")
-    private Period period;
+    @NotNull(message = "시작 기간을 입력해주세요.")
+    @Pattern(regexp = "^\\d{4}-(0[1-9]|1[0-2])$", message = "시작 기간 형식은 yyyy-MM이어야 합니다.")
+    private String startDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM")
+    @Pattern(regexp = "^\\d{4}-(0[1-9]|1[0-2])$", message = "시작 기간 형식은 yyyy-MM이어야 합니다.")
+    @NotNull(message = "종료 기간을 입력해주세요.")
+    private String endDate;
 
     @NotNull(message = "카테고리를 선택해주세요.")
     private Category category;

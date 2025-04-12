@@ -3,14 +3,13 @@ package sequence.sequence_member.mypage.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import sequence.sequence_member.archive.dto.MyPageEvaluationDTO;
 
-import java.util.List;
-
-// 응답 데이터를 담을 DTO
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MyActivityResponseDTO {
-    private MyProjectDTO myProject;
-    private MyArchiveDTO myArchive;
+public class TeamFeedbackDTO {
+    private MyPageEvaluationDTO myPageEvaluation;
 }
