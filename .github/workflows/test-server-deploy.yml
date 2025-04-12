@@ -144,8 +144,8 @@ jobs:
             # 서버에서 최신 이미지 pull
             docker pull ${{secrets.DOCKER_USERNAME}}/test-sequence:latest
             # 기존 컨테이너 종료 및 삭제 (존재하는 경우)
-            docker stop sequence-spring-container || true
-            docker rm sequence-spring-container || true
+            docker stop test-sequence-spring-container || true
+            docker rm test-sequence-spring-container || true
             # 새로운 컨테이너 실행 (포트 및 필요한 환경 변수 지정 가능)
             docker run -d --name test-sequence-spring-container --network test_sequence -p 20101:8080 \
               -e JWT_SECRET=${{secrets.TEST_JWT_SECRET}} \
