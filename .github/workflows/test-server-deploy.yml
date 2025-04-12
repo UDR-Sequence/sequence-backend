@@ -9,7 +9,7 @@ name: CI CD process
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "dev" ]
 
 jobs:
   build:
