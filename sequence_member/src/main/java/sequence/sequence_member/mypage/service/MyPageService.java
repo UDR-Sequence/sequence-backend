@@ -7,32 +7,41 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.validation.Errors;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.global.response.ApiResponseData;
+import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.dto.InviteProjectOutputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.InviteAccessService;
+import sequence.sequence_member.member.service.MemberService;
 import sequence.sequence_member.mypage.dto.*;
 import sequence.sequence_member.project.repository.CommentRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
     private final MyPageUpdateService myPageUpdateService;
+    private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
     private final MyPageMapper myPageMapper;
     private final CommentRepository commentRepository;
     private final InviteAccessService inviteAccessService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     /**
      * 주어진 사용자명(username)에 해당하는 마이페이지 정보를 조회합니다.
@@ -126,5 +135,42 @@ public class MyPageService {
         }
 
         return result;
+    }
+
+    /**
+     * 로그인 정보 수정하는 메인 로직 함수
+     *
+     * @param updateLoginInfoRequestDTO 변경할 사용자 로그인 정보
+     *
+     * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public ResponseEntity<ApiResponseData<Object>> updateUserInfo(UpdateLoginInfoRequestDTO updateLoginInfoRequestDTO, String username, Errors errors) {
+        // 로그인 정보 수정
+        MemberEntity member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
+        //회원가입 유효성 검사 실패 시
+        if(errors.hasErrors()){
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
+            return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.INVALID_INPUT.getCode(), validatorResult.values().toString()));
+        }
+
+        member.setName(updateLoginInfoRequestDTO.getName());
+        member.setBirth(updateLoginInfoRequestDTO.getBirth());
+        member.setGender(updateLoginInfoRequestDTO.getGender());
+        member.setAddress(updateLoginInfoRequestDTO.getAddress());
+        member.setPhone(updateLoginInfoRequestDTO.getPhone());
+        member.setEmail(updateLoginInfoRequestDTO.getEmail());
+
+        // 비밀번호 수정 (입력된 경우만)
+        if (updateLoginInfoRequestDTO.getNewPassword() == null
+                && updateLoginInfoRequestDTO.getNewPassword().isBlank()) {
+            throw new IllegalArgumentException("수정할 비밀번호가 입력되지 않았습니다.");
+        }
+
+        member.setPassword(bCryptPasswordEncoder.encode(updateLoginInfoRequestDTO.getNewPassword()));
+
+        return null;
     }
 }

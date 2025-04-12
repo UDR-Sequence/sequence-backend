@@ -1,13 +1,17 @@
 package sequence.sequence_member.mypage.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +21,7 @@ import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.mypage.dto.MyPageRequestDTO;
 import sequence.sequence_member.mypage.dto.MyPageResponseDTO;
+import sequence.sequence_member.mypage.dto.UpdateLoginInfoRequestDTO;
 import sequence.sequence_member.mypage.service.MyPageService;
 
 import java.util.List;
@@ -82,5 +87,24 @@ public class MyPageController {
             );
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus()).body(errorResponse);
         }
+    }
+
+    @PostMapping("/api/mypage/update")
+    public ResponseEntity<ApiResponseData<String>> updateUserInfo(
+            @Valid @RequestBody UpdateLoginInfoRequestDTO updateLoginInfoRequestDTO, Errors errors
+    ) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        myPageService.updateUserInfo(updateLoginInfoRequestDTO, username, errors);
+
+        if (!updateLoginInfoRequestDTO.isPasswordMatching()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(ApiResponseData.failure(
+                            Code.CAN_NOT_FIND_RESOURCE.getCode(),
+                            "비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+                    );
+        }
+
+        return ResponseEntity.ok(ApiResponseData.success("로그인 정보 수정이 완료되었습니다."));
     }
 }
