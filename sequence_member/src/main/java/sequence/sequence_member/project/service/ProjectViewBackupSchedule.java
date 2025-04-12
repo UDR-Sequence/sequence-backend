@@ -48,6 +48,7 @@ public class ProjectViewBackupSchedule {
                 if(project.isEmpty()) {
                     log.error("redis에 존재하지 않는 projectId가 존재합니다 : {}", projectId);
                     redisTemplate.delete(key);
+                    log.info("redis에 존재하지 않는 projectId의 조회수 삭제 완료 : {}", projectId);
                     continue;
                 }
                 project.get().setViews(redisViewCount);
