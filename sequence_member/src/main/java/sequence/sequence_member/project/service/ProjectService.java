@@ -45,7 +45,7 @@ public class ProjectService {
 
     @Transactional
     public void createProject(ProjectInputDTO projectInputDTO, String username){
-        MemberEntity writer = memberRepository.findByUsername(username).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(username).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         Project project = projectRepository.save(Project.fromProjectInput(projectInputDTO,writer));
 
         saveProjectInvitedMember(projectInputDTO, writer, project);
@@ -159,7 +159,7 @@ public class ProjectService {
     public ProjectOutputDTO updateProject(Long projectId, CustomUserDetails customUserDetails, ProjectUpdateDTO projectUpdateDTO,HttpServletRequest request) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername())
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new UserNotFindException("요청하는 유저가 존재하지 않습니다."));
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 수정할 수 있습니다.");
@@ -199,7 +199,7 @@ public class ProjectService {
     public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
-        MemberEntity writer = memberRepository.findByUsername(customUserDetails.getUsername())
+        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 삭제할 수 있습니다.");
@@ -292,7 +292,7 @@ public class ProjectService {
         if (customUserDetails == null) {
             return false;
         }
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         if (member == null) {
             return false;
         }

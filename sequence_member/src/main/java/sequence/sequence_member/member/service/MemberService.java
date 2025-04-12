@@ -65,7 +65,7 @@ public class MemberService {
         //먼저 member 정보를 저장하고 나중에 외래키 값을 저장하기 위해서 멤버 정보를 먼저 저장
         memberRepository.save(memberEntity);
 
-        MemberEntity memberEntityCopy =  memberRepository.findByUsername(memberDTO.getUsername()).get();
+        MemberEntity memberEntityCopy =  memberRepository.findByUsernameAndIsDeletedFalse(memberDTO.getUsername()).get();
 
         List<AwardEntity> awardEntities = AwardEntity.toAwardEntity(memberDTO, memberEntityCopy);
         List<ExperienceEntity> experienceEntities = ExperienceEntity.toExperienceEntity(memberDTO, memberEntityCopy);
@@ -111,7 +111,7 @@ public class MemberService {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("아이디를 입력해주세요");
         }
-        return memberRepository.findByUsername(username).isPresent();
+        return memberRepository.findByUsernameAndIsDeletedFalse(username).isPresent();
     }
 
     //닉네임 중복 체크
@@ -135,6 +135,6 @@ public class MemberService {
         if(username == null || username.trim().isEmpty()){
             throw new IllegalArgumentException("아이디를 입력해주세요.");
         }
-        return memberRepository.findByUsername(username).get();
+        return memberRepository.findByUsernameAndIsDeletedFalse(username).get();
     }
 }
