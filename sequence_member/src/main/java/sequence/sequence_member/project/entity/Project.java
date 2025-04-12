@@ -90,6 +90,9 @@ public class Project extends BaseTimeEntity {
     @Column(columnDefinition = "INT DEFAULT 0")
     private Integer views;
 
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private Integer bookmarkCount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
     private MemberEntity writer;
@@ -140,6 +143,12 @@ public class Project extends BaseTimeEntity {
                 .link(projectInputDTO.getLink())
                 .writer(memberEntity)
                 .build();
+    }
+    public void addBookmarkCount(){
+        this.bookmarkCount++;
+    }
+    public void removeBookmarkCount(){
+        this.bookmarkCount--;
     }
 
     public void setMembers(List<ProjectMember> projectMembers){

@@ -35,6 +35,7 @@ public class ProjectOutputDTO {
     private List<CommentOutputDTO> comments; // 댓글들
     private Integer views; //조회수
     private Boolean isBookmark; //북마크 여부
+    private Integer bookmarks; // 북마크 수
 
     public static ProjectOutputDTO from(Project project, List<ProjectMemberOutputDTO> members, List<CommentOutputDTO> comments, int views, boolean isBookmark) {
         return ProjectOutputDTO.builder()
@@ -59,6 +60,7 @@ public class ProjectOutputDTO {
                 .comments(comments)
                 .views(views)
                 .isBookmark(isBookmark)
+                .bookmarks(project.getBookmarkCount())
                 .build();
     }
 }
