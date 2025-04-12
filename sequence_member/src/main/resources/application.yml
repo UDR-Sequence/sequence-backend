@@ -46,6 +46,8 @@ minio:
   archive_thumbnail: ${MINIO_ARCHIVE_THUMBNAIL}  # 필요하다면 이것도 추가
 
 management:
+  server:
+    port: 10100
   endpoints:
     web:
       exposure:
