@@ -159,7 +159,7 @@ jobs:
               -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
               -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
               -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
-              -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
+              -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}} \
               -e MINIO_PW=${{secrets.MINIO_PW}} \
               -e REDIS_HOST=${{secrets.TEST_REDIS_HOST}} \
               -e REDIS_PASSWORD=${{secrets.TEST_REDIS_PASSWORD}} \
