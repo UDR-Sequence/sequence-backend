@@ -143,7 +143,9 @@ public class ProjectService {
                     .profileImgUrl(projectMember.getMember().getProfileImg())
                     .build());
         }
+
         return projectMemberOutputDTOS;
+
     }
 
     /**
@@ -233,7 +235,7 @@ public class ProjectService {
                     .id(projects.get(i).getId())
                     .title(projects.get(i).getTitle())
                     .writer(projects.get(i).getWriter().getNickname())
-                    .createdDate(Date.valueOf(projects.get(i).getCreatedDateTime().toLocalDate()))
+                    .createdDate(projects.get(i).getCreatedDateTime().toLocalDate())
                     .roles(DataConvertor.stringToList(projects.get(i).getRoles()))
                     .build();
 
@@ -254,7 +256,7 @@ public class ProjectService {
                     .id(project.getId())
                     .title(project.getTitle())
                     .writer(project.getWriter().getNickname())
-                    .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                    .createdDate(project.getCreatedDateTime().toLocalDate())
                     .roles(DataConvertor.stringToList(project.getRoles()))
                     .build();
 
@@ -273,7 +275,7 @@ public class ProjectService {
                     .id(project.getId())
                     .title(project.getTitle())
                     .writer(project.getWriter().getNickname())
-                    .createdDate(Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                    .createdDate(project.getCreatedDateTime().toLocalDate())
                     .roles(DataConvertor.stringToList(project.getRoles()))
                     .build();
 

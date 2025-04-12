@@ -1,6 +1,6 @@
 package sequence.sequence_member.project.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +17,7 @@ public class ProjectOutputDTO {
     private Long id; // 프로젝트 id
     private String title; // 글 제목
     private String writer; // 프로젝트 작성자 닉메임
-    private Date createdDate; // 프로젝트 작성일
+    private LocalDate createdDate; // 프로젝트 작성일
     private String projectName; // 프로젝트 이름
     private Period period; // 프로젝트 기간
     private String startDate;

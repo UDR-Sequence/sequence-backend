@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamEvaluationRequestDto {
+public class TeamEvaluationRequestDTO {
     @NotNull(message = "평가 목록은 필수입니다.")
     @Valid
     private List<EvaluationItem> evaluations;

@@ -3,12 +3,10 @@ package sequence.sequence_member.member.dto;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
-import java.util.Date;
 import lombok.Getter;
 
 @Getter
 public class CareerInputDTO {
-
     @NotBlank(message = "회사명을 입력해주세요.")
     private String companyName;
 

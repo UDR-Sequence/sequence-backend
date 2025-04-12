@@ -41,7 +41,7 @@ public class InviteAccessService {
                     .projectInvitedMemberId(detail.getId())
                     .title(detail.getProject().getTitle())
                     .writer(detail.getProject().getWriter().getNickname())
-                    .inviteDate(Date.valueOf(detail.getCreatedDateTime().toLocalDate()))
+                    .inviteDate(detail.getCreatedDateTime().toLocalDate())
                     .build());
         }
         return inviteProjectOutputDTOList;

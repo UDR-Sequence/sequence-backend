@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
-import sequence.sequence_member.member.entity.DeleteEntity;
+import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.*;
@@ -17,8 +17,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class DeleteService {
-
-    private final DeleteRepository deletedRepository;
     private final MemberRepository memberRepository;
 
     private final AwardRepository awardRepository;
@@ -54,7 +52,7 @@ public class DeleteService {
         memberRepository.save(deleteMember);
     }
 
-    public String checkRefreshAndMember(HttpServletRequest request, String username){
+    public String checkRefreshAndMember(HttpServletRequest request, CustomUserDetails customUserDetails){
         // 쿠키 확인
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
@@ -66,6 +64,7 @@ public class DeleteService {
         for (Cookie cookie : cookies) {
             if ("refresh".equals(cookie.getName())) {
                 refresh = cookie.getValue();
+                break;
             }
         }
 
@@ -95,18 +94,11 @@ public class DeleteService {
 
         //Refresh Token과 username이 일치하는지 확인
         String tokenUsername = jwtUtil.getUsername(refresh);
-        if (!Objects.equals(tokenUsername, username)) {
+        if (!Objects.equals(tokenUsername, customUserDetails.getUsername())) {
             throw new CanNotFindResourceException("요청한 사용자와 로그인된 사용자가 다릅니다.");
         }
 
         return refresh;
     }
-
-    @Transactional
-    public void saveDeletedUser(String username, String email) {
-        DeleteEntity deletedUser = new DeleteEntity(username, email);
-        deletedRepository.save(deletedUser);
-    }
-
 }
 

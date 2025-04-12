@@ -3,7 +3,9 @@ package sequence.sequence_member.mypage.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 /**
  * 사용자가 참여한 아카이브 이력 DTO
@@ -13,6 +15,7 @@ import sequence.sequence_member.archive.dto.ArchivePageResponseDTO;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PortfolioDto {
-    private ArchivePageResponseDTO archivePageResponseDTO;
+public class PortfolioDTO {
+    private Page<ArchiveSummaryDTO> archivePage;
+    private List<InvitedProjectWithCommentDTO> invitedProjects;
 }
