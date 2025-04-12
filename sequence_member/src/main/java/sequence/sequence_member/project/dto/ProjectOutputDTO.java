@@ -1,5 +1,6 @@
 package sequence.sequence_member.project.dto;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
@@ -42,7 +43,7 @@ public class ProjectOutputDTO {
                 .id(project.getId())
                 .title(project.getTitle())
                 .writer(project.getWriter().getNickname())
-                .createdDate(java.sql.Date.valueOf(project.getCreatedDateTime().toLocalDate()))
+                .createdDate(project.getCreatedDateTime().toLocalDate())
                 .projectName(project.getProjectName())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
