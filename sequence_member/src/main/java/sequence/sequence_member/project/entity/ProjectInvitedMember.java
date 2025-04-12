@@ -37,4 +37,11 @@ public class ProjectInvitedMember extends BaseTimeEntity {
     @JoinColumn(name = "member_id",nullable = false)
     private MemberEntity member;
 
+    public static ProjectInvitedMember fromProjectAndMember(Project project, MemberEntity memberEntity){
+        return ProjectInvitedMember.builder()
+                .member(memberEntity)
+                .project(project)
+                .build();
+    }
+
 }
