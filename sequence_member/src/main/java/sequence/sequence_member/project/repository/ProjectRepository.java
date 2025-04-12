@@ -30,13 +30,14 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             "(:meeting_option IS NULL OR p.meetingOption = :meeting_option) AND " +
             "(:step IS NULL OR p.step = :step)"
     )
-    List<Project> findProjectsByFilteredKeywords(
+    Page<Project> findProjectsByFilteredKeywords(
             @Param("category") Category category,
             @Param("period") Period period,
             @Param("roles") String roles,
             @Param("skills") String skills,
             @Param("meeting_option") MeetingOption meeting_option,
-            @Param("step") Step step
+            @Param("step") Step step,
+            Pageable pageable
     );
 
     //검색 필터링
