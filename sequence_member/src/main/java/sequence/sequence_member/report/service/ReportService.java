@@ -59,7 +59,7 @@ public class ReportService {
 
         // Refresh Token과 username이 일치하는지 확인
         String tokenUsername = jwtUtil.getUsername(refresh);
-        Optional<MemberEntity> member = memberRepository.findByUsername(tokenUsername);
+        Optional<MemberEntity> member = memberRepository.findByUsernameAndIsDeletedFalse(tokenUsername);
         String tokenNickname = member.get().getNickname();
 
         boolean exist = memberRepository.existsByNickname(reportRequestDTO.getNickname());

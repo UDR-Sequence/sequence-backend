@@ -46,7 +46,7 @@ public class MyPageService {
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
     public MyPageResponseDTO getMyProfile(String username, int page, int size, CustomUserDetails customUserDetails) {
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
@@ -71,7 +71,7 @@ public class MyPageService {
             MyPageRequestDTO myPageDTO, String username,
             MultipartFile authImgFile, List<MultipartFile> portfolios
     ) {
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
       
         if (!Objects.equals(myPageDTO.getUsername(), username)) {

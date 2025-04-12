@@ -48,7 +48,7 @@ public class TeamEvaluationService {
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
             
         // username으로 멤버 찾기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
             
         // 평가자의 ArchiveMember 정보 조회
@@ -119,7 +119,7 @@ public class TeamEvaluationService {
     // 아카이브의 모든 평가 완료 여부 확인 메소드 수정
     public boolean isAllEvaluationCompleted(Long archiveId, String username) {
         // username으로 멤버 찾기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
             
         // 평가자의 ArchiveMember 정보 조회
@@ -135,7 +135,7 @@ public class TeamEvaluationService {
 
     public TeamEvaluationStatusResponseDTO getEvaluationStatus(Long archiveId, String username) {
         // username으로 멤버 찾기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
             
         // 평가자의 ArchiveMember 정보 조회
@@ -218,7 +218,7 @@ public class TeamEvaluationService {
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
         
         // username으로 멤버 찾기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
             
         // 평가자의 ArchiveMember 정보 조회

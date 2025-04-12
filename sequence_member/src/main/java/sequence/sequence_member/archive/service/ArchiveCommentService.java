@@ -37,7 +37,7 @@ public class ArchiveCommentService {
     @Transactional
     public Long createComment(Long archiveId, String username, CommentCreateRequestDTO dto) {
         // username으로 사용자 조회하여 nickname 가져오기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
         // 아카이브 조회
@@ -79,7 +79,7 @@ public class ArchiveCommentService {
     @Transactional
     public boolean updateComment(Long archiveId, Long commentId, String username, CommentUpdateRequestDTO dto) {
         // username으로 사용자 정보 조회
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
@@ -112,7 +112,7 @@ public class ArchiveCommentService {
     @Transactional
     public boolean deleteComment(Long archiveId, Long commentId, String username) {
         // username으로 사용자 조회하여 nickname 가져오기
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
         Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);

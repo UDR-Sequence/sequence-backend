@@ -36,7 +36,7 @@ public class DeleteService {
 
         //username 가져오기
         String username = jwtUtil.getUsername(refresh);
-        MemberEntity deleteMember = memberRepository.findByUsername(username)
+        MemberEntity deleteMember = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new CanNotFindResourceException("사용자를 찾을 수 없습니다."));
 
 //        //회원 정보 삭제

@@ -3,6 +3,7 @@ package sequence.sequence_member.project.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -76,15 +77,18 @@ public class ProjectController {
                                                         @RequestParam(name = "roles",required = false) String roles,
                                                         @RequestParam(name = "skills",required = false) String skills,
                                                         @RequestParam(name = "meetingOption",required = false) MeetingOption meetingOption,
-                                                        @RequestParam(name = "step",required = false) Step step){
-        List<ProjectFilterOutputDTO> projectEntities = new ArrayList<>(projectService.getProjectsByKeywords(category,periodKey,roles,skills,meetingOption,step));
+                                                        @RequestParam(name = "step",required = false) Step step,
+                                                        @RequestParam(name="sortBy", required = false, defaultValue = "createdDateTime") String sortBy,
+                                                        @RequestParam(name="page", required = false, defaultValue = "0") int page,
+                                                        @RequestParam(name="size", required = false, defaultValue = "10") int size){
+        Page<ProjectFilterOutputDTO> projectFilterOutputDTOS = projectService.getProjectsByKeywords(category,periodKey,roles,skills,meetingOption,step,sortBy,page,size);
 
         //조회된 프로젝트가 하나도 없는 경우
-        if(projectEntities.isEmpty()){
-            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "해당 필터와 일치하는 프로젝트가 없습니다.",projectEntities));
+        if(projectFilterOutputDTOS.isEmpty()){
+            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "해당 키워드와 일치하는 프로젝트가 없습니다.",projectFilterOutputDTOS.getContent()));
         }
 
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",projectEntities));
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",projectFilterOutputDTOS.getContent()));
     }
 
     @GetMapping("/filter/search")
