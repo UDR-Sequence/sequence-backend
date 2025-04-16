@@ -13,7 +13,7 @@ import sequence.sequence_member.member.converter.SkillCategoryConverter;
 
 import sequence.sequence_member.member.dto.MemberDTO;
 
-import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 
 @Entity
@@ -38,13 +38,11 @@ public class EducationEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String grade; // 1학년, 2학년, 3학년, 4학년, 5학년, 6학년
 
-    @Column(name = "entrance_date")
-    @Temporal(TemporalType.DATE)
-    private LocalDate entranceDate;
+    @Column(name = "entrance_year")
+    private Year entranceYear;
 
-    @Column(name = "graduation_date")
-    @Temporal(TemporalType.DATE)
-    private LocalDate graduationDate;
+    @Column(name = "graduation_year")
+    private Year graduationYear;
 
     @Column(name = "degree", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -64,16 +62,16 @@ public class EducationEntity extends BaseTimeEntity {
 
     public EducationEntity(
             String schoolName, String major,
-            String grade, LocalDate entranceDate,
-            LocalDate graduationDate, Degree degree,
+            String grade, Year entranceYear,
+            Year graduationYear, Degree degree,
             List<Skill> skillCategory, List<ProjectRole> desiredJob,
             MemberEntity member
     ) {
        this.schoolName = schoolName;
        this.major = major;
        this.grade = grade;
-       this.entranceDate = entranceDate;
-       this.graduationDate = graduationDate;
+       this.entranceYear = entranceYear;
+       this.graduationYear = graduationYear;
        this.degree = degree;
        this.skillCategory = skillCategory;
        this.desiredJob = desiredJob;
@@ -86,8 +84,8 @@ public class EducationEntity extends BaseTimeEntity {
         educationEntity.setSchoolName(memberDTO.getSchoolName());
         educationEntity.setMajor(memberDTO.getMajor());
         educationEntity.setGrade(memberDTO.getGrade());
-        educationEntity.setEntranceDate(memberDTO.getEntranceDate());
-        educationEntity.setGraduationDate(memberDTO.getGraduationDate());
+        educationEntity.setEntranceYear(memberDTO.getEntranceYear());
+        educationEntity.setGraduationYear(memberDTO.getGraduationYear());
         educationEntity.setDegree(memberDTO.getDegree());
         educationEntity.setDesiredJob(memberDTO.getDesiredJob());
         educationEntity.setSkillCategory(memberDTO.getSkillCategory());
@@ -98,15 +96,15 @@ public class EducationEntity extends BaseTimeEntity {
 
     public void updateEducation(
             String schoolName, String major,
-            String grade, LocalDate entranceDate,
-            LocalDate graduationDate, Degree degree,
+            String grade, Year entranceYear,
+            Year graduationYear, Degree degree,
             List<Skill> skillCategory, List<ProjectRole> desiredJob
     ) {
         this.schoolName = schoolName;
         this.major = major;
         this.grade = grade;
-        this.entranceDate = entranceDate;
-        this.graduationDate = graduationDate;
+        this.entranceYear = entranceYear;
+        this.graduationYear = graduationYear;
         this.degree = degree;
         this.skillCategory = skillCategory;
         this.desiredJob = desiredJob;
