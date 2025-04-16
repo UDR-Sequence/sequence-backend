@@ -38,10 +38,10 @@ public class EducationEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String grade; // 1학년, 2학년, 3학년, 4학년, 5학년, 6학년
 
-    @Column(name = "entrance_Year")
+    @Column(name = "entrance_year")
     private Year entranceYear;
 
-    @Column(name = "graduation_Year")
+    @Column(name = "graduation_year")
     private Year graduationYear;
 
     @Column(name = "degree", nullable = false)
