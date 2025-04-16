@@ -147,7 +147,7 @@ public class MyPageService {
     @Transactional
     public ResponseEntity<ApiResponseData<Object>> updateUserInfo(UpdateLoginInfoRequestDTO updateLoginInfoRequestDTO, String username, Errors errors) {
         // 로그인 정보 수정
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         //회원가입 유효성 검사 실패 시

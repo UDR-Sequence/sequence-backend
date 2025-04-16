@@ -2,6 +2,7 @@ package sequence.sequence_member.global.utils;
 
 import com.github.javafaker.Faker;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -60,8 +61,8 @@ public class DataCreateService {
                         faker.educator().university(),
                         faker.educator().course(),
                         faker.number().numberBetween(1, 6) + "학년",
-                        faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                        faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        Year.from(faker.date().past(2000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()),
+                        Year.from(faker.date().future(1000, java.util.concurrent.TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()),
                         faker.options().option(Degree.class),
                         List.of(faker.options().option(Skill.class)),
                         List.of(faker.options().option(ProjectRole.class)),
