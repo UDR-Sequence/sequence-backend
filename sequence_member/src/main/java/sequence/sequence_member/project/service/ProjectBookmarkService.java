@@ -26,7 +26,7 @@ public class ProjectBookmarkService {
     public String addBookmark(CustomUserDetails customUserDetails, Long projectId) {
         StringBuilder errMessgage=new StringBuilder(); //만약 null이 아닐경우 오류가 발생한것
         // 유저와 프로젝트 존재 여부 확인
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         Project project = projectRepository.findById(projectId).orElse(null);
 
         if(member == null){
@@ -60,7 +60,7 @@ public class ProjectBookmarkService {
         //todo- 코드 반복됨. 리팩토링 고민
         StringBuilder errMessgage=new StringBuilder(); //만약 null이 아닐경우 오류가 발생한것
         // 유저와 프로젝트 존재 여부 확인
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername()).orElse(null);
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         Project project = projectRepository.findById(projectId).orElse(null);
 
         if(member == null){

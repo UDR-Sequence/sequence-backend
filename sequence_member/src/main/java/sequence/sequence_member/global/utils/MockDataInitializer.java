@@ -28,7 +28,7 @@ public class MockDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
 
         // 이미 목데이터 생성되었는지를 판단함.
-        if (memberRepository.findByUsername("1_0_username").isPresent()) {
+        if (memberRepository.findByUsernameAndIsDeletedFalse("1_0_username").isPresent()) {
             return;
         }
 

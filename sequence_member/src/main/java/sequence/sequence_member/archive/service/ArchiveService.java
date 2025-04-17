@@ -116,7 +116,7 @@ public class ArchiveService {
     @Transactional
     public boolean deleteArchive(Long archiveId, String username) {
         // 사용자 검증
-        Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+        Optional<MemberEntity> memberOpt = memberRepository.findByUsernameAndIsDeletedFalse(username);
         if (memberOpt.isEmpty()) {
             return false;
         }
@@ -159,7 +159,7 @@ public class ArchiveService {
     @Transactional(readOnly = true)
     public List<UserArchiveDTO> getUserArchiveListAtAlarm(CustomUserDetails customUserDetails){
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
         List<Archive> latestArchives = archiveRepository.findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
@@ -173,7 +173,7 @@ public class ArchiveService {
     @Transactional(readOnly = true)
     public List<UserArchiveDTO> getUserArchiveList(CustomUserDetails customUserDetails) {
         // 사용자 검증
-        MemberEntity member = memberRepository.findByUsername(customUserDetails.getUsername())
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
         // 평가완료 상태인 아카이브만 조회
@@ -190,7 +190,7 @@ public class ArchiveService {
 
     public ArchiveListDTO getAllArchives(int page, SortType sortType, String username) {
         if (username != null) {
-            memberRepository.findByUsername(username)
+            memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         }
 
@@ -225,7 +225,7 @@ public class ArchiveService {
             String username) {
         
         if (username != null) {
-            memberRepository.findByUsername(username)
+            memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         }
 
@@ -291,7 +291,7 @@ public class ArchiveService {
         boolean isBookmarked = false;
         if (username != null && !username.isEmpty()) {
             // username으로 MemberEntity 조회
-            Optional<MemberEntity> memberOpt = memberRepository.findByUsername(username);
+            Optional<MemberEntity> memberOpt = memberRepository.findByUsernameAndIsDeletedFalse(username);
             if (memberOpt.isPresent()) {
                 MemberEntity userId = memberOpt.get();
                 isBookmarked = bookmarkRepository.existsByArchiveAndUserId(archive, userId);
@@ -365,7 +365,7 @@ public class ArchiveService {
             MultipartFile thumbnailFile,
             List<MultipartFile> imageFiles) throws Exception {
         
-        MemberEntity member = memberRepository.findByUsername(username)
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
 
         Archive archive = createArchiveEntity(dto, member);
