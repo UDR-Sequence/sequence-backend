@@ -214,9 +214,20 @@ public class ProjectService {
         projectBookmarkService.deleteByProject(project, customUserDetails.getUsername());
 
         //ProjectInvitedMember 삭제
+        deleteProjectInvitedMember(project, project.getInvitedMembers(), customUserDetails.getUsername());
+
+        //ProjectMember 삭제
         deleteProjectMembers(project, project.getMembers(), customUserDetails.getUsername());
 
         projectRepository.save(project);
+    }
+
+    private void deleteProjectInvitedMember(Project project, List<ProjectInvitedMember> invitedMembers,
+                                            String username) {
+        for (ProjectInvitedMember invitedMember : invitedMembers) {
+            invitedMember.softDelete(username);
+        }
+        projectInvitedMemberRepository.saveAll(invitedMembers);
     }
 
 
