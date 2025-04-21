@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
     List<ReportEntity> findByNickname(String nickname);
+    List<ReportEntity> findByNicknameAndIsDeletedFalse(String nickname);
+    Optional<ReportEntity> findByIdAndIsDeletedFalse(Long id);
 }
