@@ -3,6 +3,7 @@ package sequence.sequence_member.project.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.project.dto.ProjectFilterOutputDTO;
+import sequence.sequence_member.project.dto.ProjectFilterResultDTO;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
@@ -23,6 +25,7 @@ import sequence.sequence_member.project.service.ProjectService;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects")
@@ -72,23 +75,24 @@ public class ProjectController {
     }
 
     @GetMapping("/filter/keyword")
-    public ResponseEntity<ApiResponseData<List<ProjectFilterOutputDTO>>> filterKeyword(@RequestParam(name = "category", required = false) Category category,
-                                                        @RequestParam(name = "periodKey",required = false) String periodKey,
-                                                        @RequestParam(name = "roles",required = false) String roles,
-                                                        @RequestParam(name = "skills",required = false) String skills,
-                                                        @RequestParam(name = "meetingOption",required = false) MeetingOption meetingOption,
-                                                        @RequestParam(name = "step",required = false) Step step,
-                                                        @RequestParam(name="sortBy", required = false, defaultValue = "createdDateTime") String sortBy,
-                                                        @RequestParam(name="page", required = false, defaultValue = "0") int page,
-                                                        @RequestParam(name="size", required = false, defaultValue = "10") int size){
+    public ResponseEntity<ApiResponseData<ProjectFilterResultDTO>> filterKeyword(@RequestParam(name = "category", required = false) Category category,
+                                                                                 @RequestParam(name = "periodKey",required = false) String periodKey,
+                                                                                 @RequestParam(name = "roles",required = false) String roles,
+                                                                                 @RequestParam(name = "skills",required = false) String skills,
+                                                                                 @RequestParam(name = "meetingOption",required = false) MeetingOption meetingOption,
+                                                                                 @RequestParam(name = "step",required = false) Step step,
+                                                                                 @RequestParam(name="sortBy", required = false, defaultValue = "createdDateTime") String sortBy,
+                                                                                 @RequestParam(name="page", required = false, defaultValue = "0") int page,
+                                                                                 @RequestParam(name="size", required = false, defaultValue = "12") int size){
         Page<ProjectFilterOutputDTO> projectFilterOutputDTOS = projectService.getProjectsByKeywords(category,periodKey,roles,skills,meetingOption,step,sortBy,page,size);
 
         //조회된 프로젝트가 하나도 없는 경우
         if(projectFilterOutputDTOS.isEmpty()){
-            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "해당 키워드와 일치하는 프로젝트가 없습니다.",projectFilterOutputDTOS.getContent()));
+            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "해당 키워드와 일치하는 프로젝트가 없습니다.",ProjectFilterResultDTO.of(0, 0L,projectFilterOutputDTOS.getContent())));
         }
 
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",projectFilterOutputDTOS.getContent()));
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",ProjectFilterResultDTO.of(
+            projectFilterOutputDTOS.getTotalPages(), projectFilterOutputDTOS.getTotalElements(),projectFilterOutputDTOS.getContent())));
     }
 
     @GetMapping("/filter/search")

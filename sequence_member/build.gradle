@@ -38,7 +38,8 @@ dependencies {
 	// minio
 	implementation("io.minio:minio:8.5.10")
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'//redis 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.projectlombok:lombok:1.18.30'//redis 의존성
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
