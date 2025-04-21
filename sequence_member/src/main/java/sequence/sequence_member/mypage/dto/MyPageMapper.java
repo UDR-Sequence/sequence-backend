@@ -9,7 +9,15 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.archive.service.MyPageEvaluationService;
+import sequence.sequence_member.member.entity.AwardEntity;
+import sequence.sequence_member.member.entity.CareerEntity;
+import sequence.sequence_member.member.entity.ExperienceEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
+import sequence.sequence_member.member.entity.PortfolioEntity;
+import sequence.sequence_member.member.repository.AwardRepository;
+import sequence.sequence_member.member.repository.CareerRepository;
+import sequence.sequence_member.member.repository.ExperienceRepository;
+import sequence.sequence_member.member.repository.PortfolioRepository;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
@@ -28,6 +36,10 @@ public class MyPageMapper {
     private final ProjectBookmarkRepository projectBookmarkRepository;
     private final ArchiveBookmarkRepository archiveBookmarkRepository;
     private final MyPageEvaluationService myPageEvaluationService;
+    private final ExperienceRepository experienceRepository;
+    private final CareerRepository careerRepository;
+    private final AwardRepository awardRepository;
+    private final PortfolioRepository portfolioRepository;
 
     /**
      * 멤버와 아카이브 페이지네이션 객체를 ResponseDTO 매핑하는 메인 함수입니다.
@@ -83,9 +95,13 @@ public class MyPageMapper {
      * @return CareerHistoryDto 객체
      */
     private CareerHistoryDTO toCareerHistoryDto(MemberEntity member) {
+        List<ExperienceEntity> experienceEntities = experienceRepository.findByMemberAndIsDeletedFalse(member);
+        List<CareerEntity> careerEntities = careerRepository.findByMemberAndIsDeletedFalse(member);
+        List<AwardEntity> awardEntities = awardRepository.findByMemberAndIsDeletedFalse(member);
+        List<PortfolioEntity> portfolioEntities = portfolioRepository.findByMemberAndIsDeletedFalse(member);
         return CareerHistoryDTO.builder()
                 .introduction(member.getIntroduction())
-                .experiences(member.getExperiences().stream()
+                .experiences(experienceEntities.stream()
                         .map(e -> CareerHistoryDTO.ExperienceDTO.builder()
                                 .experienceType(e.getExperienceType())
                                 .experienceName(e.getExperienceName())
@@ -94,7 +110,7 @@ public class MyPageMapper {
                                 .experienceDescription(e.getExperienceDescription())
                                 .build())
                         .collect(Collectors.toList()))
-                .careers(member.getCareers().stream()
+                .careers(careerEntities.stream()
                         .map(c -> CareerHistoryDTO.CareerDTO.builder()
                                 .companyName(c.getCompanyName())
                                 .startDate(c.getStartDate())
@@ -102,7 +118,7 @@ public class MyPageMapper {
                                 .careerDescription(c.getCareerDescription())
                                 .build())
                         .collect(Collectors.toList()))
-                .awards(member.getAwards().stream()
+                .awards(awardEntities.stream()
                         .map(a -> CareerHistoryDTO.AwardDTO.builder()
                                 .awardType(a.getAwardType())
                                 .organizer(a.getOrganizer())
@@ -110,7 +126,7 @@ public class MyPageMapper {
                                 .awardDuration(a.getAwardDuration())
                                 .build())
                         .collect(Collectors.toList()))
-                .portfolios(member.getPortfolios().stream()
+                .portfolios(portfolioEntities.stream()
                         .map(p -> CareerHistoryDTO.PortfolioDTO.builder()
                                 .portfolioUrl(p.getPortfolioUrl())
                                 .build())

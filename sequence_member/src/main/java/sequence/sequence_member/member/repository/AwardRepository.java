@@ -2,7 +2,7 @@ package sequence.sequence_member.member.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.member.entity.AwardEntity;
@@ -13,7 +13,8 @@ import java.util.List;
 
 @Repository
 public interface AwardRepository extends JpaRepository<AwardEntity,Long> {
-    List<AwardEntity> findByMember(MemberEntity member);
+    @Query("SELECT a FROM AwardEntity a WHERE a.member = :member AND a.isDeleted = false")
+    List<AwardEntity> findByMemberAndIsDeletedFalse(MemberEntity member);
 
     @Transactional
     @Modifying

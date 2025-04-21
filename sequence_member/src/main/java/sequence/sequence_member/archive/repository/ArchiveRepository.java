@@ -59,5 +59,5 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     List<Archive> findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
         Long memberId, Status status);
 
-    Page<Archive> findByWriter(MemberEntity writer, Pageable pageable);
+    Page<Archive> findByWriterAndIsDeletedFalse(MemberEntity writer, Pageable pageable);
 } 
