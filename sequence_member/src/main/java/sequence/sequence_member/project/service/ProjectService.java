@@ -1,7 +1,6 @@
 package sequence.sequence_member.project.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +45,7 @@ public class ProjectService {
     private final MemberRepository memberRepository;
     private final ProjectViewService projectViewService;
     private final ProjectBookmarkRepository projectBookmarkRepository;
+    private final ProjectBookmarkService projectBookmarkService;
 
     @Transactional
     public void createProject(ProjectInputDTO projectInputDTO, String username){
@@ -208,7 +208,26 @@ public class ProjectService {
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 삭제할 수 있습니다.");
         }
-        projectRepository.delete(project);
+        project.softDelete(customUserDetails.getUsername());
+
+        //북마크 삭제
+        projectBookmarkService.deleteByProject(project, customUserDetails.getUsername());
+
+        //ProjectInvitedMember 삭제
+        deleteProjectInvitedMember(project, project.getInvitedMembers(), customUserDetails.getUsername());
+
+        //ProjectMember 삭제
+        deleteProjectMembers(project, project.getMembers(), customUserDetails.getUsername());
+
+        projectRepository.save(project);
+    }
+
+    private void deleteProjectInvitedMember(Project project, List<ProjectInvitedMember> invitedMembers,
+                                            String username) {
+        for (ProjectInvitedMember invitedMember : invitedMembers) {
+            invitedMember.softDelete(username);
+        }
+        projectInvitedMemberRepository.saveAll(invitedMembers);
     }
 
 
@@ -218,6 +237,13 @@ public class ProjectService {
             ProjectInvitedMember entity = ProjectInvitedMember.fromProjectAndMember(project,member);
             projectInvitedMemberRepository.save(entity);
         }
+    }
+
+    private void deleteProjectMembers(Project project, List<ProjectMember> projectMembers, String username){
+        for(ProjectMember member : projectMembers){
+            member.softDelete(username);
+        }
+        projectMemberRepository.saveAll(projectMembers);
     }
 
 

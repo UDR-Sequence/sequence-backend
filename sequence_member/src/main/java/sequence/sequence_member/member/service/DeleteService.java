@@ -47,9 +47,8 @@ public class DeleteService {
 //
 //        memberRepository.deleteByUsername(username);
 
-        //회원 비활성화
-        deleteMember.setDeleted(true);
-        memberRepository.save(deleteMember);
+        // 소프트 삭제
+        deleteMember.softDelete(username);
     }
 
     public String checkRefreshAndMember(HttpServletRequest request, CustomUserDetails customUserDetails){

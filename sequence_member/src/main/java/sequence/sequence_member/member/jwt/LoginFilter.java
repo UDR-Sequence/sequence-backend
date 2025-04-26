@@ -31,6 +31,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final TokenReissueService tokenReissueService;
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L*60*1; // 1시간
+    private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L*60*24*7; // 7일
 
     private final MemberRepository memberRepository;
 
@@ -88,11 +90,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //유저 이름 찾기
         String username = authentication.getName();
         MemberEntity memberEntity = memberRepository.findByUsernameAndIsDeletedFalse(username).orElseThrow(()->new BaseException("해당 유저가 존재하지 않습니다."));
-        
-        String access = jwtUtil.createJwt("access",username,  600000L*60*24*100); // 24시간 *100 = 100일. 테스트를 위해 기한 늘림
-        String refresh = jwtUtil.createJwt("refresh", username, 86400000L*100); // 24시간 *100 = 100일
 
-        tokenReissueService.RefreshTokenSave(username,refresh,86400000L*100);
+        String access = jwtUtil.createJwt("access",username,  ACCESS_TOKEN_EXPIRED_TIME); // 24시간  테스트를 위해 기한 늘림
+        String refresh = jwtUtil.createJwt("refresh", username, REFRESH_TOKEN_EXPIRED_TIME); // 24시간 *100 = 100일
+
+        tokenReissueService.RefreshTokenSave(username,refresh,REFRESH_TOKEN_EXPIRED_TIME);
 
         // 실패 응답 객체 생성
         ResponseEntity<ApiResponseData<LoginOutputDTO>> responseBody = ResponseEntity.ok().body(ApiResponseData.success(new LoginOutputDTO(memberEntity.getNickname(), memberEntity.getProfileImg()), "로그인을 성공하였습니다."));
