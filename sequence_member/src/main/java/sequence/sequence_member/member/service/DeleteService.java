@@ -3,11 +3,16 @@ package sequence.sequence_member.member.service;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.member.entity.AwardEntity;
+import sequence.sequence_member.member.entity.CareerEntity;
+import sequence.sequence_member.member.entity.EducationEntity;
+import sequence.sequence_member.member.entity.ExperienceEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.*;
@@ -39,16 +44,26 @@ public class DeleteService {
         MemberEntity deleteMember = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new CanNotFindResourceException("사용자를 찾을 수 없습니다."));
 
-//        //회원 정보 삭제
-//        awardRepository.deleteByMemberId(deleteMember.getId());
-//        careerRepository.deleteByMemberId(deleteMember.getId());
-//        experienceRepository.deleteByMemberId(deleteMember.getId());
-//        educationRepository.deleteByMemberId(deleteMember.getId());
-//
-//        memberRepository.deleteByUsername(username);
+        //회원 정보 삭제
+        List<AwardEntity> awards = deleteMember.getAwards();
+        awards.forEach(award -> award.softDelete(username));
+        awardRepository.saveAll(awards);
+
+        List<CareerEntity> careers = deleteMember.getCareers();
+        careers.forEach(career -> career.softDelete(username));
+        careerRepository.saveAll(careers);
+
+        List<ExperienceEntity> experiences = deleteMember.getExperiences();
+        experiences.forEach(experience -> experience.softDelete(username));
+        experienceRepository.saveAll(experiences);
+
+        EducationEntity education = deleteMember.getEducation();
+        education.softDelete(username);
+        educationRepository.save(education);
 
         //회원 비활성화
         deleteMember.setDeleted(true);
+
         memberRepository.save(deleteMember);
     }
 
