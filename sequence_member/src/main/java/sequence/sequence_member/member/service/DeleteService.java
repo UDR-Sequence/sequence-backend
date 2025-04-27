@@ -66,6 +66,10 @@ public class DeleteService {
 
         //todo - 프로필 이미지는 어떻게 해야할까
         memberRepository.save(deleteMember);
+
+        // 소프트 삭제
+        deleteMember.softDelete(username);
+
     }
 
     public String checkRefreshAndMember(HttpServletRequest request, CustomUserDetails customUserDetails){
