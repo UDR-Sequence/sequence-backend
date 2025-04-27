@@ -62,8 +62,9 @@ public class DeleteService {
         educationRepository.save(education);
 
         //회원 비활성화
-        deleteMember.setDeleted(true);
+        deleteMember.softDelete(username);
 
+        //todo - 프로필 이미지는 어떻게 해야할까
         memberRepository.save(deleteMember);
     }
 
