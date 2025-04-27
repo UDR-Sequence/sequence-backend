@@ -16,6 +16,7 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
+import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
@@ -55,6 +56,7 @@ public class ArchiveService {
     private final ArchiveViewService archiveViewService;
     private final TeamEvaluationRepository teamEvaluationRepository;
     private final ArchiveFileService archiveFileService;
+    private final TeamEvaluationService teamEvaluationService;
     
     @Value("${MINIO_ARCHIVE_IMG}")
     private String ARCHIVE_IMG_BUCKET;
@@ -148,8 +150,7 @@ public class ArchiveService {
         
         // 4. 아카이브 멤버 삭제
         archiveMemberRepository.deleteByArchiveId(archiveId);
-        
-        
+
         // 5. 최종적으로 아카이브 삭제
         archiveRepository.delete(archive);
         
@@ -160,12 +161,22 @@ public class ArchiveService {
     public List<UserArchiveDTO> getUserArchiveListAtAlarm(CustomUserDetails customUserDetails){
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFindException("사용자를 찾을 수 없습니다."));
 
         List<Archive> latestArchives = archiveRepository.findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
         List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+
+        // 평가전 상태인 아카이브만 리스트에 추가
         for(Archive archive : latestArchives){
-            userArchiveDTOList.add(new UserArchiveDTO(archive));
+            List<ArchiveMember> archiveMembers = archiveMemberRepository.findAllByArchiveId(archive.getId());
+            ArchiveMember archiveMember = archiveMembers.stream()
+                .filter(self -> self.getMember().getId().equals(member.getId()))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFindException( "사용자를 찾을 수 없습니다."));
+            Status memberStatus = teamEvaluationService.getArvhiceMemberEvaluationStatus(archiveMember, archiveMembers);
+            if(memberStatus == Status.평가전){
+                userArchiveDTOList.add(new UserArchiveDTO(archive));
+            }
         }
         return userArchiveDTOList;
     }
