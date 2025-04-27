@@ -15,6 +15,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
@@ -59,7 +60,7 @@ public class MyPageService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
-        Page<Archive> archivePage = archiveRepository.findByWriter(member, pageable);
+        Page<Archive> archivePage = archiveRepository.findByWriterAndIsDeletedFalse(member, pageable);
 
         List<InvitedProjectWithCommentDTO> invitedProjects = getInvitedProjects(customUserDetails);
 
@@ -102,8 +103,10 @@ public class MyPageService {
         MemberEntity member = memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
+        if(member.isDeleted()) throw new BAD_REQUEST_EXCEPTION("탈퇴한 사용자입니다.");
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
-        Page<Archive> archivePage = archiveRepository.findByWriter(member, pageable);
+        Page<Archive> archivePage = archiveRepository.findByWriterAndIsDeletedFalse(member, pageable);
 
         List<InvitedProjectWithCommentDTO> invitedProjects = getInvitedProjects(customUserDetails);
 
@@ -123,7 +126,7 @@ public class MyPageService {
 
         for (InviteProjectOutputDTO detail : inviteList) {
             Long projectId = detail.getProjectInvitedMemberId();
-            int commentCount = commentRepository.countByProjectId(projectId);   // 댓글수 가져오기
+            int commentCount = commentRepository.countByProjectIdAndIsDeletedFalse(projectId);   // 댓글수 가져오기
 
             result.add(InvitedProjectWithCommentDTO.builder()
                     .projectInvitedMemberId(detail.getProjectInvitedMemberId())

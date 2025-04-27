@@ -7,6 +7,6 @@ import sequence.sequence_member.project.entity.Comment;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.project.id = :projectId")
-    int countByProjectId(Long projectId);
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.project.id = :projectId and c.isDeleted = false")
+    int countByProjectIdAndIsDeletedFalse(Long projectId);
 }
