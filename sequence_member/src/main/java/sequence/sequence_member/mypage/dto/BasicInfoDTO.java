@@ -70,4 +70,6 @@ public class BasicInfoDTO {
 
     private List<Skill> skillCategory;
     private List<ProjectRole> desiredJob;
+
+    private String profileImg;
 }
