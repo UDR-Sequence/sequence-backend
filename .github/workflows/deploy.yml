@@ -1,0 +1,152 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: CI CD process
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      
+    # 테스트용 MariaDB 컨테이너 추가
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        ports:
+          - 3306:3306
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        
+    env:
+      DATABASE_URL: jdbc:mariadb://localhost:3306/testdb
+      DATABASE_USERNAME: testuser
+      DATABASE_PASSWORD: testpass
+      DATABASE_DRIVER: org.mariadb.jdbc.Driver
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MAX_FILE_SIZE: ${{ secrets.MAX_FILE_SIZE }}
+      MAX_REQUEST_SIZE : ${{ secrets.MAX_REQUEST_SIZE }}
+      MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
+      MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
+      MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
+      MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
+      MINIO_PORTFOLIO_BUCKET_NAME: ${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}}
+      MINIO_PW: ${{secrets.MINIO_PW}}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
+      MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
+      
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+
+    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
+    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4 # v4.0.0
+      with:
+        gradle-version: '8.10.2'
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew build
+      working-directory: sequence_member
+
+
+    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
+    #
+    # - name: Setup Gradle
+    #   uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+    #   with:
+    #     gradle-version: '8.9'
+    #
+    # - name: Build with Gradle 8.9
+    #   run: gradle build
+
+    # 도커 로그인
+    - name: Docker Login
+      uses: docker/login-action@v3.3.0
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: List repository root
+      run: ls -la
+    - name: List sequence_member directory
+      run: ls -la sequence_member
+    # Docker 이미지 빌드
+    - name: Build Docker image
+      run: |
+        docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
+      working-directory: sequence_member
+    # Docker 이미지 푸시
+    - name: Push Docker image
+      run: |
+        docker push ${{secrets.DOCKER_USERNAME}}/sequence:latest
+      working-directory: sequence_member
+  
+  # ssh연결 및 실행
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{secrets.SERVER_HOST}}
+          username: ${{secrets.SERVER_USERNAME}}
+          key: ${{secrets.SERVER_SSH_KEY}}
+          port: 22
+          script: |
+            # 서버에서 최신 이미지 pull
+            docker pull ${{secrets.DOCKER_USERNAME}}/sequence:latest
+            # 기존 컨테이너 종료 및 삭제 (존재하는 경우)
+            docker stop sequence-spring-container || true
+            docker rm sequence-spring-container || true
+            # 새로운 컨테이너 실행 (포트 및 필요한 환경 변수 지정 가능)
+            docker run -d --name sequence-spring-container --network sequence -p 10101:8080 \
+              -e JWT_SECRET=${{secrets.JWT_SECRET}} \
+              -e MAX_FILE_SIZE=${{secrets.MAX_FILE_SIZE}} \
+              -e MAX_REQUEST_SIZE=${{secrets.MAX_REQUEST_SIZE}} \
+              -e DATABASE_DRIVER=org.mariadb.jdbc.Driver \
+              -e DATABASE_URL=${{secrets.DATABASE_URL}} \
+              -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} \
+              -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
+              -e MINIO_ENDPOINT=${{secrets.MINIO_ENDPOINT}} \
+              -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
+              -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
+              -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
+              -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}} \
+              -e MINIO_PW=${{secrets.MINIO_PW}} \
+              -e REDIS_HOST=${{secrets.REDIS_HOST}} \
+              -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
+              -e REDIS_PORT=${{secrets.REDIS_PORT}} \
+              -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \
+              -e MINIO_ARCHIVE_IMG=${{secrets.MINIO_ARCHIVE_IMG}} \
+              ${{secrets.DOCKER_USERNAME}}/sequence:latest
+            # monitoring 네트워크 연결 추가
+            docker network connect monitoring sequence-spring-container
+      

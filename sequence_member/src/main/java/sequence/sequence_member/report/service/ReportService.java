@@ -9,7 +9,6 @@ import sequence.sequence_member.archive.entity.ArchiveComment;
 import sequence.sequence_member.archive.repository.ArchiveCommentRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
-import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.EducationEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
@@ -91,7 +90,7 @@ public class ReportService {
 
     // 신고 내역 조회
     public List<ReportResponseDTO> searchReport(String nickname) {
-        List<ReportEntity> reportEntities = reportRepository.findByNicknameAndIsDeletedFalse(nickname);
+        List<ReportEntity> reportEntities = reportRepository.findByNickname(nickname);
         List<ReportResponseDTO> reportResponseDTOS = new ArrayList<>();
 
         for (ReportEntity reportEntity : reportEntities) {
@@ -164,25 +163,5 @@ public class ReportService {
             default:
                 throw new IllegalArgumentException("지원하지 않는 신고 대상입니다: " + targetType);
         }
-    }
-
-    public void deleteReport(Long reportId, CustomUserDetails customUserDetails) {
-        String username = customUserDetails.getUsername();
-        String nickname = memberRepository.findByUsernameAndIsDeletedFalse(username)
-                .orElseThrow(() -> new CanNotFindResourceException("사용자를 찾을 수 없습니다."))
-                .getNickname();
-
-        // 신고 내역 가져오기
-        ReportEntity report = reportRepository.findByIdAndIsDeletedFalse(reportId)
-                .orElseThrow(() -> new CanNotFindResourceException("신고 내역을 찾을 수 없습니다."));
-
-        // 본인이 신고한 건만 철회
-        if (!report.getReporter().equals(nickname)) {
-            throw new CanNotFindResourceException("본인이 작성한 신고만 철회할 수 있습니다.");
-        }
-
-        // soft delete
-        report.softDelete(username);
-        reportRepository.save(report);
     }
 }
