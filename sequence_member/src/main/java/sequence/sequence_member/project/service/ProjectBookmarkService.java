@@ -85,4 +85,15 @@ public class ProjectBookmarkService {
         return "북마크 삭제 성공";
     }
 
+    @Transactional
+    public void deleteByProject(Project project, String username){
+        List<ProjectBookmark> bookmarks = bookmarkRepository.findAllByProject(project);
+        if (bookmarks != null && !bookmarks.isEmpty()) {
+            for (ProjectBookmark bookmark : bookmarks) {
+                bookmark.softDelete(username);
+            }
+            bookmarkRepository.saveAll(bookmarks);
+        }
+    }
+
 }

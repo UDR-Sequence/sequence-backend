@@ -1,6 +1,7 @@
 package sequence.sequence_member.archive.service;
 
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.entity.ArchiveMember;
@@ -150,27 +151,7 @@ public class TeamEvaluationService {
 
         // 각 팀원별로 평가 상태 확인
         for (ArchiveMember archiveMember : archiveMembers) {
-            int totalMembersToEvaluate = archiveMembers.size() - 1; // 자신 제외
-            int evaluatedCount = 0;
-            
-            // 해당 팀원이 다른 팀원들을 평가했는지 확인
-            for (ArchiveMember targetMember : archiveMembers) {
-                if (archiveMember.equals(targetMember)) {
-                    continue;  // 자기 자신은 건너뛰기
-                }
-
-                boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluated(
-                    archiveMember, 
-                    targetMember
-                );
-                if (hasEvaluated) {
-                    evaluatedCount++;
-                }
-            }
-
-            // 해당 팀원이 모든 팀원을 평가했는지 확인
-            Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ? 
-                Status.평가완료 : Status.평가전;
+            Status memberStatus = getArvhiceMemberEvaluationStatus(archiveMember, archiveMembers);
 
             // 역할 정보 가져오기
             List<ProjectRole> roles = new ArrayList<>();
@@ -197,6 +178,32 @@ public class TeamEvaluationService {
             .memberStatus(statusMap)
             .isAllCompleted(isAllCompleted)
             .build();
+    }
+
+    @NotNull
+    public Status getArvhiceMemberEvaluationStatus(ArchiveMember archiveMember, List<ArchiveMember> archiveMembers) {
+        int totalMembersToEvaluate = archiveMembers.size() - 1; // 자신 제외
+        int evaluatedCount = 0;
+
+        // 해당 팀원이 다른 팀원들을 평가했는지 확인
+        for (ArchiveMember targetMember : archiveMembers) {
+            if (archiveMember.equals(targetMember)) {
+                continue;  // 자기 자신은 건너뛰기
+            }
+
+            boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluated(
+                    archiveMember,
+                targetMember
+            );
+            if (hasEvaluated) {
+                evaluatedCount++;
+            }
+        }
+
+        // 해당 팀원이 모든 팀원을 평가했는지 확인
+        Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ?
+            Status.평가완료 : Status.평가전;
+        return memberStatus;
     }
 
     public List<String> getEvaluators(Long archiveId) {

@@ -110,7 +110,8 @@ public class MyPageUpdateService {
 
         try {
             // 기존 포트폴리오 삭제
-            portfolioRepository.deleteByMember(member);
+            List<PortfolioEntity> existPortfolios = member.getPortfolios();
+            existPortfolios.forEach(portfolio -> portfolio.softDelete(member.getUsername()));
 
             // 새로운 포트폴리오 파일명 리스트
             List<String> portfolioNames = new ArrayList<>();
@@ -177,12 +178,12 @@ public class MyPageUpdateService {
      * @param myPageDTO 사용자가 제공한 수상 경력 정보
      */
     private void updateAwards(MemberEntity member, MyPageRequestDTO myPageDTO) {
-        List<AwardEntity> existingAwards = awardRepository.findByMember(member);
+        List<AwardEntity> existingAwards = awardRepository.findByMemberAndIsDeletedFalse(member);
         List<AwardEntity> newAwards = myPageDTO.getAwards().stream()
                 .map(dto -> new AwardEntity(dto.getAwardType(), dto.getOrganizer(), dto.getAwardName(), dto.getAwardDuration(), member))
                 .collect(Collectors.toList());
 
-        awardRepository.deleteAll(existingAwards);
+        existingAwards.forEach(award -> award.softDelete(member.getUsername()));
         awardRepository.saveAll(newAwards);
     }
 
@@ -194,12 +195,12 @@ public class MyPageUpdateService {
      * @param myPageDTO 사용자가 제공한 경력 정보
      */
     private void updateCareers(MemberEntity member, MyPageRequestDTO myPageDTO) {
-        List<CareerEntity> existingCareers = careerRepository.findByMember(member);  // 기존 경력 조회
+        List<CareerEntity> existingCareers = careerRepository.findByMemberAndIsDeletedFalse(member);  // 기존 경력 조회
         List<CareerEntity> newCareers = myPageDTO.getCareers().stream()               // 새로운 경력으로 업데이트
                 .map(dto -> new CareerEntity(dto.getCompanyName(), dto.getStartDate(), dto.getEndDate(), dto.getCareerDescription(), member))
                 .collect(Collectors.toList());
 
-        careerRepository.deleteAll(existingCareers);
+        existingCareers.forEach(career -> career.softDelete(member.getUsername()));
         careerRepository.saveAll(newCareers);
     }
 
@@ -211,12 +212,12 @@ public class MyPageUpdateService {
      * @param myPageDTO 사용자가 제공한 경험 정보
      */
     private void updateExperiences(MemberEntity member, MyPageRequestDTO myPageDTO) {
-        List<ExperienceEntity> existingExperiences = experienceRepository.findByMember(member);  // 기존 경험 조회
+        List<ExperienceEntity> existingExperiences = experienceRepository.findByMemberAndIsDeletedFalse(member);  // 기존 경험 조회
         List<ExperienceEntity> newExperiences = myPageDTO.getExperiences().stream()               // 새로운 경험으로 업데이트
                 .map(dto -> new ExperienceEntity(dto.getExperienceType(), dto.getExperienceName(), dto.getStartDate(), dto.getEndDate(), dto.getExperienceDescription(), member))
                 .collect(Collectors.toList());
 
-        experienceRepository.deleteAll(existingExperiences);
+        existingExperiences.forEach(experience -> experience.softDelete(member.getUsername()));
         experienceRepository.saveAll(newExperiences);
     }
 
