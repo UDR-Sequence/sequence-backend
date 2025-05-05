@@ -98,4 +98,5 @@ public class MemberEntity extends BaseTimeEntity {
         memberEntity.setIntroduction(memberDTO.getIntroduction());
         return memberEntity;
     }
+
 }

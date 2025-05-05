@@ -2,7 +2,7 @@ name: CI process at Pull request
 
 on:
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -32,7 +32,7 @@ jobs:
       DATABASE_USERNAME: testuser
       DATABASE_PASSWORD: testpass
       DATABASE_DRIVER: org.mariadb.jdbc.Driver
-      JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MAX_FILE_SIZE: ${{ secrets.MAX_FILE_SIZE }}
       MAX_REQUEST_SIZE : ${{ secrets.MAX_REQUEST_SIZE }}
       MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
@@ -43,28 +43,28 @@ jobs:
       MINIO_PW: ${{secrets.MINIO_PW}}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
       MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
       MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
 
-    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4 # v4.0.0
-      with:
-        gradle-version: '8.10.2'
+      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
+      # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4 # v4.0.0
+        with:
+          gradle-version: '8.10.2'
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
-      working-directory: sequence_member
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build
+        working-directory: sequence_member
 
   dependency-submission:
     runs-on: ubuntu-latest
@@ -72,16 +72,16 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
-    # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
-    - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
-      with:
-        build-root-directory: sequence_member
+      # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
+      # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+        with:
+          build-root-directory: sequence_member
