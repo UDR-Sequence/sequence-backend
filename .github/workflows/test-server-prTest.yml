@@ -8,7 +8,42 @@ jobs:
   build-and-analyze:
     name: Build and analyze
     runs-on: ubuntu-latest
+    # 테스트용 MariaDB 컨테이너 추가
+    # 테스트용 MariaDB 컨테이너 추가
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        ports:
+          - 3306:3306
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
 
+    env:
+      DATABASE_URL: jdbc:mariadb://localhost:3306/testdb
+      DATABASE_USERNAME: testuser
+      DATABASE_PASSWORD: testpass
+      DATABASE_DRIVER: org.mariadb.jdbc.Driver
+      JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      MAX_FILE_SIZE: ${{ secrets.MAX_FILE_SIZE }}
+      MAX_REQUEST_SIZE : ${{ secrets.MAX_REQUEST_SIZE }}
+      MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
+      MINIO_ACCESS_KEY: ${{secrets.MINIO_ACCESS_KEY}}
+      MINIO_SECRET_KEY: ${{secrets.MINIO_SECRET_KEY}}
+      MINIO_BUCKET_NAME: ${{secrets.MINIO_BUCKET_NAME}}
+      MINIO_PORTFOLIO_BUCKET_NAME: ${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}}
+      MINIO_PW: ${{secrets.MINIO_PW}}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+      MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
+      MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
     steps:
       - uses: actions/checkout@v4
         with:
