@@ -73,4 +73,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_USE_BUILD_TOOL_JDK: "true"
-        run: ./gradlew build sonar --info
+        run: ./gradlew build sonar --info -Dsonar.scanner.skipJreProvisioning=true
