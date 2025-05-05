@@ -85,6 +85,7 @@ public class MyPageMapper {
                 .degree(member.getEducation().getDegree())
                 .skillCategory(member.getEducation().getSkillCategory())
                 .desiredJob(member.getEducation().getDesiredJob())
+                .profileImg(member.getProfileImg())
                 .build();
     }
 

@@ -79,7 +79,7 @@ public class MyPageService {
     @Transactional
     public void updateMyProfile(
             MyPageRequestDTO myPageDTO, String username,
-            MultipartFile authImgFile, List<MultipartFile> portfolios
+            MultipartFile profileImg, List<MultipartFile> portfolios
     ) {
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
@@ -88,7 +88,7 @@ public class MyPageService {
             throw new IllegalArgumentException("아이디는 변경할 수 없습니다.");
         }
 
-        myPageUpdateService.updateProfile(member, myPageDTO, authImgFile, portfolios);
+        myPageUpdateService.updateProfile(member, myPageDTO, profileImg, portfolios);
     }
 
     /**
