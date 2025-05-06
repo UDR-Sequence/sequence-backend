@@ -69,7 +69,7 @@ public class DeleteService {
 
         // 소프트 삭제
         deleteMember.softDelete(username);
-
+        memberRepository.save(deleteMember);
     }
 
     public String checkRefreshAndMember(HttpServletRequest request, CustomUserDetails customUserDetails){
