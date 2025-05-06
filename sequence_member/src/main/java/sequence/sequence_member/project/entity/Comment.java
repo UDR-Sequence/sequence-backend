@@ -16,11 +16,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 @Entity
 @Getter
+@Where(clause = "is_deleted = false")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

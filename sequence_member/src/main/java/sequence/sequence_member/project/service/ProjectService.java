@@ -3,7 +3,9 @@ package sequence.sequence_member.project.service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ import sequence.sequence_member.project.repository.ProjectMemberRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ProjectService {
 
@@ -173,14 +176,22 @@ public class ProjectService {
 
         // 삭제된 멤버들은 ProjectMember에서 삭제
         List<MemberEntity> deletedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getDeletedMembersNicknames());
-        if(deletedMembers.contains(writer)){
-            throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
+        for(MemberEntity deletedMember : deletedMembers){
+            ProjectMember projectMember = projectMemberRepository.findByMemberIdAndProjectId(
+                    deletedMember.getId(), projectId);
+            if(projectMember==null){
+                log.error("삭제된 멤버가 프로젝트에 존재하지 않습니다.");
+                continue;
+            }
+            if(deletedMembers.contains(writer)){
+                throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
+            }
+            projectMember.softDelete(customUserDetails.getUsername());
+            projectMemberRepository.save(projectMember);
         }
-        projectMemberRepository.deleteByProjectAndMemberIn(project, deletedMembers);
 
         // 만약 초대목록 멤버에 존재한다면 본인은 제거
-        if (projectUpdateDTO.getInvitedMembersNicknames() != null &&
-            projectUpdateDTO.getInvitedMembersNicknames().contains(writer.getNickname())) {
+        if (projectUpdateDTO.getInvitedMembersNicknames() != null) {
             projectUpdateDTO.getInvitedMembersNicknames().remove(writer.getNickname());
         }
 
@@ -200,6 +211,7 @@ public class ProjectService {
         return getProject(projectId,request, customUserDetails);
     }
 
+    // soft delete를 통해 프로젝트를 삭제하는 메인 로직 함수
     public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
