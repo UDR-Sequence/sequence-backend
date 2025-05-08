@@ -96,12 +96,15 @@ public class ProjectController {
     }
 
     @GetMapping("/filter/search")
-    public ResponseEntity<ApiResponseData<List<ProjectFilterOutputDTO>>> filterSearch(@RequestParam(name="title") String title){
-        List<ProjectFilterOutputDTO> projectEntities = new ArrayList<>(projectService.getProjectsBySearch(title));
-        if(projectEntities.isEmpty()){
-            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "검색어와 일치하는 프로젝트가 없습니다.",projectEntities));
+    public ResponseEntity<ApiResponseData<ProjectFilterResultDTO>> filterSearch(@RequestParam(name="title") String title,
+                                                                                      @RequestParam(name="sortBy", required = false, defaultValue = "createdDateTime") String sortBy,
+                                                                                      @RequestParam(name="page", required = false, defaultValue = "0") int page,
+                                                                                      @RequestParam(name="size", required = false, defaultValue = "12") int size){
+        Page<ProjectFilterOutputDTO> projectFilterOutputDTOS = projectService.getProjectsBySearch(title, sortBy, page, size);
+        if(projectFilterOutputDTOS.isEmpty()){
+            return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "검색어와 일치하는 프로젝트가 없습니다.",ProjectFilterResultDTO.of(0, 0L,projectFilterOutputDTOS.getContent())));
         }
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",projectEntities));
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회가 완료되었습니다.",ProjectFilterResultDTO.of(projectFilterOutputDTOS.getTotalPages(), projectFilterOutputDTOS.getTotalElements(),projectFilterOutputDTOS.getContent())));
     }
 
     @GetMapping("/list")
