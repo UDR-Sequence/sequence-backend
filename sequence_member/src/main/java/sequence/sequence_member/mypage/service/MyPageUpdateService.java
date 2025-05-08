@@ -49,15 +49,15 @@ public class MyPageUpdateService {
      *
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 마이페이지 정보
-     * @param authImgFile 프로필 이미지 파일
+     * @param profileImg 프로필 이미지 파일
      * @param portfolios  새로운 포트폴리오 파일 목록
      */
     public void updateProfile(
             MemberEntity member, MyPageRequestDTO myPageDTO,
-            MultipartFile authImgFile, List<MultipartFile> portfolios
+            MultipartFile profileImg, List<MultipartFile> portfolios
     ) {
-        updateBasicInfo(member, myPageDTO);
-        updatePortfolios(member, authImgFile, portfolios);
+        updateBasicInfo(member, profileImg, myPageDTO);
+        updatePortfolios(member, portfolios);
         updateAwards(member, myPageDTO);
         updateCareers(member, myPageDTO);
         updateExperiences(member, myPageDTO);
@@ -70,7 +70,26 @@ public class MyPageUpdateService {
      * @param member 업데이트할 사용자 엔티티
      * @param myPageDTO 사용자가 제공한 기본 정보
      */
-    private void updateBasicInfo(MemberEntity member, MyPageRequestDTO myPageDTO) {
+    private void updateBasicInfo(MemberEntity member, MultipartFile profileImg, MyPageRequestDTO myPageDTO) {
+        if (profileImg != null && !profileImg.isEmpty()) {
+            log.info("profileImg: originalFilename = {}, size = {}", profileImg.getOriginalFilename(), profileImg.getSize());
+            try {
+                // 새 파일 이름 결정
+                String profileImageName = multipartUtil.determineFileName(
+                        profileImg, member.getUsername(), SUFFIX, PROFILE_BUCKET_NAME, "profile"
+                );
+
+                // 프로필 이미지명 업데이트
+                member.setProfileImg(profileImageName);
+            } catch (Exception e) {
+                String errorMessage = "프로필 이미지 처리 중 오류가 발생했습니다: " + e.getMessage();
+                log.info(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+        } else {
+            log.info("profileImg is null or empty.");
+        }
+
         member.setName(myPageDTO.getName());
         member.setBirth(myPageDTO.getBirth());
         member.setGender(myPageDTO.getGender());
@@ -85,20 +104,11 @@ public class MyPageUpdateService {
      * 기존 포트폴리오를 삭제하고 새로운 포트폴리오를 추가합니다.
      *
      * @param member      업데이트할 사용자 엔티티
-     * @param authImgFile 프로필 이미지 파일
      * @param portfolios  새로운 포트폴리오 파일 목록
      */
     private void updatePortfolios(
-            MemberEntity member,
-            MultipartFile authImgFile, List<MultipartFile> portfolios
+            MemberEntity member, List<MultipartFile> portfolios
     ) {
-        // 전달된 authImgFile, portfolios 매개변수 확인
-        if (authImgFile != null) {
-            log.info("authImgFile: originalFilename = {}, size = {}", authImgFile.getOriginalFilename(), authImgFile.getSize());
-        } else {
-            log.info("authImgFile is null.");
-        }
-
         if (portfolios != null && !portfolios.isEmpty()) {
             log.info("Number of portfolios received: {}", portfolios.size());
             for (MultipartFile portfolio : portfolios) {
@@ -143,21 +153,6 @@ public class MyPageUpdateService {
                 } catch (Exception e) {
                     // 포트폴리오 엔티티 저장 시 예외 처리
                     String errorMessage = "포트폴리오 엔티티 저장 중 오류가 발생했습니다: " + e.getMessage();
-                    log.info(errorMessage);
-                    throw new RuntimeException(errorMessage);  // 예외 던져서 외부로 전달
-                }
-            }
-
-            // 프로필 이미지 업데이트
-            if (authImgFile != null && !authImgFile.isEmpty()) {
-                try {
-                    String fileName = multipartUtil.determineFileName(
-                            authImgFile, member.getUsername(), SUFFIX, PROFILE_BUCKET_NAME, profileImg
-                    );
-                    member.setProfileImg(fileName);
-                } catch (Exception e) {
-                    // 프로필 이미지 파일 처리 오류가 발생한 경우
-                    String errorMessage = "프로필 이미지 처리 중 오류가 발생했습니다: " + e.getMessage();
                     log.info(errorMessage);
                     throw new RuntimeException(errorMessage);  // 예외 던져서 외부로 전달
                 }

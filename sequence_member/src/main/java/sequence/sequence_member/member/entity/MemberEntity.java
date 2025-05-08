@@ -57,9 +57,6 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="profile_img", length = 500)
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN")
-    private boolean isDeleted;
-
 
     // portfolio와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)

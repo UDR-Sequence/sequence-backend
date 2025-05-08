@@ -56,13 +56,13 @@ public class MyPageController {
     @PutMapping(value = "/api/mypage", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> updateMyProfile(
             @RequestPart(name = "myPageDTO") MyPageRequestDTO myPageDTO,
-            @RequestPart(name = "authImgFile", required = false) MultipartFile authImgFile,
+            @RequestPart(name = "profileImg", required = false) MultipartFile profileImg,
             @RequestPart(name = "portfolios", required = false) List<MultipartFile> portfolios
     ) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
-            myPageService.updateMyProfile(myPageDTO, username, authImgFile, portfolios);
+            myPageService.updateMyProfile(myPageDTO, username, profileImg, portfolios);
             return ResponseEntity.ok(ApiResponseData.success("마이페이지 수정이 완료되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.status(Code.CAN_NOT_FIND_RESOURCE.getStatus())

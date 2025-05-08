@@ -54,7 +54,6 @@ public class DataCreateService {
                 member.setNickname(batchNumber + "_" + i + "_" + faker.funnyName().name());
                 member.setSchoolName(faker.educator().university());
                 member.setProfileImg(faker.internet().avatar());
-                member.setDeleted(false);
 
                 // EducationEntity 생성
                 EducationEntity education = new EducationEntity(
