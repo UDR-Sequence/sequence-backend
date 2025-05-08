@@ -46,7 +46,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
         "(q.title LIKE CONCAT('%', :title, '%')) AND" +
         " q.isDeleted = false "
     )
-    List<Project> findProjectsByFilterdSearch(@Param("title") String title);
+    Page<Project> findProjectsByFilterdSearch(@Param("title") String title, Pageable pageable);
 
     @Query("SELECT p From Project p")
     List<Project> findAllProjects();

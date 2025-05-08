@@ -275,7 +275,7 @@ public class ProjectService {
         int pageSize = switch (size) {
             case 30 -> 30;
             case 50 -> 50;
-            default -> 10;
+            default -> 12;
         };
 
         // 정렬 조건 설정
@@ -292,23 +292,25 @@ public class ProjectService {
         return projects.map(ProjectFilterOutputDTO::toProjectFilterOutputDTO);
     }
 
-    public List<ProjectFilterOutputDTO> getProjectsBySearch(String title){
-        List<Project> projects = projectRepository.findProjectsByFilterdSearch(title);
-        List<ProjectFilterOutputDTO> projectFilterOutputDTOS = new ArrayList<>();
+    public Page<ProjectFilterOutputDTO> getProjectsBySearch(String title, String sortBy, int page, int size){
+        // 페이지 크기 제한
+        int pageSize = switch (size) {
+            case 30 -> 30;
+            case 50 -> 50;
+            default -> 12;
+        };
 
-        for(Project project : projects){
-            ProjectFilterOutputDTO projectFilterOutputDTO = ProjectFilterOutputDTO.builder()
-                    .id(project.getId())
-                    .title(project.getTitle())
-                    .writer(project.getWriter().getNickname())
-                    .createdDate(project.getCreatedDateTime().toLocalDate())
-                    .roles(DataConvertor.stringToList(project.getRoles()))
-                    .build();
+        // 정렬 조건 설정
+        Sort sort = Sort.by(
+            "createdDateTime".equals(sortBy) ? "createdDateTime" : "modifiedDateTime"
+        ).descending();
 
-            projectFilterOutputDTOS.add(projectFilterOutputDTO);
-        }
+        //pageable 객체 만들기
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
 
-        return projectFilterOutputDTOS;
+        Page<Project> projects = projectRepository.findProjectsByFilterdSearch(title, pageable);
+
+        return projects.map(ProjectFilterOutputDTO::toProjectFilterOutputDTO);
     }
 
     public List<ProjectFilterOutputDTO> getAllProjects(){
