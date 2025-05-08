@@ -263,7 +263,7 @@ public class ProjectService {
         int pageSize = switch (size) {
             case 30 -> 30;
             case 50 -> 50;
-            default -> 10;
+            default -> 12;
         };
 
         // 정렬 조건 설정
