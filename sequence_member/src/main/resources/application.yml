@@ -4,6 +4,20 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: ${NAVER_MAIL_USERNAME}
+    password: ${NAVER_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          ssl.trust: smtp.naver.com
+    debug: true
+
   jpa:
     hibernate:
       ddl-auto: update

@@ -122,6 +122,12 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        //비밀번호 변경 설정
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/pw-reset/request-reset", "/api/pw-reset/reset-password").permitAll()
+                        .anyRequest().authenticated());
+
         return http.build();
 
     }

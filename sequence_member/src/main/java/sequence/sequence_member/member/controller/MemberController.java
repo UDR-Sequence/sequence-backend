@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
+import sequence.sequence_member.member.dto.FindUsernameInputDTO;
+import sequence.sequence_member.member.dto.FindUsernameOutputDTO;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
+import sequence.sequence_member.member.service.FindUsernameService;
 import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
 
@@ -27,6 +30,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberSearchService memberSearchService;
+    private final FindUsernameService findUsernameService;
 
     @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> join(@RequestPart("memberDTO") @Valid MemberDTO memberDTO, Errors errors,
@@ -41,6 +45,14 @@ public class MemberController {
         memberService.save(memberDTO,authImgFile,portfolios);
         return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
+
+    // 아이디 찾기
+    @PostMapping("/find_username")
+    public ResponseEntity<ApiResponseData<FindUsernameOutputDTO>> findUsername(@Valid @RequestBody FindUsernameInputDTO inputDTO) {
+        FindUsernameOutputDTO result = findUsernameService.findUsername(inputDTO);
+        return ResponseEntity.ok().body(ApiResponseData.success(result));
+    }
+
 
     @GetMapping("/check_username")
     public ResponseEntity<ApiResponseData<String>> checkUser(@RequestParam(name = "username") String username){

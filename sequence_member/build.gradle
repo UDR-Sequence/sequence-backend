@@ -54,6 +54,9 @@ dependencies {
 
 	//Prometheus
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+
+	//Naver SMTP
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {
