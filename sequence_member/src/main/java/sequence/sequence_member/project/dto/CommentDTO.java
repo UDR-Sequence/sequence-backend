@@ -12,4 +12,5 @@ public class CommentDTO {
     private String writer; // 작성자_닉네임
     private String content; // 내용
     private LocalDateTime createdLocalDateTime; // 작성일
+    private String profileImage; // 프로필 이미지
 }
