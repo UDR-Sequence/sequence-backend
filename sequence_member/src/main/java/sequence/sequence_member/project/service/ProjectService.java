@@ -119,6 +119,7 @@ public class ProjectService {
                     .writer(comment.getWriter().getNickname())
                     .content(comment.getContent())
                     .createdLocalDateTime(comment.getCreatedDateTime())
+                    .profileImage(comment.getWriter().getProfileImg())
                     .build();
 
             CommentOutputDTO commentOutputDTO = new CommentOutputDTO(parentComment);
@@ -131,6 +132,7 @@ public class ProjectService {
                         .writer(childComment.getWriter().getNickname())
                         .content(childComment.getContent())
                         .createdLocalDateTime(childComment.getCreatedDateTime())
+                        .profileImage(comment.getWriter().getProfileImg())
                         .build();
                 commentOutputDTO.addChildComment(childCommentDTO);
             }
