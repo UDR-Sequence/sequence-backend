@@ -7,23 +7,33 @@ import sequence.sequence_member.global.exception.CanNotFindResourceException;
 @Getter
 @RequiredArgsConstructor
 public enum Skill {
-    ADOBE_ILLUSTRATION("Adobe illustration"),
-    ADOBE_PHOTOSHOP("Adobe Photoshop"),
-    ADOBE_INDESIGN("Adobe InDesign"),
     JAVASCRIPT("JavaScript"),
     TYPESCRIPT("TypeScript"),
-    FIGMA("Figma"),
-    SPRING("Spring"),
-    DOCKER("Docker"),
-    NODE_JS("Node.js"),
-    REACT("React"),
+    REACT("React.js"),
     VUE_JS("Vue.js"),
+    SVELTE("Svelte"),
+
+    ANGULAR("Angular.js"),
+
+    FIGMA("Figma"),
+
+    SPRINGBOOT("SpringBoot"),
+    NODE_JS("Node.js"),
     NEXT_JS("Next.js"),
     DJANGO("Django"),
+
+    DOCKER("Docker"),
     AWS("AWS"),
-    REACT_NATIVE("React Native"),
+    NGINX("Nginx"),
+    KUBERNETES("Kubernetes"),
+    GIT("git"),
+    JENKINS("Jenkins"),
+    GITHUB_ACTIONS("Github Actions"),
+
     FLUTTER("Flutter"),
-    ANGULAR("Angular"),
+    REACT_NATIVE("React Native"),
+    SWIFT("Swift"),
+    KOTLIN("Kotlin"),
     ;
     //to-do 추후 추가 예정
 
@@ -36,6 +46,16 @@ public enum Skill {
             }
         }
         throw new CanNotFindResourceException("존재하지 않는 스킬입니다. " + name);
+    }
+
+    public static String fromSkillEnum(Skill name){
+        for(Skill skill : Skill.values()){
+            if(skill.toString().equals(name.toString())){
+                return skill.getName();
+            }
+        }
+        throw new CanNotFindResourceException("존재하지 않는 스킬입니다. " + name.toString());
+
     }
 
 }

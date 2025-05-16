@@ -10,10 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.response.Code;
+import sequence.sequence_member.member.converter.SkillCategoryConverter;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
+import sequence.sequence_member.member.entity.EducationEntity;
+import sequence.sequence_member.member.repository.EducationRepository;
 import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
 
@@ -91,5 +95,6 @@ public class MemberController {
     public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         return ResponseEntity.ok(ApiResponseData.success(memberSearchService.searchMemberNicknames(customUserDetails,nickname)));
     }
+
 
 }
