@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.utils.MultipartUtil;
+import sequence.sequence_member.member.converter.SkillCategoryConverter;
 import sequence.sequence_member.member.entity.AwardEntity;
 import sequence.sequence_member.member.entity.CareerEntity;
 import sequence.sequence_member.member.entity.EducationEntity;
@@ -43,6 +44,7 @@ public class MyPageUpdateService {
     private final CareerRepository careerRepository;
     private final ExperienceRepository experienceRepository;
     private final EducationRepository educationRepository;
+    private final SkillCategoryConverter skillCategoryConverter;
 
     /**
      * 주어진 사용자 정보를 바탕으로 마이페이지를 업데이트합니다.
@@ -232,7 +234,7 @@ public class MyPageUpdateService {
                         myPageDTO.getEntranceYear(),
                         myPageDTO.getGraduationYear(),
                         myPageDTO.getDegree(),
-                        myPageDTO.getSkillCategory(),
+                        skillCategoryConverter.convertToSkillEnum(myPageDTO.getSkillCategory()),
                         myPageDTO.getDesiredJob()
                 ),
                 () -> {
@@ -243,7 +245,7 @@ public class MyPageUpdateService {
                             myPageDTO.getEntranceYear(),
                             myPageDTO.getGraduationYear(),
                             myPageDTO.getDegree(),
-                            myPageDTO.getSkillCategory(),
+                            skillCategoryConverter.convertToSkillEnum(myPageDTO.getSkillCategory()),
                             myPageDTO.getDesiredJob(),
                             member
                     );
