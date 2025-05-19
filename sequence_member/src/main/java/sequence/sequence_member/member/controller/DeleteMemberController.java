@@ -3,19 +3,15 @@ package sequence.sequence_member.member.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.dto.DeleteInputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
-import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.DeleteService;
 import sequence.sequence_member.member.service.MemberService;
 
@@ -26,9 +22,6 @@ public class DeleteMemberController {
 
     private final MemberService memberService;
     private final DeleteService deleteService;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final MemberRepository memberRepository;
-
 
     // 사용자 탈퇴 API
     @DeleteMapping("/api/user/delete")
@@ -42,7 +35,7 @@ public class DeleteMemberController {
 
         MemberEntity member = memberService.GetUser(customUserDetails.getUsername());
 
-        if (member.isDeleted() == true) {
+        if (member.isDeleted()) {
             throw new CanNotFindResourceException("이미 탈퇴된 회원 입니다.");
         }
 
@@ -74,7 +67,7 @@ public class DeleteMemberController {
         }
 
         //사용자 탈퇴 상태 반환
-        if(member.isDeleted() == false) {
+        if(member.isDeleted()) {
             return ResponseEntity.ok().body(ApiResponseData.success(false, "탈퇴되지 않은 사용자 입니다."));
         }else{
             return ResponseEntity.ok().body(ApiResponseData.success(true, "탈퇴된 사용자 입니다."));
