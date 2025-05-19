@@ -77,7 +77,7 @@ public class MemberDTO {
     @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
 
-    private List<Skill> skillCategory;
+    private List<String> skillCategory;
     private List<ProjectRole> desiredJob;
     private List<ExperienceDTO> experiences;
     private List<CareerInputDTO> careers;

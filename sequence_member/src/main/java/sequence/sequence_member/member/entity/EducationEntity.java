@@ -78,7 +78,7 @@ public class EducationEntity extends BaseTimeEntity {
        this.member = member;
     }
 
-    public static EducationEntity toEducationEntity(MemberDTO memberDTO, MemberEntity memberEntity){
+    public static EducationEntity toEducationEntity(MemberDTO memberDTO, List<Skill> skills, MemberEntity memberEntity){
         EducationEntity educationEntity = new EducationEntity();
 
         educationEntity.setSchoolName(memberDTO.getSchoolName());
@@ -88,7 +88,7 @@ public class EducationEntity extends BaseTimeEntity {
         educationEntity.setGraduationYear(memberDTO.getGraduationYear());
         educationEntity.setDegree(memberDTO.getDegree());
         educationEntity.setDesiredJob(memberDTO.getDesiredJob());
-        educationEntity.setSkillCategory(memberDTO.getSkillCategory());
+        educationEntity.setSkillCategory(skills);
         educationEntity.setMember(memberEntity);
 
         return educationEntity;

@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.multipart.MultipartFile;
+import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.MultipartUtil;
+import sequence.sequence_member.member.converter.SkillCategoryConverter;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.member.entity.*;
 import sequence.sequence_member.member.repository.*;
@@ -38,6 +40,7 @@ public class MemberService {
     private final EducationRepository educationRepository;
     private final ExperienceRepository experienceRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final SkillCategoryConverter skillCategoryConverter;
 
     @Transactional
     public void save(MemberDTO memberDTO, MultipartFile authImgFile, List<MultipartFile> portfolios){
@@ -77,7 +80,10 @@ public class MemberService {
             portfolioRepository.saveAll(portfolioEntities);
         }
 
-        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, memberEntityCopy);
+        //String 으로 받은 스킬들을 Enum으로 변환
+        List<Skill> skills = skillCategoryConverter.convertToSkillEnum(memberDTO.getSkillCategory());
+
+        EducationEntity educationEntity = EducationEntity.toEducationEntity(memberDTO, skills,memberEntityCopy);
         // 관계 설정
         educationEntity.setMember(memberEntityCopy);
         memberEntityCopy.setEducation(educationEntity);
