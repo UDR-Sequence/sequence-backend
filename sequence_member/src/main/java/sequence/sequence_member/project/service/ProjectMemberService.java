@@ -1,12 +1,15 @@
 package sequence.sequence_member.project.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
+import sequence.sequence_member.project.dto.ProjectMemberOutputDTO;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
@@ -44,6 +47,22 @@ public class ProjectMemberService {
     public void saveProjectMember(Project project, MemberEntity member) {
         ProjectMember entity = ProjectMember.fromProjectAndMember(project,member);
         projectMemberRepository.save(entity);
+    }
+
+    // 프로젝트 멤버 정보를 조회하는 함수
+    @NotNull
+    public List<ProjectMemberOutputDTO> getProjectMemberOutputDTOS(Project project) {
+        //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
+        List<ProjectMember> projectMembers = project.getMembers();
+        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
+        for (ProjectMember projectMember : projectMembers) {
+            projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
+                    .nickname(projectMember.getMember().getNickname())
+                    .profileImgUrl(projectMember.getMember().getProfileImg())
+                    .build());
+        }
+
+        return projectMemberOutputDTOS;
     }
 
 }

@@ -18,8 +18,19 @@ public class ProjectViewService {
     private final StringRedisTemplate redisTemplate;
     private static final long VIEW_EXPIRATION_TIME = 60 * 60; // 1시간 유지
 
+    public int getViews(Long projectId, HttpServletRequest request, Project project) {
+        //views 조회
+        int views = 0;
+        try {
+            views = getViewsFromRedis(request, projectId);
+        }catch (Exception e){
+            views = project.getViews()+1;
+        }
+        return views;
+    }
+
     @MethodDescription(description = "Redis에서 조회수를 가져오는 로직")
-    public int getViewsFromRedis(HttpServletRequest request, Long postId){
+    private int getViewsFromRedis(HttpServletRequest request, Long postId){
 
         // IP + User-Agent로 조회이력을 확인할 고유 Value값 생성.
         String clientId = getClientIP(request)+getUserAgent(request).hashCode();
