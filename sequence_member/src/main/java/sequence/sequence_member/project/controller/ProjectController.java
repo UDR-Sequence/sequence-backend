@@ -21,6 +21,7 @@ import sequence.sequence_member.project.dto.ProjectOutputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 import sequence.sequence_member.project.service.ProjectBookmarkService;
 import sequence.sequence_member.project.service.ProjectCreateService;
+import sequence.sequence_member.project.service.ProjectGetService;
 import sequence.sequence_member.project.service.ProjectService;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ProjectCreateService projectCreateService;
+    private final ProjectGetService projectGetService;
     private final ProjectBookmarkService projectBookmarkService;
 
     @PostMapping()
@@ -45,7 +47,7 @@ public class ProjectController {
 
     @GetMapping("/{projectId}")
     public ResponseEntity<ApiResponseData<ProjectOutputDTO>> getProject(@PathVariable("projectId") Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectService.getProject(projectId, request, customUserDetails)));
+        return ResponseEntity.ok().body(ApiResponseData.of(Code.SUCCESS.getCode(), "프로젝트 조회 성공", projectGetService.getProject(projectId, request, customUserDetails)));
     }
 
     @PutMapping("/{projectId}")
