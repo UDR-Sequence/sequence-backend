@@ -3,6 +3,7 @@ package sequence.sequence_member.project.service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.project.dto.ProjectInputDTO;
@@ -21,6 +22,7 @@ public class ProjectMemberService {
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
 
     // 프로젝트 초대 멤버를 저장하는 함수
+    @Transactional
     public void saveProjectInvitedMember(ProjectInputDTO projectInputDTO, MemberEntity writer, Project project) {
         if(projectInputDTO.getInvitedMembersNicknames()==null || projectInputDTO.getInvitedMembersNicknames().isEmpty()){
             return;
@@ -43,6 +45,5 @@ public class ProjectMemberService {
         ProjectMember entity = ProjectMember.fromProjectAndMember(project,member);
         projectMemberRepository.save(entity);
     }
-
 
 }
