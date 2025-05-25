@@ -3,7 +3,6 @@ package sequence.sequence_member.project.service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -45,34 +44,11 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectMemberService projectMemberService;
     private final MemberRepository memberRepository;
     private final ProjectViewService projectViewService;
     private final ProjectBookmarkRepository projectBookmarkRepository;
     private final ProjectBookmarkService projectBookmarkService;
-
-    @Transactional
-    public void createProject(ProjectInputDTO projectInputDTO, String username){
-        MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(username).orElseThrow(()-> new UserNotFindException("해당 유저가 존재하지 않습니다."));
-        Project project = projectRepository.save(Project.fromProjectInput(projectInputDTO,writer));
-
-        saveProjectInvitedMember(projectInputDTO, writer, project);
-        saveProjectMember(project, writer);
-    }
-
-    private void saveProjectInvitedMember(ProjectInputDTO projectInputDTO, MemberEntity writer, Project project) {
-        if(projectInputDTO.getInvitedMembersNicknames()==null || projectInputDTO.getInvitedMembersNicknames().isEmpty()){
-            return;
-        }
-        projectInputDTO.getInvitedMembersNicknames().remove(writer.getNickname()); // 본인은 제거
-        List<MemberEntity> invitedMembers = memberRepository.findByNicknameIn(projectInputDTO.getInvitedMembersNicknames());
-        saveProjectInvitedMemberEntities(project, invitedMembers);
-    }
-
-    // 초대 완료까지된 멤버를 저장하는 함수. 프로젝트 생성 시점에는 writer만 저장
-    private void saveProjectMember(Project project, MemberEntity writer) {
-        ProjectMember entity = ProjectMember.fromProjectAndMember(project,writer);
-        projectMemberRepository.save(entity);
-    }
 
     /**
      * Project를 조회하는 메인 로직 함수
@@ -101,6 +77,33 @@ public class ProjectService {
             views = project.getViews()+1;
         }
         return views;
+    }
+
+    @NotNull
+    private static List<ProjectMemberOutputDTO> getProjectMemberOutputDTOS(Project project) {
+        //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
+        List<ProjectMember> projectMembers = project.getMembers();
+        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
+        for (ProjectMember projectMember : projectMembers) {
+            projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
+                    .nickname(projectMember.getMember().getNickname())
+                    .profileImgUrl(projectMember.getMember().getProfileImg())
+                    .build());
+        }
+
+        return projectMemberOutputDTOS;
+    }
+
+    // 프로젝트 북마크 여부 확인 ( 북마크 되어있으면 true, 아니면 false, 로그인 안한 사용자는 false)
+    public boolean isBookmarked(Long projectId, CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) {
+            return false;
+        }
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        return projectBookmarkRepository.existsByMemberIdAndProjectId(member.getId(), projectId);
     }
 
     @NotNull
@@ -141,21 +144,7 @@ public class ProjectService {
         return commentOutputDTOS;
     }
 
-    @NotNull
-    private static List<ProjectMemberOutputDTO> getProjectMemberOutputDTOS(Project project) {
-        //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
-        List<ProjectMember> projectMembers = project.getMembers();
-        List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
-        for (ProjectMember projectMember : projectMembers) {
-            projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
-                    .nickname(projectMember.getMember().getNickname())
-                    .profileImgUrl(projectMember.getMember().getProfileImg())
-                    .build());
-        }
 
-        return projectMemberOutputDTOS;
-
-    }
 
     /**
      * 프로젝트 수정하는 메인로직 함수
@@ -208,7 +197,7 @@ public class ProjectService {
         // 기존에 초대된 상태인 멤버들은 중복으로 초대되지 않도록 제거
         invitedMembers.removeAll(invitedMembersInDB);
 
-        saveProjectInvitedMemberEntities(project, invitedMembers);
+        projectMemberService.saveProjectInvitedMemberEntities(project, invitedMembers);
 
         return getProject(projectId,request, customUserDetails);
     }
@@ -242,15 +231,6 @@ public class ProjectService {
             invitedMember.softDelete(username);
         }
         projectInvitedMemberRepository.saveAll(invitedMembers);
-    }
-
-
-    // 초대된 멤버들을 저장하는 함수
-    private void saveProjectInvitedMemberEntities(Project project, List<MemberEntity> invitedMembers){
-        for(MemberEntity member : invitedMembers){
-            ProjectInvitedMember entity = ProjectInvitedMember.fromProjectAndMember(project,member);
-            projectInvitedMemberRepository.save(entity);
-        }
     }
 
     private void deleteProjectMembers(Project project, List<ProjectMember> projectMembers, String username){
@@ -336,16 +316,6 @@ public class ProjectService {
     }
 
 
-    // 프로젝트 북마크 여부 확인 ( 북마크 되어있으면 true, 아니면 false, 로그인 안한 사용자는 false)
-    public boolean isBookmarked(Long projectId, CustomUserDetails customUserDetails) {
-        if (customUserDetails == null) {
-            return false;
-        }
-        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
-        if (member == null) {
-            return false;
-        }
-        return projectBookmarkRepository.existsByMemberIdAndProjectId(member.getId(), projectId);
-    }
+
 
 }
