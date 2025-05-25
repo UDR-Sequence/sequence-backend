@@ -3,6 +3,9 @@ package sequence.sequence_member.member.repository;
 import java.lang.reflect.Member;
 import java.time.LocalDate;
 import java.util.List;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -29,6 +32,13 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
     List<MemberEntity> findByNicknameIn(List<String> nickanmeList);
 
     Optional<MemberEntity> findById(Long userId);
+
+    Optional<MemberEntity> findByUsernameAndEmail(
+            @NotBlank(message = "아이디를 입력해주세요.")
+            String username,
+            @NotBlank(message = "이메일을 입력해주세요.")
+            @Email(message = "유효한 이메일 형식이 아닙니다.")
+            String email);
 
 
 //    List<String> findByNicknameContaining(String nickname, int limit);
