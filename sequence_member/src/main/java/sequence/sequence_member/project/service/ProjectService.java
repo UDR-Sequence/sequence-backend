@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.enums.enums.Category;
@@ -26,12 +24,10 @@ import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.project.dto.*;
-import sequence.sequence_member.project.entity.Comment;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.entity.ProjectInvitedMember;
 import sequence.sequence_member.project.entity.ProjectMember;
 import sequence.sequence_member.project.mapper.PeriodMapper;
-import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
 import sequence.sequence_member.project.repository.ProjectMemberRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
@@ -46,8 +42,7 @@ public class ProjectService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectMemberService projectMemberService;
     private final MemberRepository memberRepository;
-    private final ProjectViewService projectViewService;
-    private final ProjectBookmarkRepository projectBookmarkRepository;
+    private final ProjectGetService projectGetService;
     private final ProjectBookmarkService projectBookmarkService;
 
     /**
@@ -103,7 +98,7 @@ public class ProjectService {
 
         projectMemberService.saveProjectInvitedMemberEntities(project, invitedMembers);
 
-        return getProject(projectId,request, customUserDetails);
+        return projectGetService.getProject(projectId,request, customUserDetails);
     }
 
     // soft delete를 통해 프로젝트를 삭제하는 메인 로직 함수

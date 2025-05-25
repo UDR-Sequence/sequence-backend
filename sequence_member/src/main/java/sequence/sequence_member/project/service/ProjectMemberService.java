@@ -20,6 +20,7 @@ public class ProjectMemberService {
     private final MemberRepository memberRepository;
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
 
+    // 프로젝트 초대 멤버를 저장하는 함수
     public void saveProjectInvitedMember(ProjectInputDTO projectInputDTO, MemberEntity writer, Project project) {
         if(projectInputDTO.getInvitedMembersNicknames()==null || projectInputDTO.getInvitedMembersNicknames().isEmpty()){
             return;
@@ -29,12 +30,6 @@ public class ProjectMemberService {
         saveProjectInvitedMemberEntities(project, invitedMembers);
     }
 
-    // 초대 완료까지된 멤버를 저장하는 함수. 프로젝트 생성 시점에는 writer만 저장
-    public void saveProjectMember(Project project, MemberEntity writer) {
-        ProjectMember entity = ProjectMember.fromProjectAndMember(project,writer);
-        projectMemberRepository.save(entity);
-    }
-
     // 초대된 멤버들을 저장하는 함수
     public void saveProjectInvitedMemberEntities(Project project, List<MemberEntity> invitedMembers){
         for(MemberEntity member : invitedMembers){
@@ -42,4 +37,12 @@ public class ProjectMemberService {
             projectInvitedMemberRepository.save(entity);
         }
     }
+
+    // 초대 완료까지된 멤버를 저장하는 함수
+    public void saveProjectMember(Project project, MemberEntity member) {
+        ProjectMember entity = ProjectMember.fromProjectAndMember(project,member);
+        projectMemberRepository.save(entity);
+    }
+
+
 }
