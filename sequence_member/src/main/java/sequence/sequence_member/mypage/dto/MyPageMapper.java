@@ -173,7 +173,7 @@ public class MyPageMapper {
     public MyActivitiesDTO getMyActivity(MemberEntity member) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
 
-        List<MyActivitiesDTO.PostDTO> archiveWritten = archiveRepository.findByWriter(member, sort).stream()
+        List<MyActivitiesDTO.PostDTO> archiveWritten = archiveRepository.findByWriterAndIsDeletedFalse(member, sort).stream()
                 .map(this::mapToPostDTO)
                 .collect(Collectors.toList());
 
