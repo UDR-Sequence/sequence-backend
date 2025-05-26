@@ -9,20 +9,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FindPasswordOutputDTO<T> {
+public class FindPasswordOutputDTO {
     private boolean success;
     private String message;
-    private T data;
 
-    public static <T> FindPasswordOutputDTO<T> success(String message, T data) {
-        return FindPasswordOutputDTO.<T>builder().success(true)
-                .data(data)
+    public static FindPasswordOutputDTO success(String message) {
+        return FindPasswordOutputDTO.builder()
+                .success(true)
                 .message(message)
                 .build();
     }
 
-    public static <T> FindPasswordOutputDTO<T> fail(String message) {
-        return FindPasswordOutputDTO.<T>builder()
+    public static FindPasswordOutputDTO fail(String message) {
+        return FindPasswordOutputDTO.builder()
                 .success(false)
                 .message(message)
                 .build();
