@@ -70,6 +70,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('sequence_member/**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
+      - name: Set sonar version
+        id: set_version
+        run: echo "version=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+
       - name: Build and analyze
         working-directory: sequence_member
         env:
@@ -79,7 +83,6 @@ jobs:
         run: |
           ./gradlew build sonar \
             -Dsonar.scanner.skipJreProvisioning=true \
-            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.branch.name=dev \
+            -Dsonar.projectVersion=${{ steps.set_version.outputs.version }}
 
