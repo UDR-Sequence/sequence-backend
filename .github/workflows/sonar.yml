@@ -83,6 +83,5 @@ jobs:
         run: |
           ./gradlew build sonar \
             -Dsonar.scanner.skipJreProvisioning=true \
-            -Dsonar.branch.name=dev \
             -Dsonar.projectVersion=${{ steps.set_version.outputs.version }}
 
