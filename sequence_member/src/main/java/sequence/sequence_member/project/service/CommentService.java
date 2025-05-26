@@ -1,6 +1,9 @@
 package sequence.sequence_member.project.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.exception.AuthException;
@@ -10,7 +13,9 @@ import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
+import sequence.sequence_member.project.dto.CommentDTO;
 import sequence.sequence_member.project.dto.CommentInputDTO;
+import sequence.sequence_member.project.dto.CommentOutputDTO;
 import sequence.sequence_member.project.dto.CommentUpdateDTO;
 import sequence.sequence_member.project.entity.Comment;
 import sequence.sequence_member.project.entity.Project;
@@ -111,5 +116,44 @@ public class CommentService {
         }
 
         return comment;
+    }
+
+    // 프로젝트에 대한 댓글들을 조회하여 CommentOutputDTO로 변환하는 함수
+    @NotNull
+    public List<CommentOutputDTO> getCommentOutputDTOS(Project project) {
+        // 댓글들을 조회하여 응답데이터에 포함함
+        List<Comment> comments = project.getComments();
+        List<CommentOutputDTO> commentOutputDTOS = new ArrayList<>(); // Comments를 정리하여 CommentOutputDTO로 변환
+        for(Comment comment : comments){
+            if(comment.getParentComment()!=null){
+                continue;
+            }
+
+            // 부모 댓글을 CommentDTO로 변환
+            CommentDTO parentComment = CommentDTO.builder()
+                    .id(comment.getId())
+                    .writer(comment.getWriter().getNickname())
+                    .content(comment.getContent())
+                    .createdLocalDateTime(comment.getCreatedDateTime())
+                    .profileImage(comment.getWriter().getProfileImg())
+                    .build();
+
+            CommentOutputDTO commentOutputDTO = new CommentOutputDTO(parentComment);
+
+            // 자식 댓글을 CommentDTO로 변환후 CommentOutputDTO의 childComments에 추가
+            List<Comment> childComments = comment.getChildComments();
+            for(Comment childComment : childComments){
+                CommentDTO childCommentDTO = CommentDTO.builder()
+                        .id(childComment.getId())
+                        .writer(childComment.getWriter().getNickname())
+                        .content(childComment.getContent())
+                        .createdLocalDateTime(childComment.getCreatedDateTime())
+                        .profileImage(comment.getWriter().getProfileImg())
+                        .build();
+                commentOutputDTO.addChildComment(childCommentDTO);
+            }
+            commentOutputDTOS.add(commentOutputDTO);
+        }
+        return commentOutputDTOS;
     }
 }
