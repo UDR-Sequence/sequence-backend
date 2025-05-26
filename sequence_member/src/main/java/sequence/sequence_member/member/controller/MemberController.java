@@ -88,8 +88,6 @@ public class MemberController {
         return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
     }
 
-
-
     //닉네임으로 유저들 검색하는 컨트롤러
     @GetMapping("/search")
     public ResponseEntity<ApiResponseData<List<String>>> searchMembers(@RequestParam(name = "nickname") String nickname, @AuthenticationPrincipal CustomUserDetails customUserDetails){

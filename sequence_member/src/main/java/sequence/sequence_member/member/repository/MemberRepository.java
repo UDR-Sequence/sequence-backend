@@ -33,6 +33,7 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
     SELECT m.nickname
     FROM MemberEntity m
     WHERE m.nickname LIKE CONCAT('%', :nickname, '%')
+    AND m.isDeleted = false
     ORDER BY
         CASE
             WHEN m.nickname = :nickname THEN 0
