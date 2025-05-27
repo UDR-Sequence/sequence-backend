@@ -18,10 +18,18 @@ public class EmailAuthService {
     private final JavaMailSender mailSender;
     private final EmailAuthTokenRepository tokenRepo;
 
-    // 이메일 요청: 토큰 생성 + 메일 전송 + 저장
+    // 이메일 요청: 기존 토큰 만료 → 새 토큰 생성 + 메일 전송 + 저장
     public void requestEmailVerification(String email) {
-        String token = UUID.randomUUID().toString().substring(0, 6); // 6자리 토큰
-        EmailAuthTokenEntity<Object> emailAuthToken = EmailAuthTokenEntity.builder()
+        // 기존 토큰 모두 만료 처리
+        tokenRepo.findAllByEmail(email).forEach(token -> {
+            token.setExpired(true);
+            tokenRepo.save(token);
+        });
+
+        // 새 토큰 발급
+        String token = UUID.randomUUID().toString().substring(0, 6);
+
+        EmailAuthTokenEntity emailAuthToken = EmailAuthTokenEntity.builder()
                 .email(email)
                 .token(token)
                 .createdAt(LocalDateTime.now())
@@ -30,11 +38,11 @@ public class EmailAuthService {
 
         tokenRepo.save(emailAuthToken);
 
+        // 메일 전송
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("이메일 인증 코드");
         message.setText("아래 인증 코드를 입력해주세요: " + token);
-
         mailSender.send(message);
     }
 
@@ -44,9 +52,23 @@ public class EmailAuthService {
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 인증 정보입니다."));
 
         if (authToken.isExpired()) {
-            throw new IllegalStateException("토큰이 만료되었습니다.");
+            throw new IllegalStateException("이미 토큰이 만료되었습니다.");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        if (authToken.getCreatedAt().plusMinutes(1).isBefore(now)) {
+            authToken.setExpired(true);
+            tokenRepo.save(authToken);
+            throw new IllegalStateException("시간 초과로 인하여 토큰이 만료되었습니다.");
+        }
+
+        // 해당 이메일의 모든 토큰 만료 처리
+        tokenRepo.findAllByEmail(email).forEach(t -> {
+            t.setVerified(false); // 기존 것들 다 false로 초기화
+            tokenRepo.save(t);
+        });
+
+        // 현재 토큰만 인증 처리
         authToken.setVerified(true);
         tokenRepo.save(authToken);
     }

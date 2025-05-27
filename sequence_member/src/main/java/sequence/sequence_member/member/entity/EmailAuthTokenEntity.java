@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EmailAuthTokenEntity<isVerified> {
+public class EmailAuthTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,9 @@ public class EmailAuthTokenEntity<isVerified> {
 
     private boolean isVerified;
 
+    private boolean isExpired;
+
     public boolean isExpired() {
-        return createdAt.plusMinutes(10).isBefore(LocalDateTime.now());
+        return isExpired || createdAt.plusMinutes(10).isBefore(LocalDateTime.now());
     }
 }
