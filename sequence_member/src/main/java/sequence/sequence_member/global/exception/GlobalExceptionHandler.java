@@ -40,6 +40,7 @@ public class GlobalExceptionHandler {
     // 메서드 인자 타입 불일치 예외 처리
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponseData<String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex){
+        log.error("MethodArgumentTypeMismatchException: ", ex);
         // 반환할 메시지와 HTTP 상태 코드 설정
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseData.of(Code.VALIDATION_ERROR.getCode(),
                 ex.getName()+" 은 반드시 해당타입이여야합니다. : "+ex.getRequiredType().getName(),null));
