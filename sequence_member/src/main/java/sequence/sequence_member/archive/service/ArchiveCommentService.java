@@ -28,9 +28,9 @@ public class ArchiveCommentService {
     private final ArchiveRepository archiveRepository;
     private final MemberRepository memberRepository;
 
-    // 아카이브 존재 여부 확인
+    // 아카이브 존재 여부 확인 (삭제되지 않은 것만)
     public boolean checkArchiveExists(Long archiveId) {
-        return archiveRepository.existsById(archiveId);
+        return archiveRepository.existsByIdAndIsDeletedFalse(archiveId);
     }
 
     // 댓글 작성
@@ -40,8 +40,8 @@ public class ArchiveCommentService {
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
-        // 아카이브 조회
-        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        // 아카이브 조회 (삭제되지 않은 것만)
+        Optional<Archive> archiveOpt = archiveRepository.findByIdAndIsDeletedFalse(archiveId);
         if (archiveOpt.isEmpty()) {
             return null;
         }
@@ -51,7 +51,7 @@ public class ArchiveCommentService {
         // 대댓글인 경우 부모 댓글 검증
         ArchiveComment parent = null;
         if (dto.getParentId() != null) {
-            Optional<ArchiveComment> parentOpt = commentRepository.findById(dto.getParentId());
+            Optional<ArchiveComment> parentOpt = commentRepository.findByIdAndIsDeletedFalse(dto.getParentId());
             if (parentOpt.isEmpty()) {
                 return null;
             }
@@ -69,7 +69,6 @@ public class ArchiveCommentService {
                 .writer(member.getNickname())  // 조회한 사용자의 nickname을 writer로 저장
                 .parent(parent)
                 .content(dto.getContent())
-                .isDeleted(false)
                 .build();
 
         return commentRepository.save(comment).getId();
@@ -82,14 +81,14 @@ public class ArchiveCommentService {
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
-        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        Optional<Archive> archiveOpt = archiveRepository.findByIdAndIsDeletedFalse(archiveId);
         if (archiveOpt.isEmpty()) {
             return false;
         }
         
         Archive archive = archiveOpt.get();
 
-        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriterAndIsDeletedFalse(
             commentId, 
             archive, 
             member.getNickname()  // 조회한 사용자의 nickname 사용
@@ -100,30 +99,26 @@ public class ArchiveCommentService {
         
         ArchiveComment comment = commentOpt.get();
 
-        if (comment.isDeleted()) {
-            return false;
-        }
-
         comment.updateContent(dto.getContent());
         return true;
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 (소프트 삭제)
     @Transactional
     public boolean deleteComment(Long archiveId, Long commentId, String username) {
         // username으로 사용자 조회하여 nickname 가져오기
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("사용자를 찾을 수 없습니다."));
         
-        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        Optional<Archive> archiveOpt = archiveRepository.findByIdAndIsDeletedFalse(archiveId);
         if (archiveOpt.isEmpty()) {
             return false;
         }
         
         Archive archive = archiveOpt.get();
 
-        // nickname으로 댓글 작성자 검증
-        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriter(
+        // nickname으로 댓글 작성자 검증 (삭제되지 않은 댓글만)
+        Optional<ArchiveComment> commentOpt = commentRepository.findByIdAndArchiveAndWriterAndIsDeletedFalse(
             commentId, 
             archive, 
             member.getNickname()  // 조회한 사용자의 nickname으로 검증
@@ -134,19 +129,16 @@ public class ArchiveCommentService {
         
         ArchiveComment comment = commentOpt.get();
 
-        // 이미 삭제된 댓글인지 확인
-        if (comment.isDeleted()) {
-            return false;
-        }
-
-        comment.delete();
+        // 소프트 삭제 적용
+        comment.softDelete(username);
+        commentRepository.save(comment);
         return true;
     }
 
-    // 댓글 목록 조회 (페이징)
+    // 댓글 목록 조회 (페이징) - 삭제되지 않은 댓글만
     public CommentPageResponseDTO getComments(Long archiveId, int page) {
-        // 아카이브 존재 확인
-        if (!archiveRepository.existsById(archiveId)) {
+        // 아카이브 존재 확인 (삭제되지 않은 것만)
+        if (!archiveRepository.existsByIdAndIsDeletedFalse(archiveId)) {
             return CommentPageResponseDTO.builder()
                     .comments(List.of())
                     .totalPages(0)
@@ -155,13 +147,13 @@ public class ArchiveCommentService {
         }
 
         Pageable pageable = PageRequest.of(page, 10);  // 한 페이지당 10개 댓글
-        Page<ArchiveComment> commentPage = commentRepository.findParentCommentsByArchiveId(archiveId, pageable);
+        Page<ArchiveComment> commentPage = commentRepository.findByArchiveIdAndParentIsNullAndIsDeletedFalseOrderByCreatedDateTimeAsc(archiveId, pageable);
 
         List<CommentResponseDTO> commentDTOs = commentPage.getContent().stream()
             .map(comment -> {
                 CommentResponseDTO dto = CommentResponseDTO.from(comment);
-                // 대댓글이 있는 경우 대댓글 목록 추가
-                List<CommentResponseDTO> replies = commentRepository.findRepliesByParentId(comment.getId())
+                // 대댓글이 있는 경우 대댓글 목록 추가 (삭제되지 않은 것만)
+                List<CommentResponseDTO> replies = commentRepository.findByParentIdAndIsDeletedFalseOrderByCreatedDateTimeAsc(comment.getId())
                     .stream()
                     .map(CommentResponseDTO::from)
                     .collect(Collectors.toList());
