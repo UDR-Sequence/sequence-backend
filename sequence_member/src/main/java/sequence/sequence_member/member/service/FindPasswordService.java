@@ -8,9 +8,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
+import sequence.sequence_member.global.exception.BaseException;
+import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.FindPasswordInputDTO;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Optional;
 import java.util.Random;
@@ -22,6 +26,9 @@ public class FindPasswordService {
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     @Transactional
     public String findPassword(FindPasswordInputDTO input) {
         // 사용자 검증
@@ -29,7 +36,7 @@ public class FindPasswordService {
                 input.getUsername(), input.getEmail());
 
         if (memberOptional.isEmpty()) {
-            return null;
+            throw new BaseException(Code.BAD_REQUEST, "입력한 개인 정보와 일치하지 않습니다.");
         }
 
         MemberEntity member = memberOptional.get();
@@ -65,6 +72,7 @@ public class FindPasswordService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
+            helper.setFrom(fromEmail);
             helper.setTo(email);
             helper.setSubject("[Sequence] 임시 비밀번호 발급 안내");
 
