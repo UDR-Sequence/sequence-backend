@@ -56,7 +56,7 @@ public class EmailAuthService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        if (authToken.getCreatedAt().plusMinutes(1).isBefore(now)) {
+        if (authToken.getCreatedAt().plusMinutes(5).isBefore(now)) {
             authToken.setExpired(true);
             tokenRepo.save(authToken);
             throw new IllegalStateException("시간 초과로 인하여 토큰이 만료되었습니다.");
