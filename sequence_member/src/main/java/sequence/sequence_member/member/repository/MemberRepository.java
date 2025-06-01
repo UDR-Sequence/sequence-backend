@@ -1,7 +1,5 @@
 package sequence.sequence_member.member.repository;
 
-import java.lang.reflect.Member;
-import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.validation.constraints.Email;
@@ -17,6 +15,7 @@ import sequence.sequence_member.member.entity.MemberEntity;
 
 import javax.swing.text.html.Option;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Repository
 public interface MemberRepository extends JpaRepository<MemberEntity,Long> {

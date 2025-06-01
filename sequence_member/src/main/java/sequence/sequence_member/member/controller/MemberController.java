@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.global.response.Code;
 import sequence.sequence_member.member.dto.CustomUserDetails;
-import sequence.sequence_member.member.dto.FindUsernameInputDTO;
-import sequence.sequence_member.member.dto.FindUsernameOutputDTO;
 import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.member.service.FindUsernameService;
 import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
+import sequence.sequence_member.member.dto.FindUsernameInputDTO;
+import sequence.sequence_member.member.dto.FindUsernameOutputDTO;
 
 import java.util.Map;
 
