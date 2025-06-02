@@ -13,6 +13,7 @@ import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 
 @Data
@@ -52,14 +53,14 @@ public class MyPageRequestDTO {
     @Pattern(regexp = "^[1-6]학년$", message = "학년은 1학년부터 6학년까지 입력 가능합니다.")
     private String grade;
 
-    private LocalDate entranceDate;
+    private Year entranceYear;
 
-    private LocalDate graduationDate;
+    private Year graduationYear;
 
     @NotNull(message = "학위는 필수 입력 값입니다.")
     private Degree degree;
 
-    private List<Skill> skillCategory;
+    private List<String> skillCategory;
     private List<ProjectRole> desiredJob;
 
     private List<AwardDTO> awards;

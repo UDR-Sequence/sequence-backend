@@ -5,7 +5,7 @@
 <br/>
 
 # 0. Getting Started (서비스 구성 및 실행 방법)
-배포 링크 (개발 중입니다!) : https://seungyun-park.github.io/sequence/ 
+배포 링크 (개발 중입니다!) : https://sequence-zeta.vercel.app/
 
 <br/>
 <br/>
@@ -35,11 +35,11 @@
 | [GitHub](https://github.com/kim946509) | [GitHub](https://github.com/Jaeboong) | [GitHub](https://github.com/HaHeonchan) |[GitHub](https://github.com/Minji6) |[GitHub](https://github.com/High-Quality-Coffee) |[GitHub](https://github.com/vkflco08) |
 
 
-| 박승균 | 정준용 | 최보경 |
-|:------:|:------:|:------:|
-| <img src="https://avatars.githubusercontent.com/u/59389436?v=4" alt="박승균" width="150"> | <img src="https://avatars.githubusercontent.com/u/168815407?v=4" alt="정준용" width="150"> | <img src="https://avatars.githubusercontent.com/u/169350112?v=4" alt="최보경" width="150"> | 
-| FE | FE | FE |
-| [GitHub](https://github.com/seungyun-Park) | [GitHub](https://github.com/beshurl) | [GitHub](https://github.com/bogyeong11) |
+| 박승균 | 정준용 |
+|:------:|:------:|
+| <img src="https://avatars.githubusercontent.com/u/59389436?v=4" alt="박승균" width="150"> | <img src="https://avatars.githubusercontent.com/u/168815407?v=4" alt="정준용" width="150"> |
+| FE | FE |
+| [GitHub](https://github.com/seungyun-Park) | [GitHub](https://github.com/beshurl) |
 
 <br/>
 <br/>

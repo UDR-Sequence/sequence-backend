@@ -20,6 +20,9 @@ public class TokenReissueController {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     private final TokenReissueService tokenReissueService;
+    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L*60*1; // 1시간
+    private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L*60*24*7; // 7일
+
 
     public TokenReissueController(JWTUtil jwtUtil, RefreshRepository refreshRepository, TokenReissueService tokenReissueService){
         this.jwtUtil = jwtUtil;
@@ -71,12 +74,12 @@ public class TokenReissueController {
         String username = jwtUtil.getUsername(refresh);
 
         //새로운 토큰 생성
-        String newAccess = jwtUtil.createJwt("access", username, 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", username, 86400000L);
+        String newAccess = jwtUtil.createJwt("access", username, ACCESS_TOKEN_EXPIRED_TIME);
+        String newRefresh = jwtUtil.createJwt("refresh", username, REFRESH_TOKEN_EXPIRED_TIME);
 
         //기존 refresh 토큰을 DB에서 삭제 후 새로운 refresh 토큰을 저장한다
         refreshRepository.deleteByRefresh(refresh);
-        tokenReissueService.RefreshTokenSave(username, newRefresh, 86400000L);
+        tokenReissueService.RefreshTokenSave(username, newRefresh, REFRESH_TOKEN_EXPIRED_TIME);
 
         //response
         response.setHeader("access", newAccess);

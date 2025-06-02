@@ -85,4 +85,27 @@ public class ProjectBookmarkService {
         return "북마크 삭제 성공";
     }
 
+    @Transactional
+    public void deleteByProject(Project project, String username){
+        List<ProjectBookmark> bookmarks = bookmarkRepository.findAllByProject(project);
+        if (bookmarks != null && !bookmarks.isEmpty()) {
+            for (ProjectBookmark bookmark : bookmarks) {
+                bookmark.softDelete(username);
+            }
+            bookmarkRepository.saveAll(bookmarks);
+        }
+    }
+
+    // 프로젝트 북마크 여부 확인 ( 북마크 되어있으면 true, 아니면 false, 로그인 안한 사용자는 false)
+    public boolean isBookmarked(Long projectId, CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) {
+            return false;
+        }
+        MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        return bookmarkRepository.existsByMemberIdAndProjectId(member.getId(), projectId);
+    }
+
 }

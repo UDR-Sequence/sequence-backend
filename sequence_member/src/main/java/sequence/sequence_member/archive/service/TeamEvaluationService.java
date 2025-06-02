@@ -1,6 +1,7 @@
 package sequence.sequence_member.archive.service;
 
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.archive.entity.ArchiveMember;
@@ -43,8 +44,8 @@ public class TeamEvaluationService {
             String username,
             TeamEvaluationRequestDTO requestDto) {
             
-        // archive 존재 여부 먼저 확인
-        Archive archive = archiveRepository.findById(archiveId)
+        // archive 존재 여부 먼저 확인 (삭제되지 않은 것만)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
             
         // username으로 멤버 찾기
@@ -67,8 +68,8 @@ public class TeamEvaluationService {
                 throw new BAD_REQUEST_EXCEPTION("피평가자가 해당 아카이브의 멤버가 아닙니다: " + evaluation.getEvaluatedNickname());
             }
 
-            // 이미 평가했는지 확인
-            if (teamEvaluationRepository.existsByEvaluatorAndEvaluated(evaluator, evaluated)) {
+            // 이미 평가했는지 확인 (삭제되지 않은 평가만)
+            if (teamEvaluationRepository.existsByEvaluatorAndEvaluatedAndIsDeletedFalse(evaluator, evaluated)) {
                 throw new BAD_REQUEST_EXCEPTION("이미 평가를 완료했습니다: " + evaluation.getEvaluatedNickname());
             }
 
@@ -106,8 +107,8 @@ public class TeamEvaluationService {
             teamEvaluationRepository.save(teamEvaluation);
         }
 
-        // 모든 팀원 평가가 완료되었는지 확인
-        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
+        // 모든 팀원 평가가 완료되었는지 확인 (삭제되지 않은 평가만)
+        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchiveAndNotDeleted(archive);
         
         // 모든 평가가 완료되면 아카이브 상태 변경
         if (isAllCompleted && archive.getStatus() == Status.평가전) {
@@ -128,9 +129,9 @@ public class TeamEvaluationService {
             throw new BAD_REQUEST_EXCEPTION("해당 아카이브의 멤버가 아닙니다.");
         }
 
-        Archive archive = archiveRepository.findById(archiveId)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
             .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("아카이브 정보를 찾을 수 없습니다."));
-        return teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
+        return teamEvaluationRepository.isAllEvaluationCompletedInArchiveAndNotDeleted(archive);
     }
 
     public TeamEvaluationStatusResponseDTO getEvaluationStatus(Long archiveId, String username) {
@@ -150,27 +151,7 @@ public class TeamEvaluationService {
 
         // 각 팀원별로 평가 상태 확인
         for (ArchiveMember archiveMember : archiveMembers) {
-            int totalMembersToEvaluate = archiveMembers.size() - 1; // 자신 제외
-            int evaluatedCount = 0;
-            
-            // 해당 팀원이 다른 팀원들을 평가했는지 확인
-            for (ArchiveMember targetMember : archiveMembers) {
-                if (archiveMember.equals(targetMember)) {
-                    continue;  // 자기 자신은 건너뛰기
-                }
-
-                boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluated(
-                    archiveMember, 
-                    targetMember
-                );
-                if (hasEvaluated) {
-                    evaluatedCount++;
-                }
-            }
-
-            // 해당 팀원이 모든 팀원을 평가했는지 확인
-            Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ? 
-                Status.평가완료 : Status.평가전;
+            Status memberStatus = getArvhiceMemberEvaluationStatus(archiveMember, archiveMembers);
 
             // 역할 정보 가져오기
             List<ProjectRole> roles = new ArrayList<>();
@@ -199,12 +180,38 @@ public class TeamEvaluationService {
             .build();
     }
 
+    @NotNull
+    public Status getArvhiceMemberEvaluationStatus(ArchiveMember archiveMember, List<ArchiveMember> archiveMembers) {
+        int totalMembersToEvaluate = archiveMembers.size() - 1; // 자신 제외
+        int evaluatedCount = 0;
+
+        // 해당 팀원이 다른 팀원들을 평가했는지 확인 (삭제되지 않은 평가만)
+        for (ArchiveMember targetMember : archiveMembers) {
+            if (archiveMember.equals(targetMember)) {
+                continue;  // 자기 자신은 건너뛰기
+            }
+
+            boolean hasEvaluated = teamEvaluationRepository.existsByEvaluatorAndEvaluatedAndIsDeletedFalse(
+                    archiveMember,
+                targetMember
+            );
+            if (hasEvaluated) {
+                evaluatedCount++;
+            }
+        }
+
+        // 해당 팀원이 모든 팀원을 평가했는지 확인
+        Status memberStatus = (evaluatedCount == totalMembersToEvaluate) ?
+            Status.평가완료 : Status.평가전;
+        return memberStatus;
+    }
+
     public List<String> getEvaluators(Long archiveId) {
-        Archive archive = archiveRepository.findById(archiveId)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
                 .orElseThrow(() -> new BAD_REQUEST_EXCEPTION("아카이브 정보를 찾을 수 없습니다."));
 
-        // 해당 아카이브에서 평가를 진행한 평가자들의 목록 조회
-        List<ArchiveMember> evaluators = teamEvaluationRepository.findDistinctEvaluatorsByArchive(archive);
+        // 해당 아카이브에서 평가를 진행한 평가자들의 목록 조회 (삭제되지 않은 평가만)
+        List<ArchiveMember> evaluators = teamEvaluationRepository.findDistinctEvaluatorsByArchiveAndNotDeleted(archive);
 
         // 평가자들의 닉네임 리스트로 변환하여 반환
         return evaluators.stream()
@@ -213,8 +220,8 @@ public class TeamEvaluationService {
     }
 
     public List<TeamEvaluationResponseDTO> getTeamEvaluations(Long archiveId, String username) {
-        // archive 존재 여부 확인
-        Archive archive = archiveRepository.findById(archiveId)
+        // archive 존재 여부 확인 (삭제되지 않은 것만)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
         
         // username으로 멤버 찾기
@@ -269,10 +276,10 @@ public class TeamEvaluationService {
 
     @Transactional
     public boolean checkAndUpdateEvaluationStatus(Long archiveId) {
-        Archive archive = archiveRepository.findById(archiveId)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
             .orElseThrow(() -> new ArchiveNotFoundException("아카이브 정보를 찾을 수 없습니다."));
         
-        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchive(archive);
+        boolean isAllCompleted = teamEvaluationRepository.isAllEvaluationCompletedInArchiveAndNotDeleted(archive);
         
         // 모든 평가가 완료되었고, 현재 상태가 평가전이면 평가완료로 변경
         if (isAllCompleted && archive.getStatus() == Status.평가전) {

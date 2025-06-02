@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.MeetingOption;
 import sequence.sequence_member.global.enums.enums.Period;
@@ -30,6 +31,7 @@ import sequence.sequence_member.project.dto.ProjectInputDTO;
 import sequence.sequence_member.project.dto.ProjectUpdateDTO;
 
 @Entity
+@Where(clause = "is_deleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -127,7 +129,6 @@ public class Project extends BaseTimeEntity {
         return Project.builder()
                 .title(projectInputDTO.getTitle())
                 .projectName(projectInputDTO.getProjectName())
-                .projectName(projectInputDTO.getProjectName())
                 .startDate(projectInputDTO.getStartDate())
                 .endDate(projectInputDTO.getEndDate())
                 .period(Period.calculatePeriod(projectInputDTO.getStartDate(), projectInputDTO.getEndDate()))
@@ -141,6 +142,7 @@ public class Project extends BaseTimeEntity {
                 .article(projectInputDTO.getArticle())
                 .link(projectInputDTO.getLink())
                 .writer(memberEntity)
+                .bookmarkCount(0)
                 .build();
     }
     public void addBookmarkCount(){

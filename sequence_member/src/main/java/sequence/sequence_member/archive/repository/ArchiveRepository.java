@@ -17,47 +17,65 @@ import java.util.Optional;
 public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 기본 CRUD 메서드는 JpaRepository에서 제공
 
-    //아카이브 등록 후 Read
+    // 기본 조회 - 삭제되지 않은 아카이브만
+    Optional<Archive> findByIdAndIsDeletedFalse(Long id);
+    
+    // 전체 목록 조회 - 삭제되지 않은 것만
+    Page<Archive> findByIsDeletedFalse(Pageable pageable);
+    
+    // 상태별 조회 - 삭제되지 않은 것만
+    Page<Archive> findByStatusAndIsDeletedFalse(Status status, Pageable pageable);
+    
+    // 카테고리별 조회 - 삭제되지 않은 것만
+    Page<Archive> findByCategoryAndIsDeletedFalse(Category category, Pageable pageable);
+    
+    // 카테고리와 상태로 조회 - 삭제되지 않은 것만
+    Page<Archive> findByCategoryAndStatusAndIsDeletedFalse(Category category, Status status, Pageable pageable);
+    
+    // 제목으로 검색 - 삭제되지 않은 것만
+    Page<Archive> findByTitleContainingIgnoreCaseAndIsDeletedFalse(String title, Pageable pageable);
+    
+    // 제목으로 검색하고 상태로 필터링 - 삭제되지 않은 것만
+    Page<Archive> findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(String title, Status status, Pageable pageable);
+    
+    // 카테고리와 제목으로 검색 - 삭제되지 않은 것만
+    Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndIsDeletedFalse(Category category, String title, Pageable pageable);
+    
+    // 카테고리와 제목으로 검색하고 상태로 필터링 - 삭제되지 않은 것만
+    Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(Category category, String title, Status status, Pageable pageable);
+    
+    // 멤버 ID로 아카이브 검색 - 삭제되지 않은 것만
+    @Query("SELECT a FROM Archive a JOIN a.archiveMembers am WHERE am.member.id = :memberId AND a.isDeleted = false")
+    Page<Archive> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+    
+    // 유저가 참여하고 있는 아카이브 조회 (최신순 10개) - 삭제되지 않은 것만
+    @Query("SELECT a FROM Archive a JOIN a.archiveMembers am WHERE am.member.id = :memberId AND a.isDeleted = false ORDER BY a.createdDateTime DESC")
+    List<Archive> findTop10ByMemberId(@Param("memberId") Long memberId);
+    
+    // 특정 멤버의 아카이브 중 상태가 평가완료인 것만 조회 (최신순 5개) - 삭제되지 않은 것만
+    @Query("SELECT a FROM Archive a JOIN a.archiveMembers am WHERE am.member.id = :memberId AND a.status = :status AND a.isDeleted = false ORDER BY a.createdDateTime DESC")
+    List<Archive> findTop5ByMemberIdAndStatus(@Param("memberId") Long memberId, @Param("status") Status status);
+    
+    // 특정 멤버가 작성한 모든 아카이브 조회 - 삭제되지 않은 것만
+    List<Archive> findByWriterAndIsDeletedFalse(MemberEntity writer, Sort sort);
+    Page<Archive> findByWriterAndIsDeletedFalse(MemberEntity writer, Pageable pageable);
+    
+    // 조회수 조회 - 삭제되지 않은 것만
+    @Query("SELECT a.view FROM Archive a WHERE a.id = :archiveId AND a.isDeleted = false")
+    Optional<Integer> findViewById(@Param("archiveId") Long archiveId);
+    
+    // 아카이브 존재 확인 - 삭제되지 않은 것만
+    boolean existsByIdAndIsDeletedFalse(Long id);
+
+    // ========== 호환성을 위한 기존 메서드들 (모든 아카이브 포함) ==========
+    // 실제 사용을 권장하지 않음 - 삭제된 아카이브도 포함됨
+    
     Optional<Archive> findById(Long id);
     
-    // 카테고리와 제목으로 검색
     Page<Archive> findByCategoryAndTitleContainingIgnoreCase(Category category, String title, Pageable pageable);
-    
-    // 카테고리로만 검색
-    Page<Archive> findByCategory(Category category, Pageable pageable);
-    
-    // 제목으로만 검색
     Page<Archive> findByTitleContainingIgnoreCase(String title, Pageable pageable);
-
-    // 멤버 ID로 아카이브 검색
     Page<Archive> findByArchiveMembers_Member_Id(Long memberId, Pageable pageable);
-
-    // 유저가 참여하고 있는 아카이브 조회 (최신순 10개)
     List<Archive> findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc(Long archiveMembersMemberId);
+    List<Archive> findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(Long memberId, Status status);
 
-    // 전체 목록 조회는 JpaRepository의 findAll(Pageable) 사용
-    @Query("SELECT a.view FROM Archive a WHERE a.id = :archiveId")
-    Optional<Integer> findViewById(@Param("archiveId") Long archiveId);
-
-    // 특정 멤버가 작성한 모든 아카이빙 글을 조회
-    List<Archive> findByWriter(MemberEntity writer, Sort sort);
-
-    // 상태별 조회 메서드 추가
-    Page<Archive> findByStatus(Status status, Pageable pageable);
-    
-    // 카테고리와 상태로 조회
-    Page<Archive> findByCategoryAndStatus(Category category, Status status, Pageable pageable);
-    
-    // 제목으로 검색하고 상태로 필터링
-    Page<Archive> findByTitleContainingIgnoreCaseAndStatus(String title, Status status, Pageable pageable);
-    
-    // 카테고리와 제목으로 검색하고 상태로 필터링
-    Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndStatus(
-        Category category, String title, Status status, Pageable pageable);
-    
-    // 특정 멤버의 아카이브 중 상태가 평가완료인 것만 조회
-    List<Archive> findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
-        Long memberId, Status status);
-
-    Page<Archive> findByWriter(MemberEntity writer, Pageable pageable);
 } 

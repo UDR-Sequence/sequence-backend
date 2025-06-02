@@ -16,6 +16,7 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.global.enums.enums.Category;
 import sequence.sequence_member.global.enums.enums.SortType;
+import sequence.sequence_member.global.exception.UserNotFindException;
 import sequence.sequence_member.member.dto.CustomUserDetails;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.repository.MemberRepository;
@@ -55,6 +56,7 @@ public class ArchiveService {
     private final ArchiveViewService archiveViewService;
     private final TeamEvaluationRepository teamEvaluationRepository;
     private final ArchiveFileService archiveFileService;
+    private final TeamEvaluationService teamEvaluationService;
     
     @Value("${MINIO_ARCHIVE_IMG}")
     private String ARCHIVE_IMG_BUCKET;
@@ -63,8 +65,8 @@ public class ArchiveService {
     private String ARCHIVE_THUMBNAIL_BUCKET;  // 썸네일 버킷 추가
 
     public ArchiveOutputDTO getArchiveById(Long archiveId, String username, HttpServletRequest request) {
-        // Optional로 아카이브 조회
-        Optional<Archive> archiveOptional = archiveRepository.findById(archiveId);
+        // Optional로 아카이브 조회 (삭제되지 않은 것만)
+        Optional<Archive> archiveOptional = archiveRepository.findByIdAndIsDeletedFalse(archiveId);
         
         // 아카이브가 없으면 null 반환
         if (archiveOptional.isEmpty()) {
@@ -123,8 +125,8 @@ public class ArchiveService {
         
         MemberEntity member = memberOpt.get();
         
-        // 아카이브 존재 여부 확인
-        Optional<Archive> archiveOpt = archiveRepository.findById(archiveId);
+        // 아카이브 존재 여부 확인 (삭제되지 않은 것만)
+        Optional<Archive> archiveOpt = archiveRepository.findByIdAndIsDeletedFalse(archiveId);
         if (archiveOpt.isEmpty()) {
             return false;
         }
@@ -136,22 +138,9 @@ public class ArchiveService {
             return false;
         }
         
-        // 관련 엔티티를 순서대로 삭제 (참조 무결성 유지)
-        // 1. 팀 평가 삭제
-        teamEvaluationRepository.deleteByArchiveId(archiveId);
-        
-        // 2. 댓글 삭제
-        commentRepository.deleteByArchiveId(archiveId);
-        
-        // 3. 북마크 삭제
-        bookmarkRepository.deleteByArchiveId(archiveId);
-        
-        // 4. 아카이브 멤버 삭제
-        archiveMemberRepository.deleteByArchiveId(archiveId);
-        
-        
-        // 5. 최종적으로 아카이브 삭제
-        archiveRepository.delete(archive);
+        // 소프트 삭제 적용
+        archive.softDelete(username);
+        archiveRepository.save(archive);
         
         return true;
     }
@@ -160,12 +149,22 @@ public class ArchiveService {
     public List<UserArchiveDTO> getUserArchiveListAtAlarm(CustomUserDetails customUserDetails){
         // 사용자 검증
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFindException("사용자를 찾을 수 없습니다."));
 
-        List<Archive> latestArchives = archiveRepository.findTop10ByArchiveMembers_Member_IdOrderByCreatedDateTimeDesc((member.getId()));
+        List<Archive> latestArchives = archiveRepository.findTop10ByMemberId(member.getId());
         List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
+
+        // 평가전 상태인 아카이브만 리스트에 추가
         for(Archive archive : latestArchives){
-            userArchiveDTOList.add(new UserArchiveDTO(archive));
+            List<ArchiveMember> archiveMembers = archiveMemberRepository.findAllByArchiveId(archive.getId());
+            ArchiveMember archiveMember = archiveMembers.stream()
+                .filter(self -> self.getMember().getId().equals(member.getId()))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFindException( "사용자를 찾을 수 없습니다."));
+            Status memberStatus = teamEvaluationService.getArvhiceMemberEvaluationStatus(archiveMember, archiveMembers);
+            if(memberStatus == Status.평가전){
+                userArchiveDTOList.add(new UserArchiveDTO(archive));
+            }
         }
         return userArchiveDTOList;
     }
@@ -176,10 +175,8 @@ public class ArchiveService {
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다."));
 
-        // 평가완료 상태인 아카이브만 조회
-        List<Archive> latestArchives = archiveRepository
-            .findTop5ByArchiveMembers_Member_IdAndStatusOrderByCreatedDateTimeDesc(
-                member.getId(), Status.평가완료);
+        // 평가완료 상태인 아카이브만 조회 (삭제되지 않은 것만)
+        List<Archive> latestArchives = archiveRepository.findTop5ByMemberIdAndStatus(member.getId(), Status.평가완료);
         
         List<UserArchiveDTO> userArchiveDTOList = new ArrayList<>();
         for(Archive archive : latestArchives){
@@ -195,7 +192,7 @@ public class ArchiveService {
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
+        Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
         
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
             .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
@@ -233,15 +230,15 @@ public class ArchiveService {
         Page<Archive> archivePage;
         
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatus(
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
                 category, keyword.trim(), Status.평가완료, pageable);
         } else if (category != null) {
-            archivePage = archiveRepository.findByCategoryAndStatus(category, Status.평가완료, pageable);
+            archivePage = archiveRepository.findByCategoryAndStatusAndIsDeletedFalse(category, Status.평가완료, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatus(
+            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
                 keyword.trim(), Status.평가완료, pageable);
         } else {
-            archivePage = archiveRepository.findByStatus(Status.평가완료, pageable);
+            archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
         }
 
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
@@ -301,7 +298,7 @@ public class ArchiveService {
 
         // 댓글 정보 조회
         List<ArchiveCommentOutputDTO> commentDTOs = new ArrayList<>();
-        Page<ArchiveComment> parentComments = commentRepository.findParentCommentsByArchiveId(
+        Page<ArchiveComment> parentComments = commentRepository.findByArchiveIdAndParentIsNullOrderByCreatedDateTimeAsc(
             archive.getId(), 
             PageRequest.of(0, Integer.MAX_VALUE)  // 정렬 조건 제거
         );
@@ -319,7 +316,7 @@ public class ArchiveService {
             ArchiveCommentOutputDTO commentOutputDTO = new ArchiveCommentOutputDTO(parentDTO);
 
             // 대댓글 조회
-            List<ArchiveComment> childComments = commentRepository.findRepliesByParentId(parentComment.getId());
+            List<ArchiveComment> childComments = commentRepository.findByParentIdOrderByCreatedDateTimeAsc(parentComment.getId());
             for (ArchiveComment childComment : childComments) {
                 ArchiveCommentOutputDTO.CommentDTO childDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                         .id(childComment.getId())
@@ -430,8 +427,8 @@ public class ArchiveService {
     }
 
     private Archive validateAndGetArchive(Long archiveId, String username) {
-        // 아카이브 조회
-        Archive archive = archiveRepository.findById(archiveId)
+        // 아카이브 조회 (삭제되지 않은 것만)
+        Archive archive = archiveRepository.findByIdAndIsDeletedFalse(archiveId)
                 .orElseThrow(() -> new CanNotFindResourceException("아카이브를 찾을 수 없습니다."));
         
         // 작성자 검증

@@ -9,15 +9,15 @@ name: CI CD process
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
-      
+
     # 테스트용 MariaDB 컨테이너 추가
     services:
       mariadb:
@@ -33,13 +33,13 @@ jobs:
         image: redis:latest
         ports:
           - 6379:6379
-        
+
     env:
       DATABASE_URL: jdbc:mariadb://localhost:3306/testdb
       DATABASE_USERNAME: testuser
       DATABASE_PASSWORD: testpass
       DATABASE_DRIVER: org.mariadb.jdbc.Driver
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
       MAX_FILE_SIZE: ${{ secrets.MAX_FILE_SIZE }}
       MAX_REQUEST_SIZE : ${{ secrets.MAX_REQUEST_SIZE }}
       MINIO_ENDPOINT: ${{secrets.MINIO_ENDPOINT}}
@@ -50,10 +50,10 @@ jobs:
       MINIO_PW: ${{secrets.MINIO_PW}}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
       MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
       MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
-      
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -100,12 +100,12 @@ jobs:
     # Docker 이미지 빌드
     - name: Build Docker image
       run: |
-        docker build -t ${{secrets.DOCKER_USERNAME}}/sequence:latest .
+        docker build -t ${{secrets.DOCKER_USERNAME}}/test-sequence:latest .
       working-directory: sequence_member
     # Docker 이미지 푸시
     - name: Push Docker image
       run: |
-        docker push ${{secrets.DOCKER_USERNAME}}/sequence:latest
+        docker push ${{secrets.DOCKER_USERNAME}}/test-sequence:latest
       working-directory: sequence_member
 
   dependency-submission:
@@ -127,7 +127,7 @@ jobs:
       uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
       with:
         build-root-directory: sequence_member
-  
+
   # ssh연결 및 실행
   deploy:
     needs: [build]
@@ -142,31 +142,30 @@ jobs:
           port: 22
           script: |
             # 서버에서 최신 이미지 pull
-            docker pull ${{secrets.DOCKER_USERNAME}}/sequence:latest
+            docker pull ${{secrets.DOCKER_USERNAME}}/test-sequence:latest
             # 기존 컨테이너 종료 및 삭제 (존재하는 경우)
-            docker stop sequence-spring-container || true
-            docker rm sequence-spring-container || true
+            docker stop test-sequence-spring-container || true
+            docker rm test-sequence-spring-container || true
             # 새로운 컨테이너 실행 (포트 및 필요한 환경 변수 지정 가능)
-            docker run -d --name sequence-spring-container --network sequence -p 10101:8080 \
-              -e JWT_SECRET=${{secrets.JWT_SECRET}} \
+            docker run -d --name test-sequence-spring-container --network test_sequence -p 20101:8080 \
+              -e JWT_SECRET=${{secrets.TEST_JWT_SECRET}} \
               -e MAX_FILE_SIZE=${{secrets.MAX_FILE_SIZE}} \
               -e MAX_REQUEST_SIZE=${{secrets.MAX_REQUEST_SIZE}} \
               -e DATABASE_DRIVER=org.mariadb.jdbc.Driver \
-              -e DATABASE_URL=${{secrets.DATABASE_URL}} \
-              -e DATABASE_USERNAME=${{secrets.DATABASE_USERNAME}} \
-              -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
+              -e DATABASE_URL=${{secrets.TEST_DATABASE_URL}} \
+              -e DATABASE_USERNAME=${{secrets.TEST_DATABASE_USERNAME}} \
+              -e DATABASE_PASSWORD=${{secrets.TEST_DATABASE_PASSWORD}} \
               -e MINIO_ENDPOINT=${{secrets.MINIO_ENDPOINT}} \
               -e MINIO_ACCESS_KEY=${{secrets.MINIO_ACCESS_KEY}} \
               -e MINIO_SECRET_KEY=${{secrets.MINIO_SECRET_KEY}} \
               -e MINIO_BUCKET_NAME=${{secrets.MINIO_BUCKET_NAME}} \
               -e MINIO_PORTFOLIO_BUCKET_NAME=${{secrets.MINIO_PORTFOLIO_BUCKET_NAME}} \
               -e MINIO_PW=${{secrets.MINIO_PW}} \
-              -e REDIS_HOST=${{secrets.REDIS_HOST}} \
-              -e REDIS_PASSWORD=${{secrets.REDIS_PASSWORD}} \
-              -e REDIS_PORT=${{secrets.REDIS_PORT}} \
+              -e REDIS_HOST=${{secrets.TEST_REDIS_HOST}} \
+              -e REDIS_PASSWORD=${{secrets.TEST_REDIS_PASSWORD}} \
+              -e REDIS_PORT=${{secrets.TEST_REDIS_PORT}} \
               -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \
               -e MINIO_ARCHIVE_IMG=${{secrets.MINIO_ARCHIVE_IMG}} \
-              ${{secrets.DOCKER_USERNAME}}/sequence:latest
+              ${{secrets.DOCKER_USERNAME}}/test-sequence:latest
             # monitoring 네트워크 연결 추가
-            docker network connect monitoring sequence-spring-container
-      
+            docker network connect monitoring test-sequence-spring-container

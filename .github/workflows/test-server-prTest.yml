@@ -7,10 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
-      
+
     # 테스트용 MariaDB 컨테이너 추가
     services:
       mariadb:
@@ -43,7 +43,7 @@ jobs:
       MINIO_PW: ${{secrets.MINIO_PW}}
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${{secrets.REDIS_PASSOWRD}}
+      REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
       MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
       MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
     steps:
@@ -55,8 +55,8 @@ jobs:
         distribution: 'temurin'
 
 
-    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
+      # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4 # v4.0.0
       with:

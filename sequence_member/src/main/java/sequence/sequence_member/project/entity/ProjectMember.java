@@ -14,12 +14,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 @Entity
 @Getter @Setter
+@Where(clause = "is_deleted = false")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

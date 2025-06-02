@@ -28,7 +28,8 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             "(:roles IS NULL OR p.roles LIKE CONCAT('%', :roles , '%')) AND " +
             "(:skills IS NULL OR p.skills LIKE CONCAT('%', :skills, '%')) AND " +
             "(:meeting_option IS NULL OR p.meetingOption = :meeting_option) AND " +
-            "(:step IS NULL OR p.step = :step)"
+            "(:step IS NULL OR p.step = :step) AND " +
+            "p.isDeleted = false "
     )
     Page<Project> findProjectsByFilteredKeywords(
             @Param("category") Category category,
@@ -41,8 +42,11 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
     );
 
     //검색 필터링
-    @Query("SELECT q From Project q WHERE " + "(q.title LIKE CONCAT('%', :title, '%'))")
-    List<Project> findProjectsByFilterdSearch(@Param("title") String title);
+    @Query("SELECT q From Project q WHERE " +
+        "(q.title LIKE CONCAT('%', :title, '%')) AND" +
+        " q.isDeleted = false "
+    )
+    Page<Project> findProjectsByFilterdSearch(@Param("title") String title, Pageable pageable);
 
     @Query("SELECT p From Project p")
     List<Project> findAllProjects();

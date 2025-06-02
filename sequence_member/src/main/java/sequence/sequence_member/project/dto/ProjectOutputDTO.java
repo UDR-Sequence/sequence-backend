@@ -18,6 +18,7 @@ public class ProjectOutputDTO {
     private Long id; // 프로젝트 id
     private String title; // 글 제목
     private String writer; // 프로젝트 작성자 닉메임
+    private String writerProfileImage; // 프로젝트 작성자 프로필 이미지
     private LocalDate createdDate; // 프로젝트 작성일
     private String projectName; // 프로젝트 이름
     private Period period; // 프로젝트 기간
@@ -43,6 +44,7 @@ public class ProjectOutputDTO {
                 .id(project.getId())
                 .title(project.getTitle())
                 .writer(project.getWriter().getNickname())
+                .writerProfileImage(project.getWriter().getProfileImg())
                 .createdDate(project.getCreatedDateTime().toLocalDate())
                 .projectName(project.getProjectName())
                 .startDate(project.getStartDate())
