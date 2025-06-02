@@ -26,7 +26,7 @@ public class FindPasswordService {
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${NAVER_MAIL_USERNAME}")
+    @Value("${NAVER_MAIL_USERNAME:dev_mj_@naver.com}")
     private String fromEmail;
 
     @Transactional
