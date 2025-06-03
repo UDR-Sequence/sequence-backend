@@ -54,7 +54,6 @@ public class ArchiveService {
     private final ArchiveBookmarkRepository bookmarkRepository;
     private final ArchiveCommentRepository commentRepository;
     private final ArchiveViewService archiveViewService;
-    private final TeamEvaluationRepository teamEvaluationRepository;
     private final ArchiveFileService archiveFileService;
     private final TeamEvaluationService teamEvaluationService;
     
@@ -195,16 +194,23 @@ public class ArchiveService {
         Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
         
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
-            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
-                .id(archive.getId())
-                .title(archive.getTitle())
-                .writerNickname(archive.getWriter().getNickname())
-                .thumbnail(archive.getThumbnail())
-                .commentCount(archive.getComments().size())
-                .view(archive.getView())
-                .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
-                .createdDateTime(archive.getCreatedDateTime())
-                .build())
+            .map(archive -> {
+                // 작성자를 제외한 멤버 수 계산
+                int otherMemberCount = archive.getArchiveMembers().size() - 1; // 작성자 제외
+                if (otherMemberCount < 0) otherMemberCount = 0; // 음수 방지
+                
+                return ArchiveListDTO.ArchiveSimpleDTO.builder()
+                    .id(archive.getId())
+                    .title(archive.getTitle())
+                    .writerNickname(archive.getWriter().getNickname())
+                    .thumbnail(archive.getThumbnail())
+                    .commentCount(archive.getComments().size())
+                    .view(archive.getView())
+                    .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
+                    .otherMemberCount(otherMemberCount)
+                    .createdDateTime(archive.getCreatedDateTime())
+                    .build();
+            })
             .toList();
 
         return ArchiveListDTO.builder()
@@ -242,16 +248,23 @@ public class ArchiveService {
         }
 
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
-            .map(archive -> ArchiveListDTO.ArchiveSimpleDTO.builder()
-                .id(archive.getId())
-                .title(archive.getTitle())
-                .writerNickname(archive.getWriter().getNickname())
-                .thumbnail(archive.getThumbnail())
-                .commentCount(archive.getComments().size())
-                .view(archive.getView())
-                .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
-                .createdDateTime(archive.getCreatedDateTime())
-                .build())
+            .map(archive -> {
+                // 작성자를 제외한 멤버 수 계산
+                int otherMemberCount = archive.getArchiveMembers().size() - 1; // 작성자 제외
+                if (otherMemberCount < 0) otherMemberCount = 0; // 음수 방지
+                
+                return ArchiveListDTO.ArchiveSimpleDTO.builder()
+                    .id(archive.getId())
+                    .title(archive.getTitle())
+                    .writerNickname(archive.getWriter().getNickname())
+                    .thumbnail(archive.getThumbnail())
+                    .commentCount(archive.getComments().size())
+                    .view(archive.getView())
+                    .bookmarkCount((int) bookmarkRepository.countByArchive(archive))
+                    .otherMemberCount(otherMemberCount)
+                    .createdDateTime(archive.getCreatedDateTime())
+                    .build();
+            })
             .toList();
 
         return ArchiveListDTO.builder()
