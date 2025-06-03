@@ -34,16 +34,9 @@ public class ArchiveComment extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private boolean isDeleted;
-
     // 비즈니스 메서드
     public boolean isReply() {
         return parent != null;
-    }
-
-    public void delete() {
-        this.isDeleted = true;
     }
 
     public void updateContent(String content) {

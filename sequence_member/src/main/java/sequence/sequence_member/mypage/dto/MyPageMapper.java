@@ -9,6 +9,7 @@ import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveBookmarkRepository;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
 import sequence.sequence_member.archive.service.MyPageEvaluationService;
+import sequence.sequence_member.member.converter.SkillCategoryConverter;
 import sequence.sequence_member.member.entity.AwardEntity;
 import sequence.sequence_member.member.entity.CareerEntity;
 import sequence.sequence_member.member.entity.ExperienceEntity;
@@ -40,6 +41,7 @@ public class MyPageMapper {
     private final CareerRepository careerRepository;
     private final AwardRepository awardRepository;
     private final PortfolioRepository portfolioRepository;
+    private final SkillCategoryConverter skillCategoryConverter;
 
     /**
      * 멤버와 아카이브 페이지네이션 객체를 ResponseDTO 매핑하는 메인 함수입니다.
@@ -83,7 +85,7 @@ public class MyPageMapper {
                 .entranceYear(member.getEducation().getEntranceYear())
                 .graduationYear(member.getEducation().getGraduationYear())
                 .degree(member.getEducation().getDegree())
-                .skillCategory(member.getEducation().getSkillCategory())
+                .skillCategory(skillCategoryConverter.convertToSkillString(member.getEducation().getSkillCategory()))
                 .desiredJob(member.getEducation().getDesiredJob())
                 .profileImg(member.getProfileImg())
                 .build();
@@ -173,7 +175,7 @@ public class MyPageMapper {
     public MyActivitiesDTO getMyActivity(MemberEntity member) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdDateTime");
 
-        List<MyActivitiesDTO.PostDTO> archiveWritten = archiveRepository.findByWriter(member, sort).stream()
+        List<MyActivitiesDTO.PostDTO> archiveWritten = archiveRepository.findByWriterAndIsDeletedFalse(member, sort).stream()
                 .map(this::mapToPostDTO)
                 .collect(Collectors.toList());
 

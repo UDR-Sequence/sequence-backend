@@ -20,8 +20,8 @@ public class SkillController {
 
     // 모든 스킬들을 조회하는 컨트롤러
     @GetMapping
-    public ResponseEntity<ApiResponseData<Map<Skill,String>>> getAllSkills() {
-        Map<Skill, String> skills = skillService.getAllSkills();
+    public ResponseEntity<ApiResponseData<List<String>>> getAllSkills() {
+        List<String> skills = skillService.getAllSkills();
         return ResponseEntity.ok(ApiResponseData.success(skills));
     }
 }

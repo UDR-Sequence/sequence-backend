@@ -19,7 +19,8 @@ public class MemberSearchService {
     @Transactional(readOnly = true)
     public List<String> searchMemberNicknames(CustomUserDetails customUserDetails, String nickname){
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
-                .orElseThrow(() -> new UserNotFindException("요청하는 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFindException("회원을 검색할 권한이 존재하지 않습니다. (이미 탈퇴한 회원은 회원 조회가 불가능합니다.)"));
+
         Pageable pageable = PageRequest.of(0, 20);  // 첫 페이지, 최대 20개
         List<String> nicknames = memberRepository.searchMemberNicknames(nickname, pageable);
         

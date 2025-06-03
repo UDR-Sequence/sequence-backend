@@ -20,6 +20,9 @@ import sequence.sequence_member.member.entity.EducationEntity;
 import sequence.sequence_member.member.repository.EducationRepository;
 import sequence.sequence_member.member.service.MemberSearchService;
 import sequence.sequence_member.member.service.MemberService;
+import sequence.sequence_member.member.dto.FindUsernameInputDTO;
+import sequence.sequence_member.member.dto.FindUsernameOutputDTO;
+import sequence.sequence_member.member.service.FindUsernameService;
 
 import java.util.Map;
 
@@ -31,6 +34,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberSearchService memberSearchService;
+    private final FindUsernameService findUsernameService;
 
     @PostMapping(value = "/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ApiResponseData<String>> join(@RequestPart("memberDTO") @Valid MemberDTO memberDTO, Errors errors,
@@ -45,6 +49,14 @@ public class MemberController {
         memberService.save(memberDTO,authImgFile,portfolios);
         return ResponseEntity.ok().body(ApiResponseData.success("회원가입이 완료되었습니다."));
     }
+
+    // 아이디 찾기
+    @PostMapping("/find_username")
+    public ResponseEntity<ApiResponseData<FindUsernameOutputDTO>> findUsername(@Valid @RequestBody FindUsernameInputDTO inputDTO) {
+        FindUsernameOutputDTO result = findUsernameService.findUsername(inputDTO);
+        return ResponseEntity.ok().body(ApiResponseData.success(result));
+    }
+
 
     @GetMapping("/check_username")
     public ResponseEntity<ApiResponseData<String>> checkUser(@RequestParam(name = "username") String username){
@@ -87,8 +99,6 @@ public class MemberController {
 
         return ResponseEntity.ok().body(ApiResponseData.success("사용가능한 닉네임 입니다."));
     }
-
-
 
     //닉네임으로 유저들 검색하는 컨트롤러
     @GetMapping("/search")
