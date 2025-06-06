@@ -57,6 +57,9 @@ dependencies {
 	//Prometheus
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
+	//social login
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 	//Naver SMTP
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }

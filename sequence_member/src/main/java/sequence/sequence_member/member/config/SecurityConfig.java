@@ -16,12 +16,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import sequence.sequence_member.member.authority.OAuth2FailureHandler;
+import sequence.sequence_member.member.authority.OAuth2SuccessHandler;
 import sequence.sequence_member.member.jwt.CustomLogoutFilter;
 import sequence.sequence_member.member.jwt.JWTFilter;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.jwt.LoginFilter;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.repository.RefreshRepository;
+import sequence.sequence_member.member.service.CustomOAuth2UserService;
 import sequence.sequence_member.member.service.TokenReissueService;
 
 import java.util.Arrays;
@@ -38,7 +41,9 @@ public class SecurityConfig {
     private final TokenReissueService tokenReissueService;
     private final RefreshRepository refreshRepository;
     private final MemberRepository memberRepository;
-
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -85,14 +90,12 @@ public class SecurityConfig {
         http
                 .formLogin((auth)->auth.disable());
 
-
         //http basic 인증 방식 disable
         http
                 .httpBasic((auth)->auth.disable());
 
         http
                 .logout((auth)->auth.disable()); // 기본 로그아웃 필터 비활성화
-
 
         //경로별 인가 작업
         http
@@ -104,7 +107,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/archive/**").authenticated()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
                         .anyRequest().authenticated());
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                );
 
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
@@ -123,7 +135,5 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
-
     }
-
 }

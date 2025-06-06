@@ -23,7 +23,6 @@ public class TokenReissueController {
     private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L*60*1; // 1시간
     private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L*60*24*7; // 7일
 
-
     public TokenReissueController(JWTUtil jwtUtil, RefreshRepository refreshRepository, TokenReissueService tokenReissueService){
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
