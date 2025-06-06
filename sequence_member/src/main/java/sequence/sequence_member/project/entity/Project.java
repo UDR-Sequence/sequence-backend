@@ -129,7 +129,6 @@ public class Project extends BaseTimeEntity {
         return Project.builder()
                 .title(projectInputDTO.getTitle())
                 .projectName(projectInputDTO.getProjectName())
-                .projectName(projectInputDTO.getProjectName())
                 .startDate(projectInputDTO.getStartDate())
                 .endDate(projectInputDTO.getEndDate())
                 .period(Period.calculatePeriod(projectInputDTO.getStartDate(), projectInputDTO.getEndDate()))
@@ -143,6 +142,7 @@ public class Project extends BaseTimeEntity {
                 .article(projectInputDTO.getArticle())
                 .link(projectInputDTO.getLink())
                 .writer(memberEntity)
+                .bookmarkCount(0)
                 .build();
     }
     public void addBookmarkCount(){
