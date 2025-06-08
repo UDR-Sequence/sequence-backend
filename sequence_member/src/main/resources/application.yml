@@ -51,18 +51,7 @@ spring:
       password: ${REDIS_PASSWORD}
       timeout: 6000ms
   
-  spring:
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${AUTH_EMAIL}
-    password: ${AUTH_EMAIL_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+
 minio:
   endpoint: ${MINIO_ENDPOINT}
   accessKey: ${MINIO_ACCESS_KEY}
