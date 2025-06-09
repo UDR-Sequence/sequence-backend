@@ -22,6 +22,7 @@ public class ArchiveListDTO {
         private int commentCount;
         private int view;  // 조회수 추가
         private int bookmarkCount;  // 북마크 수 추가
+        private int otherMemberCount;  // 작성자 제외 멤버 수 추가
         private LocalDateTime createdDateTime;
     }
 } 

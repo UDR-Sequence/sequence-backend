@@ -3,12 +3,14 @@ package sequence.sequence_member.member.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import sequence.sequence_member.global.enums.enums.AuthProvider;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter @Setter
@@ -57,7 +59,6 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name="profile_img", length = 500)
     private String profileImg; // todo - 파일을 minio에 저장하고 url을 저장하는 방식으로 변경
 
-
     // portfolio와의 일대다 관계 설정
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PortfolioEntity> portfolios=new ArrayList<>();
@@ -77,7 +78,6 @@ public class MemberEntity extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "education_id")
     private EducationEntity education;
-
 
     public enum Gender{
         M,F
@@ -99,4 +99,33 @@ public class MemberEntity extends BaseTimeEntity {
         return memberEntity;
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    @Column(length = 100)
+    private String providerId;
+
+    public static MemberEntity createSocialMember(
+            String email,
+            String name,
+            AuthProvider provider,
+            String providerId
+    ) {
+        MemberEntity member = new MemberEntity();
+        member.setUsername(email);
+        member.setPassword("SOCIAL_USER"); // 또는 null.toString(), 또는 UUID 등 처리
+        member.setName(name);
+        member.setBirth(LocalDate.of(2000, 1, 1)); // 기본값
+        member.setGender(Gender.M); // 기본값 (실제 소셜에서 성별 제공되면 반영)
+        member.setAddress("소셜 로그인 주소");
+        member.setPhone("000-0000-0000");
+        member.setEmail(email);
+        member.setNickname("user_" + UUID.randomUUID().toString().substring(0, 8));
+        member.setSchoolName("소셜 로그인 사용자");
+        member.setIntroduction("소셜 로그인 사용자입니다.");
+        member.setProvider(provider);
+        member.setProviderId(providerId);
+        return member;
+    }
 }
