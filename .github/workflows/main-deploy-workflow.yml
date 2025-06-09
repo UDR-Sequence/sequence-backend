@@ -53,8 +53,6 @@ jobs:
       REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
       MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
       MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
-      AUTH_EMAIL: ${{secrets.AUTH_EMAIL}}
-      AUTH_EMAIL_PASSWORD: ${{secrets.AUTH_EMAIL_PASSWORD}}
 
     steps:
       - uses: actions/checkout@v4
@@ -168,7 +166,5 @@ jobs:
               -e REDIS_PORT=${{secrets.REDIS_PORT}} \
               -e MINIO_ARCHIVE_THUMBNAIL=${{secrets.MINIO_ARCHIVE_THUMBNAIL}} \
               -e MINIO_ARCHIVE_IMG=${{secrets.MINIO_ARCHIVE_IMG}} \
-              -e AUTH_EMAIL=${{secrets.AUTH_EMAIL}} \
-              -e AUTH_EMAIL_PASSWORD=${{secrets.AUTH_EMAIL_PASSWORD}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
 
