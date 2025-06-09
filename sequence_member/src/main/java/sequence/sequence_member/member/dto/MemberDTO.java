@@ -58,6 +58,7 @@ public class MemberDTO {
     private String introduction;
 
     @NotBlank(message = "닉네임은 필수 입력 값입니다.")
+    @Size(min= 1, max= 10, message = "닉네임은 최소 1자 이상 최대 10자 이하입니다.")
     private String nickname;
 
     @NotBlank(message = "학교명은 필수 입력 값입니다.")
