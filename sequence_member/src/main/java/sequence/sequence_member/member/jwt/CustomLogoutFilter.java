@@ -57,7 +57,6 @@ public class CustomLogoutFilter extends GenericFilterBean {
             }
         }
 
-
         //refresh 토큰 체크
         if(refresh == null){
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -102,9 +101,5 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_OK);
-
-
     }
-
-
 }
