@@ -23,6 +23,7 @@ public class ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final MemberRepository memberRepository;
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
+    private final ProjectInviteEmailService projectInviteEmailService;
 
     // 프로젝트 초대 멤버를 저장하는 함수
     @Transactional
@@ -40,6 +41,9 @@ public class ProjectMemberService {
         for(MemberEntity member : invitedMembers){
             ProjectInvitedMember entity = ProjectInvitedMember.fromProjectAndMember(project,member);
             projectInvitedMemberRepository.save(entity);
+
+            // 이메일 초대장 발송 추가
+            projectInviteEmailService.sendInviteEmail(project, member);
         }
     }
 
