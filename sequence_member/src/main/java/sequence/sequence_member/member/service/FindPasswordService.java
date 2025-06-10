@@ -76,12 +76,71 @@ public class FindPasswordService {
             helper.setTo(email);
             helper.setSubject("[Sequence] 임시 비밀번호 발급 안내");
 
-            String content = "<html><body>"
-                    + "<h2>임시 비밀번호 발급 안내</h2>"
-                    + "<p>안녕하세요. 임시 비밀번호가 발급되었습니다.</p>"
-                    + "<p>아래의 임시 비밀번호로 로그인 후, 보안을 위해 마이페이지에서 비밀번호를 변경해주세요.</p>"
-                    + "<p><strong>임시 비밀번호: " + temporaryPassword + "</strong></p>"
-                    + "</body></html>";
+            String content = "<!DOCTYPE html>" +
+                    "<html lang=\"ko\">" +
+                    "<head>" +
+                    "<meta charset=\"UTF-8\">" +
+                    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                    "<title>Sequence 임시비밀번호 발송</title>" +
+                    "</head>" +
+                    "<body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #151515; color: #ffffff;\">" +
+                    "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background-color: #151515;\">" +
+                    "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px;\">" +
+                    "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"600\" style=\"max-width: 600px; background-color: #151515;\">" +
+
+                    // 컨텐츠 섹션
+                    "<tr>" +
+                    "<td style=\"padding: 30px;\">" +
+                    "<p style=\"font-size: 18px; color: #ffffff; margin: 0 0 20px 0;\">안녕하세요. 임시 비밀번호가 발급되었습니다.</p>" +
+                    "<p style=\"font-size: 16px; color: #cccccc; margin: 0 0 30px 0; line-height: 1.6;\">아래의 임시 비밀번호로 로그인 후, 보안을 위해 마이페이지에서 비밀번호를 변경해주세요.</p>" +
+
+                    // 비밀번호 섹션
+                    "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"margin: 30px 0;\">" +
+                    "<tr>" +
+                    "<td align=\"center\" style=\"background-color: #1a1a1a; border: 2px solid #E32929; border-radius: 4px; padding: 30px;\">" +
+                    "<p style=\"color: #E32929; font-size: 12px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;\">임시 비밀번호</p>" +
+                    "<div style=\"background-color: #ffffff; color: #151515; font-size: 28px; font-weight: 900; padding: 15px 25px; border-radius: 4px; letter-spacing: 2px; font-family: 'Courier New', monospace; display: inline-block; margin: 0;\">" + temporaryPassword + "</div>" +
+                    "</td>" +
+                    "</tr>" +
+                    "</table>" +
+
+                    // 경고 섹션
+                    "<table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"margin: 30px 0;\">" +
+                    "<tr>" +
+                    "<td style=\"background-color: #1a1a1a; padding: 25px;\">" +
+                    "<h3 style=\"color: #E32929; font-size: 16px; font-weight: 700; margin: 0 0 15px 0; text-transform: uppercase;\">보안 알림 및 이용 안내</h3>" +
+                    "<p style=\"color: #cccccc; font-size: 14px; margin: 5px 0; line-height: 1.6;\">• 로그인 즉시 마이페이지에서 새로운 비밀번호로 변경하세요</p>" +
+                    "<p style=\"color: #cccccc; font-size: 14px; margin: 5px 0; line-height: 1.6;\">• 비밀번호를 타인과 공유하지 마세요</p>" +
+                    "<p style=\"color: #cccccc; font-size: 14px; margin: 5px 0; line-height: 1.6;\">• Sequence 로그인 페이지에 접속합니다</p>" +
+                    "<p style=\"color: #cccccc; font-size: 14px; margin: 5px 0; line-height: 1.6;\">• 이메일과 임시 비밀번호를 입력합니다</p>" +
+                    "<p style=\"color: #cccccc; font-size: 14px; margin: 5px 0; line-height: 1.6;\">• 로그인 후 마이페이지에서 비밀번호 변경을 완료합니다</p>" +
+                    "</td>" +
+                    "</tr>" +
+                    "</table>" +
+                    "</td>" +
+                    "</tr>" +
+
+                    // 구분선
+                    "<tr>" +
+                    "<td style=\"padding: 0 30px;\">" +
+                    "<div style=\"height: 1px; background-color: #E32929; margin: 30px 0;\"></div>" +
+                    "</td>" +
+                    "</tr>" +
+
+                    // 푸터 섹션
+                    "<tr>" +
+                    "<td align=\"center\" style=\"background-color: #0f0f0f; padding: 30px; border-top: 1px solid #333;\">" +
+                    "<h2 style=\"font-size: 24px; font-weight: 900; color: #E32929; margin: 0 0 15px 0;\">Sequence</h2>" +
+                    "<p style=\"color: #888888; font-size: 13px; margin: 5px 0;\">이 메시지는 발신 전용입니다.</p>" +
+                    "</td>" +
+                    "</tr>" +
+                    "</table>" +
+                    "</td>" +
+                    "</tr>" +
+                    "</table>" +
+                    "</body>" +
+                    "</html>";
 
             helper.setText(content, true);
             mailSender.send(message);
