@@ -84,6 +84,10 @@ management:
   endpoint:
     prometheus:
       enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 server:
   tomcat:
     mbeanregistry:
