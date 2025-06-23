@@ -80,8 +80,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus
+        include: "*"
+        # /actuator/ 이하의 모든 엔드포인트 노출 설정
   endpoint:
+    health:
+      show-details: always
+      # 이 설정은 /actuator/health 엔드포인트에서 헬스 체크 정보를 항상 상세히 보여주도록 설정합니다. 기본적으로, 헬스 체크 엔드포인트는 요약된 상태 정보만 제공하며, 상세 정보는 노출되지 않습니다.
     prometheus:
       enabled: true
   prometheus:

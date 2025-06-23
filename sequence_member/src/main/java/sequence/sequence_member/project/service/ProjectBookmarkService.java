@@ -3,6 +3,7 @@ package sequence.sequence_member.project.service;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sequence.sequence_member.global.exception.CanNotFindResourceException;
@@ -15,6 +16,7 @@ import sequence.sequence_member.project.entity.ProjectBookmark;
 import sequence.sequence_member.project.repository.ProjectBookmarkRepository;
 import sequence.sequence_member.project.repository.ProjectRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProjectBookmarkService {
@@ -31,9 +33,11 @@ public class ProjectBookmarkService {
 
         if(member == null){
             errMessgage.append("멤버를 찾을 수 없습니다.\n");
+            log.error("멤버를 찾을 수 없음");
         }
         if(project == null){
             errMessgage.append("프로젝트를 찾을 수 없습니다.\n");
+            log.error("프로젝트를 찾을 수 없음");
         }
         if(!errMessgage.isEmpty()){
             throw new CanNotFindResourceException(errMessgage.toString());
@@ -65,9 +69,11 @@ public class ProjectBookmarkService {
 
         if(member == null){
             errMessgage.append("멤버를 찾을 수 없습니다.\n");
+            log.error("멤버를 찾을 수 없음");
         }
         if(project == null){
             errMessgage.append("프로젝트를 찾을 수 없습니다.\n");
+            log.error("프로젝트를 찾을 수 없음");
         }
         if(!errMessgage.isEmpty()){
             throw new CanNotFindResourceException(errMessgage.toString());
@@ -99,10 +105,12 @@ public class ProjectBookmarkService {
     // 프로젝트 북마크 여부 확인 ( 북마크 되어있으면 true, 아니면 false, 로그인 안한 사용자는 false)
     public boolean isBookmarked(Long projectId, CustomUserDetails customUserDetails) {
         if (customUserDetails == null) {
+            log.error("로그인 재시도 필요 : No customUserDetail here");
             return false;
         }
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername()).orElse(null);
         if (member == null) {
+            log.error("멤버를 찾을 수 없음");
             return false;
         }
         return bookmarkRepository.existsByMemberIdAndProjectId(member.getId(), projectId);
