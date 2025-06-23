@@ -46,6 +46,12 @@ jobs:
       REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
       MINIO_ARCHIVE_THUMBNAIL: ${{secrets.MINIO_ARCHIVE_THUMBNAIL}}
       MINIO_ARCHIVE_IMG: ${{secrets.MINIO_ARCHIVE_IMG}}
+      GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
+      GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
+      GOOGLE_REDIRECT_URI: ${{secrets.GOOGLE_REDIRECT_URI}}
+      GOOGLE_AUTHORIZATION_URI: ${{secrets.GOOGLE_AUTHORIZATION_URI}}
+      GOOGLE_TOKEN_URI: ${{secrets.GOOGLE_TOKEN_URI}}
+      GOOGLE_USER_INFO_URI: ${{secrets.GOOGLE_USER_INFO_URI}}
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.multipart.MultipartFile;
+import sequence.sequence_member.global.enums.enums.AuthProvider;
 import sequence.sequence_member.global.enums.enums.Skill;
 import sequence.sequence_member.global.utils.MultipartUtil;
 import sequence.sequence_member.member.converter.SkillCategoryConverter;
@@ -64,6 +65,7 @@ public class MemberService {
             }
         }
 
+        memberEntity.setProvider(AuthProvider.LOCAL);
 
         //먼저 member 정보를 저장하고 나중에 외래키 값을 저장하기 위해서 멤버 정보를 먼저 저장
         memberRepository.save(memberEntity);

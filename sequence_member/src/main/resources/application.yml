@@ -44,12 +44,27 @@ spring:
   jwt:
     secret: ${JWT_SECRET}
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+        provider:
+          google:
+            authorization-uri: ${GOOGLE_AUTHORIZATION_URI}
+            token-uri: ${GOOGLE_TOKEN_URI}
+            user-info-uri: ${GOOGLE_USER_INFO_URI}
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 6000ms
+  
+
 minio:
   endpoint: ${MINIO_ENDPOINT}
   accessKey: ${MINIO_ACCESS_KEY}

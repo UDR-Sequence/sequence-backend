@@ -63,7 +63,6 @@ public class MinioService {
                         .method(Method.GET)
                         .bucket(bucketName)
                         .object(fileName)
-                        .expiry(7, TimeUnit.DAYS)
                         .build());
 
     }
