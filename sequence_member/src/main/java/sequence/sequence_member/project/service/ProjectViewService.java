@@ -5,12 +5,14 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import sequence.sequence_member.global.annotation.MethodDescription;
 import sequence.sequence_member.project.entity.Project;
 import sequence.sequence_member.project.repository.ProjectRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProjectViewService {
@@ -25,6 +27,7 @@ public class ProjectViewService {
             views = getViewsFromRedis(request, projectId);
         }catch (Exception e){
             views = project.getViews()+1;
+            log.error("view 조회 에러 발생", e);
         }
         return views;
     }

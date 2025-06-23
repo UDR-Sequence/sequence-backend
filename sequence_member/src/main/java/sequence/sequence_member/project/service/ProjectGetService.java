@@ -32,10 +32,15 @@ public class ProjectGetService {
     @Transactional(readOnly = true)
     public ProjectOutputDTO getProject(Long projectId, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId).orElseThrow(()-> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+
         List<ProjectMemberOutputDTO> projectMemberOutputDTOS = projectMemberService.getProjectMemberOutputDTOS(project);
+
         List<CommentOutputDTO> commentOutputDTOS = commentService.getCommentOutputDTOS(project);
+
         int views = projectViewService.getViews(projectId, request, project);
+
         boolean bookmarked = projectBookmarkService.isBookmarked(projectId, customUserDetails);
+
         return ProjectOutputDTO.from(project,projectMemberOutputDTOS, commentOutputDTOS, views, bookmarked);
     }
 }
