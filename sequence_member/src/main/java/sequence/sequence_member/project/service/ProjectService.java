@@ -3,6 +3,7 @@ package sequence.sequence_member.project.service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -61,6 +62,13 @@ public class ProjectService {
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 수정할 수 있습니다.");
         }
+
+        // 수정 전 원본 정보 저장
+        String originalTitle = project.getTitle();
+        String originalProjectName = project.getProjectName();
+        Category originalCategory = project.getCategory();
+        int originalPersonnel = project.getPersonnel();
+
         // Project Entity에 ProjectInputDTO의 정보를 업데이트
         project.updateProject(projectUpdateDTO);
 
@@ -97,6 +105,17 @@ public class ProjectService {
         invitedMembers.removeAll(invitedMembersInDB);
 
         projectMemberService.saveProjectInvitedMemberEntities(project, invitedMembers);
+
+        // 원본 정보 사용해서 변경사항 비교
+        String updateDetails = buildUpdateDetailsWithOriginal(
+                originalTitle, originalProjectName, originalCategory, originalPersonnel,
+                projectUpdateDTO
+        );
+
+        // 멤버들에게 알림 이메일 발송
+        if (!updateDetails.isEmpty()) {
+            projectMemberService.notifyProjectUpdate(project, updateDetails);
+        }
 
         return projectGetService.getProject(projectId,request, customUserDetails);
     }
@@ -214,7 +233,32 @@ public class ProjectService {
 
     }
 
+    // 변경사항 요약 헬퍼 메서드
+    private String buildUpdateDetailsWithOriginal(String originalTitle, String originalProjectName,
+                                                  Category originalCategory, int originalPersonnel,
+                                                  ProjectUpdateDTO request) {
+        List<String> changes = new ArrayList<>();
 
+        if (!Objects.equals(originalTitle, request.getTitle())) {
+            changes.add("프로젝트 제목 변경");
+        }
+        if (!Objects.equals(originalProjectName, request.getProjectName())) {
+            changes.add("프로젝트명 변경");
+        }
+        if (!Objects.equals(originalCategory, request.getCategory())) {
+            changes.add("카테고리 변경");
+        }
+        if (originalPersonnel != request.getPersonnel()) {
+            changes.add("모집인원 변경");
+        }
+        if (request.getDeletedMembersNicknames() != null && !request.getDeletedMembersNicknames().isEmpty()) {
+            changes.add("멤버 제외");
+        }
+        if (request.getInvitedMembersNicknames() != null && !request.getInvitedMembersNicknames().isEmpty()) {
+            changes.add("새 멤버 초대");
+        }
 
+        return String.join(", ", changes);
+    }
 
 }
