@@ -15,12 +15,12 @@ import sequence.sequence_member.member.service.TokenReissueService;
 
 import java.io.IOException;
 
-@Slf4j // Lombok 어노테이션
+@Slf4j
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenReissueService tokenReissueService;
     private final JWTUtil jwtUtil;
-    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L * 60 * 1; // 1시간
+    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L * 60; // 1시간
     private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L * 60 * 24 * 7; // 7일
 
     public OAuth2SuccessHandler(

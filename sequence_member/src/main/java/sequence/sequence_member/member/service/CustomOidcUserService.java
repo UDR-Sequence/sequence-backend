@@ -72,7 +72,7 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
             throw new IllegalStateException("HttpServletRequest not available in RequestContextHolder.");
         }
 
-        logger.debug("Session ID (load): {}", request.getSession().getId());
+        logger.info("Session ID (load): {}", request.getSession().getId());
         StringBuilder sessionAttributes = new StringBuilder("[");
         Enumeration<String> attributeNames = request.getSession().getAttributeNames();
         while (attributeNames.hasMoreElements()) {
@@ -82,10 +82,10 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
             }
         }
         sessionAttributes.append("]");
-        logger.debug("Session attributes before extract: {}", sessionAttributes.toString());
+        logger.debug("Session attributes before extract: {}", sessionAttributes);
 
         String returnedSpringSecurityState = request.getParameter("state");
-        logger.debug("반환된 state (IdP로부터): {}", returnedSpringSecurityState);
+        logger.info("반환된 state (IdP로부터): {}", returnedSpringSecurityState);
 
         String BIND_STATE_PREFIX = "bind:";
 
@@ -100,9 +100,9 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
 
             if (bindingData != null) {
                 String bindStateFromMap = (String) bindingData.get("bindState");
-                Long userIdFromMap = (Long) bindingData.get("userId");
+                String usernameFromMap = (String) bindingData.get("username");
 
-                if (bindStateFromMap != null && bindStateFromMap.startsWith(BIND_STATE_PREFIX) && userIdFromMap != null) {
+                if (bindStateFromMap != null && bindStateFromMap.startsWith(BIND_STATE_PREFIX) && usernameFromMap != null) {
                     isBindingRequest = true;
                 }
                 // 세션에서 사용한 바인딩 데이터 제거 (한번 사용하면 제거)
@@ -113,8 +113,8 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
             }
         }
 
-        logger.debug("추출된 연동용 데이터: {}", bindingData);
-        logger.debug("연동 요청 여부: {}", isBindingRequest);
+        logger.info("추출된 연동용 데이터: {}", bindingData);
+        logger.info("연동 요청 여부: {}", isBindingRequest);
 
         MemberEntity member;
         if (isBindingRequest && bindingData != null) {
@@ -130,7 +130,7 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
 
     /**
      * 기존 회원에게 소셜 계정을 연동하는 로직
-     * @param bindingData 세션에서 추출된 연동 관련 데이터 (userId, bindState)
+     * @param bindingData 세션에서 추출된 연동 관련 데이터 (username, bindState)
      * @param userInfo 소셜 제공자로부터 받은 사용자 정보
      * @param provider 소셜 제공자 타입
      * @return 연동 완료된 MemberEntity
@@ -142,22 +142,22 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
             AuthProvider provider
     ) throws OAuth2AuthenticationException {
         String bindState = (String) bindingData.get("bindState");
-        Long userId = (Long) bindingData.get("userId");
+        String username = (String) bindingData.get("username");
 
-        if (userId == null || bindState == null) {
-            logger.warn("WARN: 계정 연동을 위한 데이터가 불완전합니다. (userId: {}, bindState: {})", userId, bindState);
+        if (username == null || bindState == null) {
+            logger.warn("WARN: 계정 연동을 위한 데이터가 불완전합니다. (username: {}, bindState: {})", username, bindState);
             throw new OAuth2AuthenticationException(
                     new OAuth2Error("INVALID_BINDING_REQUEST"),
                     "계정 연동을 위한 데이터가 불완전합니다. 다시 시도해주세요."
             );
         }
-        logger.debug("DEBUG: bindSocialAccount에서 가져온 userId: {} (bindState: {})", userId, bindState);
+        logger.debug("DEBUG: bindSocialAccount에서 가져온 username: {} (bindState: {})", username, bindState);
 
-        Optional<MemberEntity> memberOptional = memberRepository.findById(userId);
+        Optional<MemberEntity> memberOptional = memberRepository.findByUsernameAndIsDeletedFalse(username);
         MemberEntity member = memberOptional.orElse(null);
 
         if (member == null) {
-            logger.warn("WARN: 연동을 시도한 사용자를 찾을 수 없습니다. userId: {}", userId);
+            logger.warn("WARN: 연동을 시도한 사용자를 찾을 수 없습니다. username: {}", username);
             throw new OAuth2AuthenticationException(
                     new OAuth2Error("USER_NOT_FOUND"),
                     "연동하려는 계정을 찾을 수 없습니다."
@@ -188,7 +188,7 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
         member.addAuthProviderIfNotExists(authProvider);
         memberRepository.save(member);
 
-        logger.info("🔗 계정 연동 완료: userId = {}, Provider: {}", userId, provider);
+        logger.info("🔗 계정 연동 완료: username = {}, Provider: {}", username, provider);
         return member;
     }
 
