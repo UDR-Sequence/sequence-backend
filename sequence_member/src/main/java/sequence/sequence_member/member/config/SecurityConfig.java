@@ -11,9 +11,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import sequence.sequence_member.member.authority.OAuth2FailureHandler;
@@ -22,13 +29,15 @@ import sequence.sequence_member.member.jwt.CustomLogoutFilter;
 import sequence.sequence_member.member.jwt.JWTFilter;
 import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.jwt.LoginFilter;
+import sequence.sequence_member.member.repository.CustomAuthorizationRequestRepository;
 import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.repository.RefreshRepository;
-import sequence.sequence_member.member.service.CustomOAuth2UserService;
+import sequence.sequence_member.member.service.CustomOidcUserService;
 import sequence.sequence_member.member.service.TokenReissueService;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 
 @Configuration
 @EnableWebSecurity
@@ -43,7 +52,7 @@ public class SecurityConfig {
     private final MemberRepository memberRepository;
     private final OAuth2FailureHandler oAuth2FailureHandler;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -53,6 +62,11 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new CustomAuthorizationRequestRepository();
     }
 
     @Bean
@@ -100,23 +114,53 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/api/login", "/api/users/join", "/api/token", "/api/users/check_username", "/api/users/check_email", "/api/users/check_nickname", "/api/skills/**", "/api/users/test", "/api/auth/**").permitAll()
+                        // 인증이 필요 없는 경로들을 먼저 정의합니다.
+                        .requestMatchers(
+                                "/api/login",
+                                "/api/users/join",
+                                "/api/token",
+                                "/api/users/check_username",
+                                "/api/users/check_email",
+                                "/api/users/check_nickname",
+                                "/api/skills/**",
+                                "/api/users/test",
+                                "/api/auth/**",
+                                "/error",
+                                "/actuator/**",
+                                "/oauth2/**",
+                                "/login/oauth2/code/**",
+                                "/favicon.ico",
+                                "/.well-known/**",
+                                "/"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/archive/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/archive/{archiveId}").permitAll()
-                        .requestMatchers("/api/archive/**").authenticated()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .anyRequest().authenticated());
+                        .requestMatchers("/api/archive/**").authenticated() // 인증 필요
+                        .anyRequest().authenticated()); // 나머지 모든 요청은 인증 필요
         http
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authEndpoint -> authEndpoint
+                                .authorizationRequestRepository(authorizationRequestRepository())
+                        )
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService)
                         )
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(oAuth2FailureHandler)
                 );
+
+        LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
+        entryPoints.put(new AntPathRequestMatcher("/oauth2/authorization/**"), new Http403ForbiddenEntryPoint());
+        entryPoints.put(new AntPathRequestMatcher("/favicon.ico"), new Http403ForbiddenEntryPoint());
+        entryPoints.put(new AntPathRequestMatcher("/.well-known/**"), new Http403ForbiddenEntryPoint());
+
+        http
+                .exceptionHandling(exceptionHandling -> {
+                    DelegatingAuthenticationEntryPoint delegatingEntryPoint = new DelegatingAuthenticationEntryPoint(entryPoints);
+                    delegatingEntryPoint.setDefaultEntryPoint(new Http403ForbiddenEntryPoint()); // 기본 엔트리포인트 명시적으로 설정
+                    exceptionHandling.authenticationEntryPoint(delegatingEntryPoint);
+                });
 
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);

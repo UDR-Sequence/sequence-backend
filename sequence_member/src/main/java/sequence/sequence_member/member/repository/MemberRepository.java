@@ -11,8 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import sequence.sequence_member.global.enums.enums.AuthProvider;
-import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.util.Optional;
@@ -58,8 +56,6 @@ public interface MemberRepository extends JpaRepository<MemberEntity,Long> {
         LENGTH(m.nickname) ASC
     """)
     List<String> searchMemberNicknames(@Param("nickname") String nickname, Pageable pageable);
-
-    Optional<MemberEntity> findByEmailAndProvider(String email, AuthProvider provider);
 
     // 아이디 찾기
     @Query("""

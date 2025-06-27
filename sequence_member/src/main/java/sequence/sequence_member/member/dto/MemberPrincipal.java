@@ -3,21 +3,27 @@ package sequence.sequence_member.member.dto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import sequence.sequence_member.member.entity.MemberEntity;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class MemberPrincipal implements OAuth2User, UserDetails {
+public class MemberPrincipal implements OidcUser, UserDetails {
 
     private final MemberEntity member;
     private final Map<String, Object> attributes;
+    private final OidcIdToken idToken;
+    private final OidcUserInfo userInfo;
 
-    public MemberPrincipal(MemberEntity member, Map<String, Object> attributes) {
+    public MemberPrincipal(MemberEntity member, Map<String, Object> attributes, OidcIdToken idToken, OidcUserInfo userInfo) {
         this.member = member;
         this.attributes = attributes;
+        this.idToken = idToken;
+        this.userInfo = userInfo;
     }
 
     public MemberEntity getMember() {
@@ -69,7 +75,26 @@ public class MemberPrincipal implements OAuth2User, UserDetails {
         return member.getName();
     }
 
-    public static MemberPrincipal create(MemberEntity member, Map<String, Object> attributes) {
-        return new MemberPrincipal(member, attributes);
+    public static MemberPrincipal create(MemberEntity member, Map<String, Object> attributes, OidcIdToken idToken, OidcUserInfo userInfo) {
+        return new MemberPrincipal(member, attributes, idToken, userInfo);
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return Map.of();
+    }
+
+    @Override
+    public OidcUserInfo getUserInfo() {
+        return null;
+    }
+
+    @Override
+    public OidcIdToken getIdToken() {
+        return null;
+    }
+
+    public MemberEntity getMemberEntity() {
+        return this.member;
     }
 }

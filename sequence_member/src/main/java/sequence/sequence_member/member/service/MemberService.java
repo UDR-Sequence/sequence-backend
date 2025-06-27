@@ -16,7 +16,6 @@ import sequence.sequence_member.member.dto.MemberDTO;
 import sequence.sequence_member.member.entity.*;
 import sequence.sequence_member.member.repository.*;
 
-
 import java.util.*;
 
 @Service
@@ -65,7 +64,13 @@ public class MemberService {
             }
         }
 
-        memberEntity.setProvider(AuthProvider.LOCAL);
+        MemberAuthProvider authProvider = new MemberAuthProvider(
+                memberEntity,
+                AuthProvider.LOCAL,
+                null
+        );
+
+        memberEntity.addAuthProviderIfNotExists(authProvider);
 
         //먼저 member 정보를 저장하고 나중에 외래키 값을 저장하기 위해서 멤버 정보를 먼저 저장
         memberRepository.save(memberEntity);

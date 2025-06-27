@@ -2,18 +2,16 @@ package sequence.sequence_member.member.authority;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(OAuth2FailureHandler.class);
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
@@ -21,8 +19,7 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
                                         AuthenticationException exception)
             throws IOException {
 
-        logger.error("소셜 로그인 실패: {}", exception.getMessage());
-        exception.printStackTrace(); // 에러 로그 확인
+        log.error("소셜 로그인 실패: {}", exception.getMessage());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"error\": \"소셜 로그인에 실패했습니다: " + exception.getMessage() + "\"}");

@@ -5,33 +5,27 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-import sequence.sequence_member.global.enums.enums.AuthProvider;
+import sequence.sequence_member.member.dto.MemberPrincipal;
 import sequence.sequence_member.member.entity.MemberEntity;
 import sequence.sequence_member.member.jwt.JWTUtil;
-import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.TokenReissueService;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 @Component
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-    private final MemberRepository memberRepository;
     private final TokenReissueService tokenReissueService;
     private final JWTUtil jwtUtil;
-    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L*60*1; // 1시간
-    private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L*60*24*7; // 7일
+    private final long ACCESS_TOKEN_EXPIRED_TIME = 600000L * 60; // 1시간
+    private final long REFRESH_TOKEN_EXPIRED_TIME = 600000L * 60 * 24 * 7; // 7일
 
     public OAuth2SuccessHandler(
-            MemberRepository memberRepository,
             TokenReissueService tokenReissueService,
             JWTUtil jwtUtil) {
-        this.memberRepository = memberRepository;
         this.tokenReissueService = tokenReissueService;
         this.jwtUtil = jwtUtil;
     }
@@ -41,27 +35,20 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
-        DefaultOidcUser oidcUser = (DefaultOidcUser) authentication.getPrincipal();
+        MemberPrincipal memberPrincipal = (MemberPrincipal) authentication.getPrincipal();
 
-        log.info("OAuth2 oidcUser={}", oidcUser);
+        log.info("OAuth2 인증 성공, Principal: {}", memberPrincipal);
 
-        String email = oidcUser.getEmail();
-        String name = oidcUser.getFullName();
-        String providerId = oidcUser.getName(); // 고유 사용자 ID
+        MemberEntity member = memberPrincipal.getMemberEntity();
 
-        Optional<MemberEntity> optionalUser = memberRepository.findByEmail(email);
+        String email = member.getEmail();
+        if (email == null || email.isEmpty()) {
+            log.error("인증된 Principal에서 이메일(email)이 null 또는 비어있습니다. 로그인 처리 실패.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email not found in OAuth2 principal.");
+            return;
+        }
 
-        MemberEntity member = optionalUser.orElseGet(() -> {
-            MemberEntity newUser = MemberEntity.createSocialMember(
-                    email,
-                    name,
-                    AuthProvider.GOOGLE,
-                    providerId
-            );
-            return memberRepository.save(newUser);
-        });
-
-        log.info("OAuth2 로그인 성공: email={}, provider={}", member.getEmail(), member.getProvider());
+        log.info("OAuth2 로그인 성공: email={}", email);
 
         String username = member.getUsername();
 
@@ -76,7 +63,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // 쿠키에 refreshToken 설정
         Cookie refreshTokenCookie = new Cookie("refresh", refresh);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false); // 배포 시 true (https)
+        refreshTokenCookie.setSecure(false); // 로컬 HTTP 환경에서는 false, 배포 HTTPS 시 true로 변경해야 합니다.
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge((int) (REFRESH_TOKEN_EXPIRED_TIME / 1000));
         response.addCookie(refreshTokenCookie);
