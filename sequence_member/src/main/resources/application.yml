@@ -84,11 +84,7 @@ management:
   endpoint:
     prometheus:
       enabled: true
-      health:
-      show-details: always
-  health:
-    mail:
-      enabled: false
+  
 server:
   tomcat:
     mbeanregistry:
