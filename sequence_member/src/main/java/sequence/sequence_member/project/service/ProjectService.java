@@ -56,27 +56,35 @@ public class ProjectService {
     public ProjectOutputDTO updateProject(Long projectId, CustomUserDetails customUserDetails, ProjectUpdateDTO projectUpdateDTO,HttpServletRequest request) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+
         MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new UserNotFindException("요청하는 유저가 존재하지 않습니다."));
+
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 수정할 수 있습니다.");
         }
+
         // Project Entity에 ProjectInputDTO의 정보를 업데이트
         project.updateProject(projectUpdateDTO);
 
         // 삭제된 멤버들은 ProjectMember에서 삭제
         List<MemberEntity> deletedMembers = memberRepository.findByNicknameIn(projectUpdateDTO.getDeletedMembersNicknames());
+
         for(MemberEntity deletedMember : deletedMembers){
             ProjectMember projectMember = projectMemberRepository.findByMemberIdAndProjectId(
                     deletedMember.getId(), projectId);
+
             if(projectMember==null){
                 log.error("삭제된 멤버가 프로젝트에 존재하지 않습니다.");
                 continue;
             }
+
             if(deletedMembers.contains(writer)){
                 throw new BAD_REQUEST_EXCEPTION("작성자는 멤버에서 삭제할 수 없습니다.");
             }
+
             projectMember.softDelete(customUserDetails.getUsername());
+
             projectMemberRepository.save(projectMember);
         }
 
@@ -105,11 +113,14 @@ public class ProjectService {
     public void deleteProject(Long projectId, CustomUserDetails customUserDetails){
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CanNotFindResourceException("해당 프로젝트가 존재하지 않습니다."));
+
         MemberEntity writer = memberRepository.findByUsernameAndIsDeletedFalse(customUserDetails.getUsername())
                 .orElseThrow(() -> new UserNotFindException("해당 유저가 존재하지 않습니다."));
+
         if (!project.getWriter().equals(writer)) {
             throw new AuthException("작성자만 삭제할 수 있습니다.");
         }
+
         project.softDelete(customUserDetails.getUsername());
 
         //북마크 삭제
@@ -129,6 +140,7 @@ public class ProjectService {
         for (ProjectInvitedMember invitedMember : invitedMembers) {
             invitedMember.softDelete(username);
         }
+
         projectInvitedMemberRepository.saveAll(invitedMembers);
     }
 
@@ -136,6 +148,7 @@ public class ProjectService {
         for(ProjectMember member : projectMembers){
             member.softDelete(username);
         }
+
         projectMemberRepository.saveAll(projectMembers);
     }
 
@@ -213,8 +226,5 @@ public class ProjectService {
         return projectFilterOutputDTOS;
 
     }
-
-
-
 
 }
