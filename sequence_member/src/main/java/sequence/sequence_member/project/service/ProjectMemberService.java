@@ -3,6 +3,7 @@ package sequence.sequence_member.project.service;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import sequence.sequence_member.project.entity.ProjectMember;
 import sequence.sequence_member.project.repository.ProjectInvitedMemberRepository;
 import sequence.sequence_member.project.repository.ProjectMemberRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProjectMemberService {
@@ -28,6 +30,7 @@ public class ProjectMemberService {
     @Transactional
     public void saveProjectInvitedMember(ProjectInputDTO projectInputDTO, MemberEntity writer, Project project) {
         if(projectInputDTO.getInvitedMembersNicknames()==null || projectInputDTO.getInvitedMembersNicknames().isEmpty()){
+            log.error("멤버를 찾을 수 없음");
             return;
         }
         projectInputDTO.getInvitedMembersNicknames().remove(writer.getNickname()); // 본인은 제거
@@ -54,7 +57,9 @@ public class ProjectMemberService {
     public List<ProjectMemberOutputDTO> getProjectMemberOutputDTOS(Project project) {
         //Member정보중 memberId, nickname, profileImg만을 추출하여 응답데이터에 포함함
         List<ProjectMember> projectMembers = project.getMembers();
+
         List<ProjectMemberOutputDTO> projectMemberOutputDTOS = new ArrayList<>();
+
         for (ProjectMember projectMember : projectMembers) {
             projectMemberOutputDTOS.add(ProjectMemberOutputDTO.builder()
                     .nickname(projectMember.getMember().getNickname())

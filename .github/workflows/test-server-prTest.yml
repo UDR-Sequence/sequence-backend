@@ -52,6 +52,9 @@ jobs:
       GOOGLE_AUTHORIZATION_URI: ${{secrets.GOOGLE_AUTHORIZATION_URI}}
       GOOGLE_TOKEN_URI: ${{secrets.GOOGLE_TOKEN_URI}}
       GOOGLE_USER_INFO_URI: ${{secrets.GOOGLE_USER_INFO_URI}}
+      NAVER_MAIL_USERNAME: ${{secrets.NAVER_MAIL_USERNAME}}
+      NAVER_MAIL_PASSWORD: ${{secrets.NAVER_MAIL_PASSWORD}}
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17

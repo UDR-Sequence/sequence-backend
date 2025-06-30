@@ -59,6 +59,8 @@ jobs:
       GOOGLE_AUTHORIZATION_URI: ${{secrets.GOOGLE_AUTHORIZATION_URI}}
       GOOGLE_TOKEN_URI: ${{secrets.GOOGLE_TOKEN_URI}}
       GOOGLE_USER_INFO_URI: ${{secrets.GOOGLE_USER_INFO_URI}}
+      NAVER_MAIL_USERNAME: ${{secrets.NAVER_MAIL_USERNAME}}
+      NAVER_MAIL_PASSWORD: ${{secrets.NAVER_MAIL_PASSWORD}}
 
     steps:
       - uses: actions/checkout@v4
@@ -178,6 +180,8 @@ jobs:
               -e GOOGLE_AUTHORIZATION_URI=${{secrets.GOOGLE_AUTHORIZATION_URI}} \
               -e GOOGLE_TOKEN_URI=${{secrets.GOOGLE_TOKEN_URI}} \
               -e GOOGLE_USER_INFO_URI=${{secrets.GOOGLE_USER_INFO_URI}} \
+              -e NAVER_MAIL_USERNAME=${{secrets.NAVER_MAIL_USERNAME}} \
+              -e NAVER_MAIL_PASSWORD=${{secrets.NAVER_MAIL_PASSWORD}} \
               ${{secrets.DOCKER_USERNAME}}/sequence:latest
             
             # monitoring 네트워크 연결 추가
