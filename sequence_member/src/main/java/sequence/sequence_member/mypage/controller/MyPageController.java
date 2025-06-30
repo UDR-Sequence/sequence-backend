@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,14 +32,12 @@ public class MyPageController {
 
     @GetMapping("/api/mypage")
     public ResponseEntity<ApiResponseData<MyPageResponseDTO>> getMyProfile(
-            @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
-            @RequestParam(defaultValue = "10") int size,  // 사이즈 기본값 10
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         String username = customUserDetails.getUsername();
 
         try {
-            MyPageResponseDTO myPageDTO = myPageService.getMyProfile(username, page, size, customUserDetails);
+            MyPageResponseDTO myPageDTO = myPageService.getMyProfile(username, customUserDetails);
             // 성공 응답 생성
             return ResponseEntity.ok(ApiResponseData.success(myPageDTO, "사용자 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
@@ -73,12 +70,10 @@ public class MyPageController {
     @GetMapping("/api/mypage/{nickname}")
     public ResponseEntity<ApiResponseData<MyPageResponseDTO>> getUserProfile(
             @PathVariable String nickname,
-            @RequestParam(defaultValue = "0") int page,  // 페이지 기본값 0
-            @RequestParam(defaultValue = "10") int size,   // 사이즈 기본값 10
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         try {
-            MyPageResponseDTO userProfile = myPageService.getUserProfile(nickname, page, size, customUserDetails);
+            MyPageResponseDTO userProfile = myPageService.getUserProfile(nickname, customUserDetails);
             return ResponseEntity.ok(ApiResponseData.success(userProfile, nickname + "님의 정보를 성공적으로 가져왔습니다."));
         } catch (Exception e) {
             ApiResponseData errorResponse = ApiResponseData.failure(

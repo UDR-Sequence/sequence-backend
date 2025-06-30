@@ -57,13 +57,21 @@ spring:
             authorization-uri: ${GOOGLE_AUTHORIZATION_URI}
             token-uri: ${GOOGLE_TOKEN_URI}
             user-info-uri: ${GOOGLE_USER_INFO_URI}
+  server:
+    servlet:
+      session:
+        cookie:
+          same-site: None
+          secure: false # 로컬 HTTP 환경에서'false'로 설정
+          httponly: true
+
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 6000ms
-  
+
 
 minio:
   endpoint: ${MINIO_ENDPOINT}
@@ -80,11 +88,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus
+        include: "*"
+        # /actuator/ 이하의 모든 엔드포인트 노출 설정
   endpoint:
+    health:
+      show-details: always
+      # 이 설정은 /actuator/health 엔드포인트에서 헬스 체크 정보를 항상 상세히 보여주도록 설정합니다. 기본적으로, 헬스 체크 엔드포인트는 요약된 상태 정보만 제공하며, 상세 정보는 노출되지 않습니다.
     prometheus:
       enabled: true
-  
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 server:
   tomcat:
     mbeanregistry:

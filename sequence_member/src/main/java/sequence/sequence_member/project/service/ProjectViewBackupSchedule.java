@@ -28,7 +28,7 @@ public class ProjectViewBackupSchedule {
         Set<String> keys = redisTemplate.keys("viewCount:*");
 
         if (keys == null || keys.isEmpty()) {
-            log.info("저장된 조회수 데이터가 없습니다.");
+            log.error("저장된 조회수 데이터가 없습니다.");
             return;
         }
 

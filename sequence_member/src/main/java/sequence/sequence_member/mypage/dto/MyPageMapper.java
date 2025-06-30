@@ -1,7 +1,6 @@
 package sequence.sequence_member.mypage.dto;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import sequence.sequence_member.archive.dto.MyPageEvaluationDTO;
@@ -47,18 +46,18 @@ public class MyPageMapper {
      * 멤버와 아카이브 페이지네이션 객체를 ResponseDTO 매핑하는 메인 함수입니다.
      *
      * @param member ResponseDTO로 매핑할 멤버 객체
-     * @param archivePage ResponseDTO로 매핑할 archive 페이지네이션 객체
+     * @param archiveList ResponseDTO로 매핑할 archive 페이지네이션 객체
      * @return 사용자의 마이페이지 정보를 담은 MyPageResponseDTO
      */
     public MyPageResponseDTO toMyPageResponseDto(
             MemberEntity member,
-            Page<Archive> archivePage,
+            List<Archive> archiveList,
             List<InvitedProjectWithCommentDTO> invitedProjects
     ) {
         return new MyPageResponseDTO(
                 toBasicInfoDto(member),
                 toCareerHistoryDto(member),
-                toPortfolioDto(archivePage, invitedProjects),
+                toPortfolioDto(archiveList, invitedProjects),
                 toTeamFeedbackDto(member),
                 getMyActivity(member)
         );
@@ -140,17 +139,19 @@ public class MyPageMapper {
     /**
      * 내가 작성한 아카이브와 초대받은 프로젝트 리스트를 PortfolioDTO로 변환합니다.
      *
-     * @param archivePage
+     * @param archiveList
      * @return PortfolioDto 객체
      */
-    private PortfolioDTO toPortfolioDto(Page<Archive> archivePage, List<InvitedProjectWithCommentDTO> invitedProjects) {
-        Page<ArchiveSummaryDTO> archiveDTO = archivePage.map(archive -> ArchiveSummaryDTO.builder()
-                .id(archive.getId())
-                .title(archive.getTitle())
-                .thumbnail(archive.getThumbnail())
-                .startDate(archive.getStartDate())
-                .endDate(archive.getEndDate())
-                .build());
+    private PortfolioDTO toPortfolioDto(List<Archive> archiveList, List<InvitedProjectWithCommentDTO> invitedProjects) {
+        List<ArchiveSummaryDTO> archiveDTO = archiveList.stream()
+                .map(archive -> ArchiveSummaryDTO.builder()
+                    .id(archive.getId())
+                    .title(archive.getTitle())
+                    .thumbnail(archive.getThumbnail())
+                    .startDate(archive.getStartDate())
+                    .endDate(archive.getEndDate())
+                    .build())
+                .collect(Collectors.toList());
 
         return new PortfolioDTO(archiveDTO, invitedProjects);
     }
