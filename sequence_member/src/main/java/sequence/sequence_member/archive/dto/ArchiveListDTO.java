@@ -18,6 +18,7 @@ public class ArchiveListDTO {
         private Long id;
         private String title;
         private String writerNickname;
+        private String writerProfileImg;  // 작성자 프로필 이미지 추가
         private String thumbnail;
         private int commentCount;
         private int view;  // 조회수 추가

@@ -191,7 +191,7 @@ public class ArchiveService {
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
+        Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalseWithWriter(Status.평가완료, pageable);
         
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
             .map(archive -> {
@@ -203,6 +203,7 @@ public class ArchiveService {
                     .id(archive.getId())
                     .title(archive.getTitle())
                     .writerNickname(archive.getWriter().getNickname())
+                    .writerProfileImg(archive.getWriter().getProfileImg())
                     .thumbnail(archive.getThumbnail())
                     .commentCount(archive.getComments().size())
                     .view(archive.getView())
@@ -236,15 +237,15 @@ public class ArchiveService {
         Page<Archive> archivePage;
         
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(
                 category, keyword.trim(), Status.평가완료, pageable);
         } else if (category != null) {
-            archivePage = archiveRepository.findByCategoryAndStatusAndIsDeletedFalse(category, Status.평가완료, pageable);
+            archivePage = archiveRepository.findByCategoryAndStatusAndIsDeletedFalseWithWriter(category, Status.평가완료, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
+            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(
                 keyword.trim(), Status.평가완료, pageable);
         } else {
-            archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
+            archivePage = archiveRepository.findByStatusAndIsDeletedFalseWithWriter(Status.평가완료, pageable);
         }
 
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
@@ -257,6 +258,7 @@ public class ArchiveService {
                     .id(archive.getId())
                     .title(archive.getTitle())
                     .writerNickname(archive.getWriter().getNickname())
+                    .writerProfileImg(archive.getWriter().getProfileImg())
                     .thumbnail(archive.getThumbnail())
                     .commentCount(archive.getComments().size())
                     .view(archive.getView())
