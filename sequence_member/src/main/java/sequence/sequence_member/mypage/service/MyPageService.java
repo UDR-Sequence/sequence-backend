@@ -3,10 +3,6 @@ package sequence.sequence_member.mypage.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +11,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.multipart.MultipartFile;
 import sequence.sequence_member.archive.entity.Archive;
 import sequence.sequence_member.archive.repository.ArchiveRepository;
+import sequence.sequence_member.global.enums.enums.Status;
 import sequence.sequence_member.global.exception.BAD_REQUEST_EXCEPTION;
 import sequence.sequence_member.global.response.ApiResponseData;
 import sequence.sequence_member.global.response.Code;
@@ -48,24 +45,19 @@ public class MyPageService {
      * 주어진 사용자명(username)에 해당하는 마이페이지 정보를 조회합니다.
      *
      * @param username 조회할 사용자의 이름
-     * @param page archive 페이지네이션 파라미터
-     * @param size archive 페이지네이션 파라미터
      * @param customUserDetails 포트폴리오 객체에서 사용하는 파라미터
      *
      * @return 사용자의 마이페이지 정보를 담은 DTO
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDTO getMyProfile(String username, int page, int size, CustomUserDetails customUserDetails) {
+    public MyPageResponseDTO getMyProfile(String username, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByUsernameAndIsDeletedFalse(username)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
-        Page<Archive> archivePage = archiveRepository.findByWriterAndIsDeletedFalse(member, pageable);
-
+        List<Archive> archiveList = archiveRepository.findTop5ByMemberIdAndStatus(member.getId(), Status.평가완료);
         List<InvitedProjectWithCommentDTO> invitedProjects = getInvitedProjects(customUserDetails);
 
-        return myPageMapper.toMyPageResponseDto(member, archivePage, invitedProjects);
-
+        return myPageMapper.toMyPageResponseDto(member, archiveList, invitedProjects);
     }
 
     /**
@@ -99,18 +91,16 @@ public class MyPageService {
      * @return 초대받은 프로젝트 정보와 각 프로젝트의 댓글 수를 담은 DTO 리스트
      * @throws EntityNotFoundException 사용자를 찾을 수 없는 경우 발생
      */
-    public MyPageResponseDTO getUserProfile(String nickname, int page, int size, CustomUserDetails customUserDetails) {
+    public MyPageResponseDTO getUserProfile(String nickname, CustomUserDetails customUserDetails) {
         MemberEntity member = memberRepository.findByNickname(nickname)
                 .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다."));
 
         if(member.isDeleted()) throw new BAD_REQUEST_EXCEPTION("탈퇴한 사용자입니다.");
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDateTime").descending());
-        Page<Archive> archivePage = archiveRepository.findByWriterAndIsDeletedFalse(member, pageable);
-
+        List<Archive> archiveList = archiveRepository.findTop5ByMemberIdAndStatus(member.getId(), Status.평가완료);
         List<InvitedProjectWithCommentDTO> invitedProjects = getInvitedProjects(customUserDetails);
 
-        return myPageMapper.toMyPageResponseDto(member, archivePage, invitedProjects);
+        return myPageMapper.toMyPageResponseDto(member, archiveList, invitedProjects);
     }
 
     /**
