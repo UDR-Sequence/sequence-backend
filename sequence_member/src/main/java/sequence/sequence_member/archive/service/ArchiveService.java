@@ -191,7 +191,7 @@ public class ArchiveService {
         }
 
         Pageable pageable = createPageableWithSort(page, sortType);
-        Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
+        Page<Archive> archivePage = archiveRepository.findByStatusAndIsDeletedFalseWithWriter(Status.평가완료, pageable);
         
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
             .map(archive -> {
@@ -203,6 +203,7 @@ public class ArchiveService {
                     .id(archive.getId())
                     .title(archive.getTitle())
                     .writerNickname(archive.getWriter().getNickname())
+                    .writerProfileImg(archive.getWriter().getProfileImg())
                     .thumbnail(archive.getThumbnail())
                     .commentCount(archive.getComments().size())
                     .view(archive.getView())
@@ -236,15 +237,15 @@ public class ArchiveService {
         Page<Archive> archivePage;
         
         if (category != null && keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
+            archivePage = archiveRepository.findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(
                 category, keyword.trim(), Status.평가완료, pageable);
         } else if (category != null) {
-            archivePage = archiveRepository.findByCategoryAndStatusAndIsDeletedFalse(category, Status.평가완료, pageable);
+            archivePage = archiveRepository.findByCategoryAndStatusAndIsDeletedFalseWithWriter(category, Status.평가완료, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(
+            archivePage = archiveRepository.findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(
                 keyword.trim(), Status.평가완료, pageable);
         } else {
-            archivePage = archiveRepository.findByStatusAndIsDeletedFalse(Status.평가완료, pageable);
+            archivePage = archiveRepository.findByStatusAndIsDeletedFalseWithWriter(Status.평가완료, pageable);
         }
 
         List<ArchiveListDTO.ArchiveSimpleDTO> archives = archivePage.getContent().stream()
@@ -257,6 +258,7 @@ public class ArchiveService {
                     .id(archive.getId())
                     .title(archive.getTitle())
                     .writerNickname(archive.getWriter().getNickname())
+                    .writerProfileImg(archive.getWriter().getProfileImg())
                     .thumbnail(archive.getThumbnail())
                     .commentCount(archive.getComments().size())
                     .view(archive.getView())
@@ -287,9 +289,17 @@ public class ArchiveService {
         return PageRequest.of(page, 18, sort);
     }
 
+    // 댓글 작성자의 프로필 이미지를 가져오는 헬퍼 메서드
+    private String getCommentWriterProfileImg(String writerNickname) {
+        return memberRepository.findByNickname(writerNickname)
+            .map(MemberEntity::getProfileImg)
+            .orElse("default.png");  // 기본 이미지
+    }
+
     // Archive 엔티티를 DTO로 변환
     private ArchiveOutputDTO convertToDTO(Archive archive, String username, int viewCount) {
         List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
+            .filter(archiveMember -> !archiveMember.getMember().getId().equals(archive.getWriter().getId()))
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
@@ -319,7 +329,8 @@ public class ArchiveService {
         for (ArchiveComment parentComment : parentComments) {
             ArchiveCommentOutputDTO.CommentDTO parentDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                     .id(parentComment.getId())
-                    .writer(parentComment.getWriter())
+                    .commentWriter(parentComment.getWriter())
+                    .commentWriterProfileImg(getCommentWriterProfileImg(parentComment.getWriter()))
                     .content(parentComment.isDeleted() ? "삭제된 댓글입니다." : parentComment.getContent())
                     .isDeleted(parentComment.isDeleted())
                     .createdDateTime(parentComment.getCreatedDateTime())
@@ -333,7 +344,8 @@ public class ArchiveService {
             for (ArchiveComment childComment : childComments) {
                 ArchiveCommentOutputDTO.CommentDTO childDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                         .id(childComment.getId())
-                        .writer(childComment.getWriter())
+                        .commentWriter(childComment.getWriter())
+                        .commentWriterProfileImg(getCommentWriterProfileImg(childComment.getWriter()))
                         .content(childComment.isDeleted() ? "삭제된 댓글입니다." : childComment.getContent())
                         .isDeleted(childComment.isDeleted())
                         .createdDateTime(childComment.getCreatedDateTime())
@@ -347,7 +359,9 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
+                .writerUsername(archive.getWriter().getUsername())
                 .writerNickname(archive.getWriter().getNickname())
+                .writerProfileImg(archive.getWriter().getProfileImg())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())

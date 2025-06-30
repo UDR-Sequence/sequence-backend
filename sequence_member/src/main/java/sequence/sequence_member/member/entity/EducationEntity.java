@@ -2,7 +2,7 @@ package sequence.sequence_member.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import sequence.sequence_member.global.enums.enums.Degree;
 import sequence.sequence_member.global.enums.enums.ProjectRole;
@@ -18,6 +18,7 @@ import java.util.List;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Table(name="education")
 @NoArgsConstructor
 public class EducationEntity extends BaseTimeEntity {

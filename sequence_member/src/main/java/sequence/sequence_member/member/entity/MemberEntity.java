@@ -3,7 +3,6 @@ package sequence.sequence_member.member.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import sequence.sequence_member.global.enums.enums.AuthProvider;
 import sequence.sequence_member.global.utils.BaseTimeEntity;
 import sequence.sequence_member.member.dto.MemberDTO;
 
@@ -99,18 +98,19 @@ public class MemberEntity extends BaseTimeEntity {
         return memberEntity;
     }
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private AuthProvider provider = AuthProvider.LOCAL;
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberAuthProvider> authProviders = new ArrayList<>();
 
-    @Column(length = 100)
-    private String providerId;
+    public void addAuthProviderIfNotExists(MemberAuthProvider authProvider) {
+        if (!this.authProviders.contains(authProvider)) {
+            this.authProviders.add(authProvider);
+            authProvider.setMember(this);
+        }
+    }
 
     public static MemberEntity createSocialMember(
             String email,
-            String name,
-            AuthProvider provider,
-            String providerId
+            String name
     ) {
         MemberEntity member = new MemberEntity();
         member.setUsername(email);
@@ -124,8 +124,6 @@ public class MemberEntity extends BaseTimeEntity {
         member.setNickname("user_" + UUID.randomUUID().toString().substring(0, 8));
         member.setSchoolName("소셜 로그인 사용자");
         member.setIntroduction("소셜 로그인 사용자입니다.");
-        member.setProvider(provider);
-        member.setProviderId(providerId);
         return member;
     }
 }

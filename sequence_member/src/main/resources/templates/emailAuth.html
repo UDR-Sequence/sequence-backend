@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sequence 이메일 인증</title>
+</head>
+
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #121212; width: 100%;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; color: #E0E0E0;">
+          <tr>
+            <td align="left" style="padding-bottom: 20px;">
+              <h1 style="color: #D9230F; font-family: 'Georgia', 'Times New Roman', Times, serif; font-size: 36px; margin: 0;">Sequence</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px; background-color: #1e1e1e; border-radius: 8px;">
+              <h2 style="font-size: 24px; color: #D9230F; margin: 0 0 20px 0;">이메일 인증 안내</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #BDBDBD; margin: 0 0 20px 0;">회원가입을 완료하려면 아래 인증 코드를 입력해주세요.</p>
+              
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #2a2a2a; border-radius: 8px; margin: 20px 0;">
+                <tr>
+                  <td align="center" style="padding: 25px;">
+                    <span style="font-size: 28px; font-weight: bold; color: #FFFFFF; letter-spacing: 5px;" th:text="${token}">A1B2C3</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="font-size: 14px; line-height: 1.6; color: #BDBDBD;">본인이 요청하지 않은 인증 메일이라면 이 메일을 무시하셔도 좋습니다.</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="font-size: 12px; color: #888888; padding: 30px 0;">
+              <p style="margin: 0;">&copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Sequence. All Rights Reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -20,11 +20,19 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 기본 조회 - 삭제되지 않은 아카이브만
     Optional<Archive> findByIdAndIsDeletedFalse(Long id);
     
+    // 작성자 정보를 함께 조회하는 최적화된 메서드 (FETCH JOIN 사용)
+    @Query("SELECT a FROM Archive a JOIN FETCH a.writer WHERE a.id = :id AND a.isDeleted = false")
+    Optional<Archive> findByIdAndIsDeletedFalseWithWriter(@Param("id") Long id);
+    
     // 전체 목록 조회 - 삭제되지 않은 것만
     Page<Archive> findByIsDeletedFalse(Pageable pageable);
     
     // 상태별 조회 - 삭제되지 않은 것만
     Page<Archive> findByStatusAndIsDeletedFalse(Status status, Pageable pageable);
+    
+    // 상태별 조회 - 작성자 정보 포함 (FETCH JOIN 사용)
+    @Query("SELECT a FROM Archive a JOIN FETCH a.writer WHERE a.status = :status AND a.isDeleted = false")
+    Page<Archive> findByStatusAndIsDeletedFalseWithWriter(@Param("status") Status status, Pageable pageable);
     
     // 카테고리별 조회 - 삭제되지 않은 것만
     Page<Archive> findByCategoryAndIsDeletedFalse(Category category, Pageable pageable);
@@ -32,17 +40,29 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 카테고리와 상태로 조회 - 삭제되지 않은 것만
     Page<Archive> findByCategoryAndStatusAndIsDeletedFalse(Category category, Status status, Pageable pageable);
     
+    // 카테고리와 상태로 조회 - 작성자 정보 포함 (FETCH JOIN 사용)
+    @Query("SELECT a FROM Archive a JOIN FETCH a.writer WHERE a.category = :category AND a.status = :status AND a.isDeleted = false")
+    Page<Archive> findByCategoryAndStatusAndIsDeletedFalseWithWriter(@Param("category") Category category, @Param("status") Status status, Pageable pageable);
+    
     // 제목으로 검색 - 삭제되지 않은 것만
     Page<Archive> findByTitleContainingIgnoreCaseAndIsDeletedFalse(String title, Pageable pageable);
     
     // 제목으로 검색하고 상태로 필터링 - 삭제되지 않은 것만
     Page<Archive> findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(String title, Status status, Pageable pageable);
     
+    // 제목으로 검색하고 상태로 필터링 - 작성자 정보 포함 (FETCH JOIN 사용)
+    @Query("SELECT a FROM Archive a JOIN FETCH a.writer WHERE a.title LIKE %:title% AND a.status = :status AND a.isDeleted = false")
+    Page<Archive> findByTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(@Param("title") String title, @Param("status") Status status, Pageable pageable);
+    
     // 카테고리와 제목으로 검색 - 삭제되지 않은 것만
     Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndIsDeletedFalse(Category category, String title, Pageable pageable);
     
     // 카테고리와 제목으로 검색하고 상태로 필터링 - 삭제되지 않은 것만
     Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalse(Category category, String title, Status status, Pageable pageable);
+    
+    // 카테고리와 제목으로 검색하고 상태로 필터링 - 작성자 정보 포함 (FETCH JOIN 사용)
+    @Query("SELECT a FROM Archive a JOIN FETCH a.writer WHERE a.category = :category AND a.title LIKE %:title% AND a.status = :status AND a.isDeleted = false")
+    Page<Archive> findByCategoryAndTitleContainingIgnoreCaseAndStatusAndIsDeletedFalseWithWriter(@Param("category") Category category, @Param("title") String title, @Param("status") Status status, Pageable pageable);
     
     // 멤버 ID로 아카이브 검색 - 삭제되지 않은 것만
     @Query("SELECT a FROM Archive a JOIN a.archiveMembers am WHERE am.member.id = :memberId AND a.isDeleted = false")
