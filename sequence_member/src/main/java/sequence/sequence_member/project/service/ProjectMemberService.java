@@ -20,11 +20,13 @@ import sequence.sequence_member.project.repository.ProjectMemberRepository;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectMemberService {
 
     private final ProjectMemberRepository projectMemberRepository;
     private final MemberRepository memberRepository;
     private final ProjectInvitedMemberRepository projectInvitedMemberRepository;
+    private final ProjectInviteEmailService projectInviteEmailService;
 
     // 프로젝트 초대 멤버를 저장하는 함수
     @Transactional
@@ -40,9 +42,14 @@ public class ProjectMemberService {
 
     // 초대된 멤버들을 저장하는 함수
     public void saveProjectInvitedMemberEntities(Project project, List<MemberEntity> invitedMembers){
+
         for(MemberEntity member : invitedMembers){
             ProjectInvitedMember entity = ProjectInvitedMember.fromProjectAndMember(project,member);
             projectInvitedMemberRepository.save(entity);
+
+            // 초대 이메일 발송
+            projectInviteEmailService.sendInviteEmail(project, member);
+            log.info("프로젝트 초대 이메일 발송 - 프로젝트: {}, 멤버: {}", project.getProjectName(), member.getNickname());
         }
     }
 
@@ -68,6 +75,32 @@ public class ProjectMemberService {
         }
 
         return projectMemberOutputDTOS;
+    }
+
+    // 프로젝트 수정 시 멤버들에게 알림 이메일 발송
+    @Transactional(readOnly = true)
+    public void notifyProjectUpdate(Project project, String updateDetails) {
+        try {
+            List<ProjectMember> projectMembers = project.getMembers();
+
+            if (projectMembers != null && !projectMembers.isEmpty()) {
+                // MemberEntity 리스트로 변환
+                List<MemberEntity> memberList = projectMembers.stream()
+                        .map(ProjectMember::getMember)
+                        .filter(member -> member != null)
+                        .toList();
+
+                // 리스트로 전달 (현재 메서드 시그니처에 맞게)
+                projectInviteEmailService.sendProjectUpdateEmail(project, memberList, updateDetails);
+
+                log.info("프로젝트 수정 알림 발송 완료 - 프로젝트: {}, 대상자: {}명",
+                        project.getProjectName(), memberList.size());
+            }
+
+        } catch (Exception e) {
+            log.error("프로젝트 수정 알림 실패 - 프로젝트: {}, 오류: {}",
+                    project.getProjectName(), e.getMessage());
+        }
     }
 
 }
