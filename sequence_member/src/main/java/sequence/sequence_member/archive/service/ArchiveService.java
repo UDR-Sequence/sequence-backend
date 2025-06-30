@@ -299,6 +299,7 @@ public class ArchiveService {
     // Archive 엔티티를 DTO로 변환
     private ArchiveOutputDTO convertToDTO(Archive archive, String username, int viewCount) {
         List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
+            .filter(archiveMember -> !archiveMember.getMember().getId().equals(archive.getWriter().getId()))
             .map(archiveMember -> ArchiveOutputDTO.ArchiveMemberDTO.builder()
                 .username(archiveMember.getMember().getUsername())
                 .nickname(archiveMember.getMember().getNickname())
@@ -328,8 +329,8 @@ public class ArchiveService {
         for (ArchiveComment parentComment : parentComments) {
             ArchiveCommentOutputDTO.CommentDTO parentDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                     .id(parentComment.getId())
-                    .writer(parentComment.getWriter())
-                    .writerProfileImg(getCommentWriterProfileImg(parentComment.getWriter()))
+                    .commentWriter(parentComment.getWriter())
+                    .commentWriterProfileImg(getCommentWriterProfileImg(parentComment.getWriter()))
                     .content(parentComment.isDeleted() ? "삭제된 댓글입니다." : parentComment.getContent())
                     .isDeleted(parentComment.isDeleted())
                     .createdDateTime(parentComment.getCreatedDateTime())
@@ -343,8 +344,8 @@ public class ArchiveService {
             for (ArchiveComment childComment : childComments) {
                 ArchiveCommentOutputDTO.CommentDTO childDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                         .id(childComment.getId())
-                        .writer(childComment.getWriter())
-                        .writerProfileImg(getCommentWriterProfileImg(childComment.getWriter()))
+                        .commentWriter(childComment.getWriter())
+                        .commentWriterProfileImg(getCommentWriterProfileImg(childComment.getWriter()))
                         .content(childComment.isDeleted() ? "삭제된 댓글입니다." : childComment.getContent())
                         .isDeleted(childComment.isDeleted())
                         .createdDateTime(childComment.getCreatedDateTime())
@@ -358,7 +359,9 @@ public class ArchiveService {
 
         return ArchiveOutputDTO.builder()
                 .id(archive.getId())
+                .writerUsername(archive.getWriter().getUsername())
                 .writerNickname(archive.getWriter().getNickname())
+                .writerProfileImg(archive.getWriter().getProfileImg())
                 .title(archive.getTitle())
                 .description(archive.getDescription())
                 .startDate(archive.getStartDate())
