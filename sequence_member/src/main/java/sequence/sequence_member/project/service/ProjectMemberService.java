@@ -20,7 +20,6 @@ import sequence.sequence_member.project.repository.ProjectMemberRepository;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ProjectMemberService {
 
     private final ProjectMemberRepository projectMemberRepository;
