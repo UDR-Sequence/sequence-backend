@@ -24,6 +24,7 @@ public class ArchiveCommentOutputDTO {
     public static class CommentDTO {
         private Long id;
         private String writer;
+        private String writerProfileImg;
         private String content;
         private boolean isDeleted;
         private LocalDateTime createdDateTime;

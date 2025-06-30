@@ -289,6 +289,13 @@ public class ArchiveService {
         return PageRequest.of(page, 18, sort);
     }
 
+    // 댓글 작성자의 프로필 이미지를 가져오는 헬퍼 메서드
+    private String getCommentWriterProfileImg(String writerNickname) {
+        return memberRepository.findByNickname(writerNickname)
+            .map(MemberEntity::getProfileImg)
+            .orElse("default.png");  // 기본 이미지
+    }
+
     // Archive 엔티티를 DTO로 변환
     private ArchiveOutputDTO convertToDTO(Archive archive, String username, int viewCount) {
         List<ArchiveOutputDTO.ArchiveMemberDTO> memberDTOs = archive.getArchiveMembers().stream()
@@ -322,6 +329,7 @@ public class ArchiveService {
             ArchiveCommentOutputDTO.CommentDTO parentDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                     .id(parentComment.getId())
                     .writer(parentComment.getWriter())
+                    .writerProfileImg(getCommentWriterProfileImg(parentComment.getWriter()))
                     .content(parentComment.isDeleted() ? "삭제된 댓글입니다." : parentComment.getContent())
                     .isDeleted(parentComment.isDeleted())
                     .createdDateTime(parentComment.getCreatedDateTime())
@@ -336,6 +344,7 @@ public class ArchiveService {
                 ArchiveCommentOutputDTO.CommentDTO childDTO = ArchiveCommentOutputDTO.CommentDTO.builder()
                         .id(childComment.getId())
                         .writer(childComment.getWriter())
+                        .writerProfileImg(getCommentWriterProfileImg(childComment.getWriter()))
                         .content(childComment.isDeleted() ? "삭제된 댓글입니다." : childComment.getContent())
                         .isDeleted(childComment.isDeleted())
                         .createdDateTime(childComment.getCreatedDateTime())
