@@ -23,7 +23,8 @@ public class ArchiveCommentOutputDTO {
     @Builder
     public static class CommentDTO {
         private Long id;
-        private String writer;
+        private String commentWriter;
+        private String commentWriterProfileImg;
         private String content;
         private boolean isDeleted;
         private LocalDateTime createdDateTime;

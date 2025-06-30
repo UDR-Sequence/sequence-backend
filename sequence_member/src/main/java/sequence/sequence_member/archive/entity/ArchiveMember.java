@@ -43,7 +43,7 @@ public class ArchiveMember extends BaseTimeEntity {
     @JoinColumn(name = "archive_id")
     private Archive archive;
     
-    @Column(name = "profile_img")
+    @Column(name = "profile_img", columnDefinition = "TEXT")
     private String profileImg;  // 멤버의 프로필 이미지 URL
 
     @Builder

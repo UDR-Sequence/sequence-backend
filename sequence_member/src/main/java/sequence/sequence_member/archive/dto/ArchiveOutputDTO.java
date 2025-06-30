@@ -16,7 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 public class ArchiveOutputDTO {
     private Long id;
+    private String writerUsername;
     private String writerNickname;
+    private String writerProfileImg;
     private String title;
     private String description; 
     private LocalDate startDate;
