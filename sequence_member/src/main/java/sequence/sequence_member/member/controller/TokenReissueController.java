@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import sequence.sequence_member.member.jwt.JWTUtil;
 import sequence.sequence_member.member.repository.RefreshRepository;
 import sequence.sequence_member.member.service.TokenReissueService;
 
+@Slf4j
 @RestController
 public class TokenReissueController {
     private final JWTUtil jwtUtil;
@@ -31,6 +33,7 @@ public class TokenReissueController {
 
     @PostMapping("/api/token")
     public ResponseEntity<?> TokenReissue(HttpServletRequest request, HttpServletResponse response) {
+        log.info("토큰 재발급 요청 : /api/token POST request 발생");
 
         //refresh token 획득
         String refresh = null;
@@ -43,6 +46,7 @@ public class TokenReissueController {
         }
 
         if(refresh == null){
+            log.error("리프레시 토큰 에러 : 리프레시 토큰 공백");
             //응답 상태 반환
             return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
         }
@@ -51,6 +55,7 @@ public class TokenReissueController {
         try{
             jwtUtil.isExpired(refresh);
         }catch(ExpiredJwtException e){
+            log.error("리프레시 토큰 에러 : 리프레시 토큰 만료");
 
             //상태 코드 반환
             return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
@@ -59,6 +64,8 @@ public class TokenReissueController {
         String category = jwtUtil.getCategory(refresh);
 
         if(!category.equals("refresh")){
+            log.error("리프레시 토큰 에러 : 유효하지 않은 리프레시 토큰");
+
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
@@ -67,6 +74,8 @@ public class TokenReissueController {
 
         //토큰이 존재하지 않는다면,
         if(!isExist){
+            log.error("리프레시 토큰 에러 : 존재하지 않는 리프레시 토큰");
+
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
@@ -86,7 +95,6 @@ public class TokenReissueController {
 
         //응답 헤더에 엑세스 토큰을 넣어서 리턴
         return new ResponseEntity<>(HttpStatus.OK);
-
     }
 
 //    private Cookie createCookie(String key, String value){

@@ -3,6 +3,7 @@ package sequence.sequence_member.member.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +20,7 @@ import sequence.sequence_member.member.repository.MemberRepository;
 import sequence.sequence_member.member.service.DeleteService;
 import sequence.sequence_member.member.service.MemberService;
 
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class DeleteMemberController {
@@ -33,6 +34,8 @@ public class DeleteMemberController {
     // 사용자 탈퇴 API
     @DeleteMapping("/api/user/delete")
     public ResponseEntity<ApiResponseData<String>> deleteProcess(@RequestBody DeleteInputDTO deleteInputDTO, HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("사용자 탈퇴 요청 : /api/user/delete DELETE request 발생");
+
         //비밀번호 비교
         if (!deleteInputDTO.getPassword().equals(deleteInputDTO.getConfirm_password())) {
             throw new CanNotFindResourceException("동일한 비밀번호를 입력해주세요");
@@ -61,8 +64,11 @@ public class DeleteMemberController {
     // 사용자 탈퇴 확인 API
     @GetMapping("/api/user/is_deleted")
     public ResponseEntity<ApiResponseData<Boolean>> isDeletedProcess(@RequestParam(name = "username") String username) {
+        log.info("사용자 탈퇴 확인 요청 : /api/user/is_deleted GET request 발생");
+
         // 파라미터 유효성 검사
         if (username == null || username.trim().isEmpty()) {
+            log.error("유효성 에러 : 아이디 입력 누락");
             return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.CAN_NOT_FIND_RESOURCE.getCode(), "아이디를 입력해주세요"));
         }
 
@@ -70,12 +76,13 @@ public class DeleteMemberController {
 
         //사용자를 찾을 수 없는 경우
         if (member == null) {
+            log.error("사용자를 찾을 수 없음");
             return ResponseEntity.badRequest().body(ApiResponseData.failure(Code.CAN_NOT_FIND_RESOURCE.getCode(), "사용자를 찾을 수 없습니다"));
         }
 
         //사용자 탈퇴 상태 반환
         if(member.isDeleted() == false) {
-            return ResponseEntity.ok().body(ApiResponseData.success(false, "탈퇴되지 않은 사용자 입니다."));
+            return ResponseEntity.ok().body(ApiResponseData.success(false, "탈퇴가 완료 되지 않은 사용자 입니다."));
         }else{
             return ResponseEntity.ok().body(ApiResponseData.success(true, "탈퇴된 사용자 입니다."));
         }
