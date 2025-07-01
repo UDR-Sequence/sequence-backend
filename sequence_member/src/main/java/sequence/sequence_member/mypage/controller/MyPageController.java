@@ -2,6 +2,7 @@ package sequence.sequence_member.mypage.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +27,7 @@ import sequence.sequence_member.mypage.service.MyPageService;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MyPageController {
@@ -37,6 +39,8 @@ public class MyPageController {
             @RequestParam(defaultValue = "10") int size,  // 사이즈 기본값 10
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
+        log.info("마이페이지 조회 요청 : /api/mypage GET request 발생");
+
         String username = customUserDetails.getUsername();
 
         try {
@@ -59,6 +63,8 @@ public class MyPageController {
             @RequestPart(name = "profileImg", required = false) MultipartFile profileImg,
             @RequestPart(name = "portfolios", required = false) List<MultipartFile> portfolios
     ) {
+        log.info("마이페이지 수정 요청 : /api/mypage PUT request 발생");
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
@@ -77,6 +83,8 @@ public class MyPageController {
             @RequestParam(defaultValue = "10") int size,   // 사이즈 기본값 10
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
+        log.info("해당 닉네임 유저의 마이페이지 조회 요청 : /api/mypage/{nickname} GET request 발생");
+
         try {
             MyPageResponseDTO userProfile = myPageService.getUserProfile(nickname, page, size, customUserDetails);
             return ResponseEntity.ok(ApiResponseData.success(userProfile, nickname + "님의 정보를 성공적으로 가져왔습니다."));
@@ -93,6 +101,8 @@ public class MyPageController {
     public ResponseEntity<ApiResponseData<String>> updateUserInfo(
             @Valid @RequestBody UpdateLoginInfoRequestDTO updateLoginInfoRequestDTO, Errors errors
     ) {
+        log.info("마이페이지 수정 요청 : /api/mypage/update PUT request 발생");
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         myPageService.updateUserInfo(updateLoginInfoRequestDTO, username, errors);
 
